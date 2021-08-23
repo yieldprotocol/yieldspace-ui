@@ -1,10 +1,9 @@
 {
-  "name": "@paulrberg/solidity-template",
-  "description": "Setup for writing Solidity smart contracts",
-  "version": "1.0.0",
+  "name": "reimbursement-token-contracts",
+  "description": "Smart contracts for Yield, Inc's Reimbursement Token project.",
+  "version": "0.0.1",
   "author": {
-    "name": "Paul Razvan Berg",
-    "url": "https://paulrberg.com"
+    "name": "Yield, Inc."
   },
   "devDependencies": {
     "@codechecks/client": "^0.1.11",
