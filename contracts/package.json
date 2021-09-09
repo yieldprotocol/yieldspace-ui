@@ -77,5 +77,8 @@
   "volta": {
     "node": "16.7.0",
     "yarn": "1.22.10"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.3.1"
   }
 }
