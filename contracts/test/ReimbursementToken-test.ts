@@ -13,8 +13,18 @@ const { isAddress, parseUnits } = ethers.utils;
 // Test constants
 const TokenName = "Reimbursement Token";
 const TokenSymbol = "RIT";
+const MaturityDate = 2000000000; // Unix timestamp far in the future
+const UnderlyingToken = ethers.Wallet.createRandom().address;
 const TokenSupply = parseUnits("1000000", 18);
 const MintReceiver = ethers.Wallet.createRandom().address;
+
+// Helper deploy method
+const deployRiToken = (deployer: SignerWithAddress, params: Array<any>) => {
+  return artifacts.readArtifact("ReimbursementToken")
+    .then( artifact => {
+      return deployContract(deployer, artifact, params);
+    });
+}
 
 describe("ReimbursementToken", () => {
   let deployer: SignerWithAddress;
@@ -25,23 +35,28 @@ describe("ReimbursementToken", () => {
   });
 
   beforeEach(async () => {
-    const riTokenArtifact = await artifacts.readArtifact("ReimbursementToken");
-    token = (await deployContract(deployer, riTokenArtifact, [
+    token = await deployRiToken(deployer, [
       TokenName,
       TokenSymbol,
+      MaturityDate,
+      UnderlyingToken,
       TokenSupply,
       MintReceiver,
-    ])) as ReimbursementToken;
+    ]) as ReimbursementToken;
   });
 
-  it("should see the deployed token contract with the correct ERC-20 configuration", async () => {
+  it("should see the deployed token contract with the correct configuration", async () => {
     expect(isAddress(token.address), "Failed to deploy ReimbursementToken").to.be.true;
 
     const name = await token.name();
+    const maturity = await token.maturity();
+    const underlying = await token.underlying();
     const symbol = await token.symbol();
     const supply = await token.totalSupply();
 
     expect(name).to.equal(TokenName);
+    expect(maturity).to.equal(MaturityDate);
+    expect(underlying).to.equal(UnderlyingToken);
     expect(symbol).to.equal(TokenSymbol);
     expect(supply).to.equal(TokenSupply);
   });
@@ -49,5 +64,16 @@ describe("ReimbursementToken", () => {
   it("should mint the token supply to the supplied receiver", async () => {
     const receiverBalance = await token.balanceOf(MintReceiver);
     expect(receiverBalance).to.equal(TokenSupply);
+  });
+
+  it("should fail to deploy with a maturity date in the past", async () => {
+    await expect(deployRiToken(deployer, [
+      TokenName,
+      TokenSymbol,
+      0,
+      UnderlyingToken,
+      TokenSupply,
+      MintReceiver,
+    ])).to.be.revertedWith("ReimbursementToken: Maturity date must be in future");
   });
 });
