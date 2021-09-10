@@ -3,10 +3,30 @@ pragma solidity >=0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
 
+/**
+ * @dev A ReimbursementToken is an asset provided by protocols to users in response to a loss of funds.
+ * It represents a claim on collateral and treasury tokens that have or will be provided by a protocol.
+ * The reimbursement token may be exchanged for collateral and or treasury tokens on a specified maturity date.
+ * Before the maturity date, the tokens may be bought and sold freely. The market price of a ReimbursementToken
+ * should logically reflect the market's confidence in a protocol's ability to provide the collateral and/or
+ * treasury tokens by the maturity date, along with some time preference discount.
+ */
 contract ReimbursementToken is ERC20Permit {
+
+    /// @dev Unix time at which redemption of token for underlying are possible
     uint256 public immutable maturity;
+
+    /// @dev Treasury asset that is returned on redemption
     address public immutable underlying;
 
+     /**
+      * @param _name Name for the ERC20 token
+      * @param _symbol Symbol for the ERC20 token
+      * @param _maturity Unix time at which redemption of token for underlying are possible
+      * @param _underlying Treasury asset that is returned on redemption
+      * @param _supply Total supply of the ERC20 token which will be minted at deploy
+      * @param _receiver Receiving address of the total supply that will be minted at deploy
+      */
     constructor(
         string memory _name,
         string memory _symbol,
