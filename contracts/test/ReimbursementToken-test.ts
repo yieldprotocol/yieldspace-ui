@@ -44,8 +44,6 @@ describe("ReimbursementToken", () => {
   });
 
   it("should see the deployed token contract with the correct configuration", async () => {
-    expect(isAddress(token.address), "Failed to deploy ReimbursementToken").to.be.true;
-
     const name = await token.name();
     const maturity = await token.maturity();
     const underlying = await token.underlying();
