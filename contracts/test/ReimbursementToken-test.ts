@@ -72,4 +72,15 @@ describe("ReimbursementToken", () => {
       MintReceiver,
     ])).to.be.revertedWith("ReimbursementToken: Maturity date must be in future");
   });
+
+  it("should fail to deploy with a supply of zero", async () => {
+    await expect(deployRiToken(deployer, [
+      TokenName,
+      TokenSymbol,
+      MaturityDate,
+      UnderlyingToken,
+      "0",
+      MintReceiver,
+    ])).to.be.revertedWith("ReimbursementToken: Supply must be greater than 0");
+  });
 });

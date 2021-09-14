@@ -36,6 +36,7 @@ contract ReimbursementToken is ERC20Permit {
         address _receiver) ERC20Permit(_name) ERC20(_name, _symbol)
     {
         require(_maturity > block.timestamp, "ReimbursementToken: Maturity date must be in future");
+        require(_supply > 0, "ReimbursementToken: Supply must be greater than 0");
         maturity = _maturity;
         underlying = _underlying;
         _mint(_receiver, _supply);
