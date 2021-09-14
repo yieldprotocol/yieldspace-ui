@@ -20,10 +20,8 @@ const MintReceiver = ethers.Wallet.createRandom().address;
 
 // Helper deploy method
 const deployRiToken = (deployer: SignerWithAddress, params: Array<any>) => {
-  return artifacts.readArtifact("ReimbursementToken")
-    .then( artifact => {
-      return deployContract(deployer, artifact, params);
-    });
+  const artifact = artifacts.readArtifactSync("ReimbursementToken");
+  return deployContract(deployer, artifact, params);
 }
 
 describe("ReimbursementToken", () => {
