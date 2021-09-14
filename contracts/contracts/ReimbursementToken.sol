@@ -37,6 +37,7 @@ contract ReimbursementToken is ERC20Permit {
     {
         require(_maturity > block.timestamp, "ReimbursementToken: Maturity date must be in future");
         require(_supply > 0, "ReimbursementToken: Supply must be greater than 0");
+        require(ERC20(_underlying).totalSupply() > 0, "ReimbursementToken: Underlying supply must be greater than 0");
         maturity = _maturity;
         underlying = _underlying;
         _mint(_receiver, _supply);
