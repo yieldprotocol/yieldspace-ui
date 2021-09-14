@@ -1,15 +1,15 @@
 // External imports
-import { artifacts, ethers, waffle } from "hardhat";
+import { ethers, waffle } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { expect } from "chai";
 
 // Internal imports
 import { ReimbursementToken } from "../typechain/ReimbursementToken";
 import { MockToken } from "../typechain/MockToken";
-import { Signer } from "ethers";
+import { deployMockToken, deployRiToken } from "./utils";
 
 // Conevenience variables
-const { deployContract, loadFixture } = waffle;
+const { loadFixture } = waffle;
 const { parseUnits } = ethers.utils;
 
 // Test constants
@@ -18,17 +18,6 @@ const TokenSymbol = "RIT";
 const MaturityDate = 2000000000; // Unix timestamp far in the future
 const TokenSupply = parseUnits("1000000", 18);
 const MintReceiver = ethers.Wallet.createRandom().address;
-
-// Helper deploy method
-const deployRiToken = (deployer: Signer, params: Array<any>) => {
-  const artifact = artifacts.readArtifactSync("ReimbursementToken");
-  return deployContract(deployer, artifact, params);
-};
-
-const deployMockToken = (deployer: Signer) => {
-  const artifact = artifacts.readArtifactSync("MockToken");
-  return deployContract(deployer, artifact, ["Mock Token", "MOCK"]);
-};
 
 describe("ReimbursementToken", () => {
   let deployer: SignerWithAddress;
