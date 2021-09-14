@@ -6,9 +6,10 @@ import { expect } from "chai";
 // Internal imports
 import { ReimbursementToken } from "../typechain/ReimbursementToken";
 import { MockToken } from "../typechain/MockToken";
+import { Signer } from "ethers";
 
 // Conevenience variables
-const { deployContract } = waffle;
+const { deployContract, loadFixture } = waffle;
 const { parseUnits } = ethers.utils;
 
 // Test constants
@@ -19,12 +20,12 @@ const TokenSupply = parseUnits("1000000", 18);
 const MintReceiver = ethers.Wallet.createRandom().address;
 
 // Helper deploy method
-const deployRiToken = (deployer: SignerWithAddress, params: Array<any>) => {
+const deployRiToken = (deployer: Signer, params: Array<any>) => {
   const artifact = artifacts.readArtifactSync("ReimbursementToken");
   return deployContract(deployer, artifact, params);
 }
 
-const deployMockToken = (deployer: SignerWithAddress) => {
+const deployMockToken = (deployer: Signer) => {
   const artifact = artifacts.readArtifactSync("MockToken");
   return deployContract(deployer, artifact, ["Mock Token", "MOCK"]);
 }
@@ -38,11 +39,11 @@ describe("ReimbursementToken", () => {
     [deployer] = await ethers.getSigners();
   });
 
-  beforeEach(async () => {
-    mockToken = await deployMockToken(deployer) as MockToken;
+  async function setup() {
+    const mockToken = await deployMockToken(deployer) as MockToken;
     await mockToken.mint(deployer.address, TokenSupply);
 
-    token = await deployRiToken(deployer, [
+    const token = await deployRiToken(deployer, [
       TokenName,
       TokenSymbol,
       MaturityDate,
@@ -50,6 +51,14 @@ describe("ReimbursementToken", () => {
       TokenSupply,
       MintReceiver,
     ]) as ReimbursementToken;
+
+    return {mockToken, token};
+  }
+
+  beforeEach(async () => {
+    const deployment = await loadFixture(setup);
+    token = deployment.token;
+    mockToken = deployment.mockToken;
   });
 
   it("should see the deployed token contract with the correct configuration", async () => {
