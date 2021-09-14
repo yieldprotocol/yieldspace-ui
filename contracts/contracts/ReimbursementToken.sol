@@ -13,7 +13,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
  */
 contract ReimbursementToken is ERC20Permit {
 
-    /// @dev Unix time at which redemption of token for underlying are possible
+    /// @dev Unix time at which redemption of tokens for underlying is possible
     uint256 public immutable maturity;
 
     /// @dev Treasury asset that is returned on redemption
@@ -22,7 +22,7 @@ contract ReimbursementToken is ERC20Permit {
      /**
       * @param _name Name for the ERC20 token
       * @param _symbol Symbol for the ERC20 token
-      * @param _maturity Unix time at which redemption of token for underlying are possible
+      * @param _maturity Unix time at which redemption of tokens for underlying is possible
       * @param _underlying Treasury asset that is returned on redemption
       * @param _supply Total supply of the ERC20 token which will be minted at deploy
       * @param _receiver Receiving address of the total supply that will be minted at deploy
