@@ -10,14 +10,13 @@ import { BalanceTree } from "./merkle-distributor/balance-tree";
 
 // Conevenience variables
 const { deployContract, loadFixture } = waffle;
-const { BigNumber } = ethers;
 const { parseUnits } = ethers.utils;
 
 // Test inputs
-const TokenName = "Reimbursement Token";
-const TokenSymbol = "RIT";
-const MaturityDate = 2000000000; // Unix timestamp far in the future
-const TokenSupply = parseUnits("1000000", 18);
+const tokenName = "Reimbursement Token";
+const tokenSymbol = "RIT";
+const maturityDate = 2000000000; // Unix timestamp far in the future
+const tokenSupply = parseUnits("1000000", 18);
 
 // Constants
 const ZERO_BYTES32 = "0x0000000000000000000000000000000000000000000000000000000000000000";
@@ -40,14 +39,14 @@ describe("MerkleDistributor", () => {
 
   async function setup() {
     const mockToken = (await deployMockToken(deployer)) as MockToken;
-    await mockToken.mint(deployer.address, TokenSupply);
+    await mockToken.mint(deployer.address, tokenSupply);
 
     const token = (await deployRiToken(deployer, [
-      TokenName,
-      TokenSymbol,
-      MaturityDate,
+      tokenName,
+      tokenSymbol,
+      maturityDate,
       mockToken.address,
-      TokenSupply,
+      tokenSupply,
       deployer.address,
     ])) as ReimbursementToken;
 
@@ -82,7 +81,7 @@ describe("MerkleDistributor", () => {
     distributor = (await deployDistributor(deployer, [token.address, tree.getHexRoot()])) as MerkleDistributor;
 
     // Transfer ritoken supply to distributor (a deploy script would do the same)
-    await token.transfer(distributor.address, TokenSupply);
+    await token.transfer(distributor.address, tokenSupply);
 
     // Generate Merkle proofs required for claiming
     const proof0 = tree.getProof(0, user0.address, amount0);
@@ -99,7 +98,7 @@ describe("MerkleDistributor", () => {
     // Verify expected balances
     expect(await token.balanceOf(user0.address)).to.equal(amount0);
     expect(await token.balanceOf(user1.address)).to.equal(amount1);
-    expect(await token.balanceOf(distributor.address)).to.equal(TokenSupply.sub(amount0).sub(amount1));
+    expect(await token.balanceOf(distributor.address)).to.equal(tokenSupply.sub(amount0).sub(amount1));
 
     // Verify a proof can not be reused after claim
     await expect(distributor.claim(0, user0.address, amount0, proof0)).to.be.revertedWith(
