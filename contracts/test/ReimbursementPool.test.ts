@@ -11,7 +11,7 @@ import { BigNumberish } from "ethers";
 // Conevenience variables
 const { deployContract, loadFixture, deployMockContract } = waffle;
 const { parseUnits } = ethers.utils;
-const { AddressZero } = ethers.constants;
+const { AddressZero, MaxUint256 } = ethers.constants;
 
 // Test inputs
 const tokenName = "Reimbursement Token";
@@ -24,6 +24,7 @@ const collateralTokenDecimals = 8;
 const collateralTokenSupply = parseUnits("21000000", collateralTokenDecimals); // 21 million
 const mintReceiver = ethers.Wallet.createRandom().address;
 const targetExchangeRate = parseUnits("1", 18);
+const treasuryTokenSupplyAmount = parseUnits("1000", treasuryTokenDecimals);
 
 const deployPool = (deployer: SignerWithAddress, params: Array<any>) => {
   const artifact = artifacts.readArtifactSync("ReimbursementPool");
@@ -40,19 +41,22 @@ const deployMockRiToken = async (deployer: SignerWithAddress, maturity: BigNumbe
 
 describe("ReimbursementToken", () => {
   let deployer: SignerWithAddress;
+  let supplier: SignerWithAddress;
   let riToken: ReimbursementToken;
   let riPool: ReimbursementPool;
   let treasuryToken: MockToken;
   let collateralToken: MockToken;
 
   before(async () => {
-    [deployer] = await ethers.getSigners();
+    [deployer, supplier] = await ethers.getSigners();
   });
 
   async function setup() {
+    // create treasury token and mint to deployer
     const treasuryToken = await deployMockToken(deployer, "Stable Coin", "STAB", treasuryTokenDecimals);
     await treasuryToken.mint(deployer.address, treasuryTokenSupply);
 
+    // create riToken
     const riToken = await deployRiToken(deployer, [
       tokenName,
       tokenSymbol,
@@ -62,10 +66,19 @@ describe("ReimbursementToken", () => {
       mintReceiver,
     ]);
 
+    // create collateral token and mint to deployer
     const collateralToken = await deployMockToken(deployer, "Governance Token", "GOV", collateralTokenDecimals);
     await collateralToken.mint(deployer.address, collateralTokenSupply);
 
+    // create riPool
     const riPool = await deployPool(deployer, [riToken.address, collateralToken.address, targetExchangeRate]);
+
+    // approve riPool for deployer
+    await treasuryToken.approve(riPool.address, MaxUint256);
+
+    // tranfer tokens & approve riPool for supplier
+    await treasuryToken.transfer(supplier.address, treasuryTokenSupplyAmount);
+    await treasuryToken.connect(supplier).approve(riPool.address, MaxUint256);
 
     return { treasuryToken, riToken, collateralToken, riPool };
   }
@@ -123,6 +136,37 @@ describe("ReimbursementToken", () => {
       await expect(
         deployPool(deployer, [mockRiToken.address, collateralToken.address, targetExchangeRate]),
       ).to.be.revertedWith("ReimbursementPool: Token maturity must be in the future");
+    });
+  });
+
+  describe("supplying assets", () => {
+    it("should allow contributions of the treasury token", async () => {
+      await riPool.depositToTreasury(treasuryTokenSupplyAmount);
+
+      // check internal accounting
+      const treasuryBalance = await riPool.treasuryBalance();
+      expect(treasuryBalance).to.equal(treasuryTokenSupplyAmount);
+
+      // check actual transfer
+      expect(await treasuryToken.balanceOf(riPool.address)).to.equal(treasuryBalance);
+    });
+
+    it("should allow treasury token contributions from anyone", async () => {
+      await riPool.depositToTreasury(treasuryTokenSupplyAmount);
+      await riPool.connect(supplier).depositToTreasury(treasuryTokenSupplyAmount);
+
+      // check internal accounting
+      const treasuryBalance = await riPool.treasuryBalance();
+      expect(treasuryBalance).to.equal(treasuryTokenSupplyAmount.mul(2));
+
+      // check actual transfer
+      expect(await treasuryToken.balanceOf(riPool.address)).to.equal(treasuryBalance);
+    });
+
+    it("should emit an event when a contribution is made", async () => {
+      await expect(riPool.connect(supplier).depositToTreasury(treasuryTokenSupplyAmount))
+        .to.emit(riPool, "TreasuryDeposit")
+        .withArgs(supplier.address, treasuryTokenSupplyAmount);
     });
   });
 });

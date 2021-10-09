@@ -11,6 +11,10 @@ import "@openzeppelin/contracts/interfaces/IERC20.sol";
  * a shortfall) at maturity. The bond issuer may also reclaim any *excess* capital after maturity.
  */
 contract ReimbursementPool {
+  // ======================================= Events ================================================
+
+  event TreasuryDeposit(address indexed despositer, uint256 amount);
+
   // ======================================= State variables =======================================
 
   /// @notice The Reimbursement Token associated with this pool
@@ -27,6 +31,8 @@ contract ReimbursementPool {
 
   /// @notice The maximum rate at which Reimbursement Tokens will be exchanged for treasury tokens at maturity
   uint256 public immutable targetExchangeRate;
+
+  uint256 public treasuryBalance;
 
   /**
    * @param _riToken The Reimbursement Token associated with this pool
@@ -59,5 +65,16 @@ contract ReimbursementPool {
     collateralToken = IERC20(_collateralToken);
     maturity = _riToken.maturity();
     targetExchangeRate = _targetExchangeRate;
+  }
+
+  function depositToTreasury(uint256 _amount) public {
+    treasuryBalance += _amount;
+
+    emit TreasuryDeposit(msg.sender, _amount);
+
+    require(
+      treasuryToken.transferFrom(msg.sender, address(this), _amount) == true,
+      "ReimbursementPool: Treasury Token Transfer Failed"
+    );
   }
 }
