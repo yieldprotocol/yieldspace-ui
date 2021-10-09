@@ -2,10 +2,10 @@
 pragma solidity >=0.8.7;
 
 import "./interfaces/IReimbursementToken.sol";
-import "@openzeppelin/contracts/interfaces/IERC20.sol";
+import "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 
 /**
- * @notice A ReimbursementPool manages the mechanics of paying out the coupon bond of its associated
+ * @notice A ReimbursementPool manages the mechanics of paying out the redemption value of its associated
  * ReimbursementToken. It manages the collateral and treasury balances, and ensures token holders are
  * paid back their debt in full (if funds are available) or to the maximum extent possible (if there is
  * a shortfall) at maturity. The bond issuer may also reclaim any *excess* capital after maturity.
@@ -21,18 +21,27 @@ contract ReimbursementPool {
   IReimbursementToken public immutable riToken;
 
   /// @notice The treasury token, i.e. the Reimbursement Token's "underlying", in which token holders are paid
-  IERC20 public immutable treasuryToken;
+  IERC20Metadata public immutable treasuryToken;
 
   /// @notice An optional collateral token, used to compensate holders in the case of treasury shortfall
-  IERC20 public immutable collateralToken;
+  IERC20Metadata public immutable collateralToken;
 
   /// @notice Unix time at which redemption of tokens for treasury/collateral tokens is possible
   uint256 public immutable maturity;
 
-  /// @notice The maximum rate at which Reimbursement Tokens will be exchanged for treasury tokens at maturity
+  /// @notice The maximum rate at which Reimbursement Tokens will be exchanged for treasury tokens at maturity,
+  /// stored as a WAD; so 1 treasury token for 1 riToken = 1e18, 0.5 treasury tokens for 1 riToken = 0.5e18, etc...
   uint256 public immutable targetExchangeRate;
 
   uint256 public treasuryBalance;
+
+  bool public hasMatured;
+
+  uint256 public finalShortfall;
+
+  uint256 public finalSurplus;
+
+  uint256 public finalExchangeRate;
 
   /**
    * @param _riToken The Reimbursement Token associated with this pool
@@ -43,7 +52,7 @@ contract ReimbursementPool {
    */
   constructor(
     IReimbursementToken _riToken,
-    IERC20 _collateralToken,
+    IERC20Metadata _collateralToken,
     uint256 _targetExchangeRate
   ) {
     require(
@@ -61,13 +70,15 @@ contract ReimbursementPool {
     require(_targetExchangeRate > 0, "ReimbursementPool: Target exchange rate must be non-zero");
 
     riToken = _riToken;
-    treasuryToken = IERC20(_riToken.underlying());
-    collateralToken = IERC20(_collateralToken);
+    treasuryToken = IERC20Metadata(_riToken.underlying());
+    collateralToken = IERC20Metadata(_collateralToken);
     maturity = _riToken.maturity();
     targetExchangeRate = _targetExchangeRate;
   }
 
-  function depositToTreasury(uint256 _amount) public {
+  // ======================================= Public functions ======================================
+
+  function depositToTreasury(uint256 _amount) external {
     treasuryBalance += _amount;
 
     emit TreasuryDeposit(msg.sender, _amount);
@@ -76,5 +87,53 @@ contract ReimbursementPool {
       treasuryToken.transferFrom(msg.sender, address(this), _amount) == true,
       "ReimbursementPool: Treasury Token Transfer Failed"
     );
+  }
+
+  function mature() external {
+    require(block.timestamp >= maturity, "ReimbursementPool: Cannot mature before maturity date");
+    hasMatured = true;
+    finalShortfall = currentShortfall();
+    finalSurplus = currentSurplus();
+
+    if (finalShortfall == 0) {
+      finalExchangeRate = targetExchangeRate;
+    } else {
+      uint256 wadTreasuryBalance = treasuryBalance * 10**(18 - treasuryToken.decimals());
+      finalExchangeRate = wdiv(wadTreasuryBalance, riToken.totalSupply());
+    }
+  }
+
+  function couponDebt() public view returns (uint256) {
+    return wmul(riToken.totalSupply(), targetExchangeRate) / 10**(18 - treasuryToken.decimals());
+  }
+
+  // TODO: combine shortfall/surplus to one method returning a tuple
+  function currentShortfall() public view returns (uint256) {
+    uint256 _couponDebt = couponDebt();
+
+    if (treasuryBalance >= _couponDebt) {
+      return 0;
+    } else {
+      return _couponDebt - treasuryBalance;
+    }
+  }
+
+  function currentSurplus() public view returns (uint256) {
+    uint256 _couponDebt = couponDebt();
+
+    if (treasuryBalance <= _couponDebt) {
+      return 0;
+    } else {
+      return treasuryBalance - _couponDebt;
+    }
+  }
+
+  function wmul(uint256 x, uint256 y) internal pure returns (uint256 z) {
+    z = x * y;
+    unchecked { z /= 1e18; }
+  }
+
+  function wdiv(uint256 x, uint256 y) internal pure returns (uint256 z) {
+    z = (x * 1e18) / y;
   }
 }

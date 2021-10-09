@@ -5,8 +5,9 @@ import { expect } from "chai";
 
 // Internal imports
 import { ReimbursementToken, MockToken, ReimbursementPool } from "../typechain/";
-import { deployMockToken, deployRiToken } from "./utils";
+import { deployMockToken, deployRiToken, toWad } from "./utils";
 import { BigNumberish } from "ethers";
+import { formatUnits } from "@ethersproject/units";
 
 // Conevenience variables
 const { deployContract, loadFixture, deployMockContract } = waffle;
@@ -16,15 +17,17 @@ const { AddressZero, MaxUint256 } = ethers.constants;
 // Test inputs
 const tokenName = "Reimbursement Token";
 const tokenSymbol = "RIT";
-const maturityDate = 2000000000; // Unix timestamp far in the future
+const maturityTimeDiff = 15 * 60; // 15 minutes in the future
+const maturityDate = Math.ceil(Date.now() / 1000) + maturityTimeDiff; // Unix timestamp time diff seconds in the future
 const riTokenSupply = parseUnits("1000000", 18); // 1 million
 const treasuryTokenDecimals = 6;
 const treasuryTokenSupply = parseUnits("1000000000", treasuryTokenDecimals); // 1 billion
 const collateralTokenDecimals = 8;
 const collateralTokenSupply = parseUnits("21000000", collateralTokenDecimals); // 21 million
 const mintReceiver = ethers.Wallet.createRandom().address;
-const targetExchangeRate = parseUnits("1", 18);
-const treasuryTokenSupplyAmount = parseUnits("1000", treasuryTokenDecimals);
+// 3:1 treasury token to riToken exchange rate
+const targetExchangeRate = toWad(parseUnits("3", treasuryTokenDecimals), treasuryTokenDecimals);
+const treasuryTokenDepositAmount = parseUnits("1000", treasuryTokenDecimals);
 
 const deployPool = (deployer: SignerWithAddress, params: Array<any>) => {
   const artifact = artifacts.readArtifactSync("ReimbursementPool");
@@ -37,6 +40,11 @@ const deployMockRiToken = async (deployer: SignerWithAddress, maturity: BigNumbe
   await mockContract.mock.maturity.returns(maturity);
   await mockContract.mock.underlying.returns(underlying);
   return mockContract;
+};
+
+const fastForward = async (seconds: number): Promise<void> => {
+  await ethers.provider.send("evm_increaseTime", [seconds]);
+  await ethers.provider.send("evm_mine", []);
 };
 
 describe("ReimbursementToken", () => {
@@ -77,7 +85,7 @@ describe("ReimbursementToken", () => {
     await treasuryToken.approve(riPool.address, MaxUint256);
 
     // tranfer tokens & approve riPool for supplier
-    await treasuryToken.transfer(supplier.address, treasuryTokenSupplyAmount);
+    await treasuryToken.transfer(supplier.address, treasuryTokenDepositAmount);
     await treasuryToken.connect(supplier).approve(riPool.address, MaxUint256);
 
     return { treasuryToken, riToken, collateralToken, riPool };
@@ -141,32 +149,119 @@ describe("ReimbursementToken", () => {
 
   describe("supplying assets", () => {
     it("should allow contributions of the treasury token", async () => {
-      await riPool.depositToTreasury(treasuryTokenSupplyAmount);
+      await riPool.depositToTreasury(treasuryTokenDepositAmount);
 
       // check internal accounting
       const treasuryBalance = await riPool.treasuryBalance();
-      expect(treasuryBalance).to.equal(treasuryTokenSupplyAmount);
+      expect(treasuryBalance).to.equal(treasuryTokenDepositAmount);
 
       // check actual transfer
       expect(await treasuryToken.balanceOf(riPool.address)).to.equal(treasuryBalance);
     });
 
     it("should allow treasury token contributions from anyone", async () => {
-      await riPool.depositToTreasury(treasuryTokenSupplyAmount);
-      await riPool.connect(supplier).depositToTreasury(treasuryTokenSupplyAmount);
+      await riPool.depositToTreasury(treasuryTokenDepositAmount);
+      await riPool.connect(supplier).depositToTreasury(treasuryTokenDepositAmount);
 
       // check internal accounting
       const treasuryBalance = await riPool.treasuryBalance();
-      expect(treasuryBalance).to.equal(treasuryTokenSupplyAmount.mul(2));
+      expect(treasuryBalance).to.equal(treasuryTokenDepositAmount.mul(2));
 
       // check actual transfer
       expect(await treasuryToken.balanceOf(riPool.address)).to.equal(treasuryBalance);
     });
 
     it("should emit an event when a contribution is made", async () => {
-      await expect(riPool.connect(supplier).depositToTreasury(treasuryTokenSupplyAmount))
+      await expect(riPool.connect(supplier).depositToTreasury(treasuryTokenDepositAmount))
         .to.emit(riPool, "TreasuryDeposit")
-        .withArgs(supplier.address, treasuryTokenSupplyAmount);
+        .withArgs(supplier.address, treasuryTokenDepositAmount);
+    });
+
+    it("should reduce the shortfall when a contribution is made", async () => {
+      const preShortfall = await riPool.currentShortfall();
+
+      expect(preShortfall).to.equal(await riPool.couponDebt());
+
+      await riPool.depositToTreasury(treasuryTokenDepositAmount);
+
+      const postShortfall = await riPool.currentShortfall();
+      expect(preShortfall.sub(treasuryTokenDepositAmount)).to.equal(postShortfall);
+      expect(await riPool.currentSurplus()).to.equal(0);
+    });
+
+    it("should show a surplus if greater than coupon debt is contributed", async () => {
+      const preShortfall = await riPool.currentShortfall();
+      const preSurplus = await riPool.currentSurplus();
+
+      expect(preSurplus).to.equal(0);
+
+      await riPool.depositToTreasury(preShortfall); // pay the full debt
+      await riPool.depositToTreasury(treasuryTokenDepositAmount); // pay some extra
+
+      const postShortfall = await riPool.currentShortfall();
+      const postSurplus = await riPool.currentSurplus();
+
+      expect(postShortfall).to.equal(0);
+      expect(postSurplus).to.equal(treasuryTokenDepositAmount);
+    });
+
+    it("should show no shortfall or surplus if exactly the coupon debt has been contributed", async () => {
+      // pay the full debt
+      await riPool.depositToTreasury(await riPool.couponDebt());
+
+      const shortfall = await riPool.currentShortfall();
+      const surplus = await riPool.currentSurplus();
+
+      expect(shortfall).to.equal(0);
+      expect(surplus).to.equal(0);
+    });
+  });
+
+  describe("maturity", () => {
+    it("should not mature before the maturity date", async () => {
+      await expect(riPool.mature()).to.be.revertedWith("ReimbursementPool: Cannot mature before maturity date");
+    });
+
+    it("should mature after the maturity date", async () => {
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+      expect(await riPool.hasMatured()).to.be.true;
+    });
+
+    it("should show the right final exchange rate after the maturity date", async () => {
+      const totalDebt = await riPool.couponDebt();
+
+      // Pay half the debt
+      riPool.depositToTreasury(totalDebt.div(2));
+
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+
+      // Exchange rate should be half that expected and 0 surplus
+      const finalExchangeRate = await riPool.finalExchangeRate();
+      expect(finalExchangeRate.mul(2)).to.equal(targetExchangeRate);
+      // TODO: final shortfall
+      expect(await riPool.finalSurplus()).to.equal(0);
+    });
+
+    it("should show the final surplus if there is one", async () => {
+      // pay more than debt
+      // mature
+      // final surplus is correct
+      // final exchange rate is target exchange
+    });
+
+    it("should show the no final surplus if exact debt paid", async () => {
+      // pay exactly the debt
+      // mature
+      // final surplus is 0
+      // final exchange rate is target exchange
+    });
+
+    it("should not allow contributions after maturity", async () => {
+      // mature
+      // test contribution reverts
     });
   });
 });
