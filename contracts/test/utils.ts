@@ -19,11 +19,17 @@ export const deployMockToken = (
   return deployContract(deployer, artifact, [name, symbol, decimals]) as Promise<MockToken>;
 };
 
-export const toWad = (amount: BigNumberish, decimals: BigNumberish): BigNumberish => {
-  const wadDecimals = BigNumber.from(18);
+const wadDecimals = BigNumber.from(18);
+const wad = parseUnits("1", wadDecimals);
+
+export const toWad = (amount: BigNumberish, decimals: BigNumberish): BigNumber => {
   if (wadDecimals.lt(decimals)) {
     throw new Error("Decimals cannot be greater than WAD decimals");
   }
 
   return BigNumber.from(10).pow(wadDecimals.sub(decimals)).mul(amount);
-}
+};
+
+export const wmul = (x: BigNumber, y: BigNumber): BigNumberish => {
+  return x.mul(y).div(wad);
+};

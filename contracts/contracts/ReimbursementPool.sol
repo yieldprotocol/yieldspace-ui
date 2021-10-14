@@ -15,6 +15,8 @@ contract ReimbursementPool {
 
   event TreasuryDeposit(address indexed despositer, uint256 amount);
 
+  event Redemption(address indexed redeemer, uint256 riTokenAmount, uint256 treasuryTokenAmount);
+
   // ======================================= State variables =======================================
 
   /// @notice The Reimbursement Token associated with this pool
@@ -128,9 +130,25 @@ contract ReimbursementPool {
     }
   }
 
+  function redeem(uint256 _amount) external {
+    require(hasMatured, "ReimbursementPool: No redemptions before maturity");
+
+    require(
+      riToken.transferFrom(msg.sender, address(this), _amount),
+      "ReimbursementPool: Reimbursement Token transfer failed"
+    );
+
+    uint256 _redemptionAmount = wmul(_amount, finalExchangeRate);
+    treasuryToken.transfer(msg.sender, _redemptionAmount);
+
+    emit Redemption(msg.sender, _amount, _redemptionAmount);
+  }
+
   function wmul(uint256 x, uint256 y) internal pure returns (uint256 z) {
     z = x * y;
-    unchecked { z /= 1e18; }
+    unchecked {
+      z /= 1e18;
+    }
   }
 
   function wdiv(uint256 x, uint256 y) internal pure returns (uint256 z) {

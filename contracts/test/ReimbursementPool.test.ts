@@ -5,9 +5,8 @@ import { expect } from "chai";
 
 // Internal imports
 import { ReimbursementToken, MockToken, ReimbursementPool } from "../typechain/";
-import { deployMockToken, deployRiToken, toWad } from "./utils";
+import { deployMockToken, deployRiToken, toWad, wmul } from "./utils";
 import { BigNumberish } from "ethers";
-import { formatUnits } from "@ethersproject/units";
 
 // Conevenience variables
 const { deployContract, loadFixture, deployMockContract } = waffle;
@@ -24,9 +23,9 @@ const treasuryTokenDecimals = 6;
 const treasuryTokenSupply = parseUnits("1000000000", treasuryTokenDecimals); // 1 billion
 const collateralTokenDecimals = 8;
 const collateralTokenSupply = parseUnits("21000000", collateralTokenDecimals); // 21 million
-const mintReceiver = ethers.Wallet.createRandom().address;
-// 3:1 treasury token to riToken exchange rate
-const targetExchangeRate = toWad(parseUnits("3", treasuryTokenDecimals), treasuryTokenDecimals);
+// 3:1 treasury token for riToken exchange rate
+const humanTargetExchangeRate = "3";
+const targetExchangeRate = toWad(parseUnits(humanTargetExchangeRate, treasuryTokenDecimals), treasuryTokenDecimals);
 const treasuryTokenDepositAmount = parseUnits("1000", treasuryTokenDecimals);
 
 const deployPool = (deployer: SignerWithAddress, params: Array<any>) => {
@@ -50,13 +49,14 @@ const fastForward = async (seconds: number): Promise<void> => {
 describe("ReimbursementToken", () => {
   let deployer: SignerWithAddress;
   let supplier: SignerWithAddress;
+  let redeemer: SignerWithAddress;
   let riToken: ReimbursementToken;
   let riPool: ReimbursementPool;
   let treasuryToken: MockToken;
   let collateralToken: MockToken;
 
   before(async () => {
-    [deployer, supplier] = await ethers.getSigners();
+    [deployer, supplier, redeemer] = await ethers.getSigners();
   });
 
   async function setup() {
@@ -71,7 +71,7 @@ describe("ReimbursementToken", () => {
       maturityDate,
       treasuryToken.address,
       riTokenSupply,
-      mintReceiver,
+      redeemer.address,
     ]);
 
     // create collateral token and mint to deployer
@@ -87,6 +87,9 @@ describe("ReimbursementToken", () => {
     // tranfer tokens & approve riPool for supplier
     await treasuryToken.transfer(supplier.address, treasuryTokenDepositAmount);
     await treasuryToken.connect(supplier).approve(riPool.address, MaxUint256);
+
+    // approve riPool to transfer riTokens for redeemer
+    await riToken.connect(redeemer).approve(riPool.address, MaxUint256);
 
     return { treasuryToken, riToken, collateralToken, riPool };
   }
@@ -252,7 +255,7 @@ describe("ReimbursementToken", () => {
       // final exchange rate is target exchange
     });
 
-    it("should show the no final surplus if exact debt paid", async () => {
+    it("should show no final surplus if exact debt paid", async () => {
       // pay exactly the debt
       // mature
       // final surplus is 0
@@ -262,6 +265,100 @@ describe("ReimbursementToken", () => {
     it("should not allow contributions after maturity", async () => {
       // mature
       // test contribution reverts
+    });
+  });
+
+  describe("redemption", async () => {
+    const redemptionAmount = parseUnits("5000", treasuryTokenDecimals);
+
+    it("should not allow redemption before maturity", async () => {
+      // pay the full debt
+      await riPool.depositToTreasury(await riPool.couponDebt());
+
+      await expect(riPool.connect(redeemer).redeem(redemptionAmount)).to.be.revertedWith(
+        "ReimbursementPool: No redemptions before maturity",
+      );
+    });
+
+    it("should take the redeemers riTokens", async () => {
+      // pay the full debt
+      await riPool.depositToTreasury(await riPool.couponDebt());
+
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+
+      const preBalance = await riToken.balanceOf(redeemer.address);
+
+      await riPool.connect(redeemer).redeem(redemptionAmount);
+
+      const postBalance = await riToken.balanceOf(redeemer.address);
+      expect(postBalance).to.equal(preBalance.sub(redemptionAmount));
+    });
+
+    it("should exchange riTokens for treasuryTokens at the target exchange rate if the full debt is paid", async () => {
+      const expectedTreasuryRedemption = wmul(redemptionAmount, targetExchangeRate);
+
+      // pay the full debt
+      await riPool.depositToTreasury(await riPool.couponDebt());
+
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+
+      await riPool.connect(redeemer).redeem(redemptionAmount);
+
+      const redeemerTreasuryBalance = await treasuryToken.balanceOf(redeemer.address);
+      expect(redeemerTreasuryBalance).to.equal(expectedTreasuryRedemption);
+    });
+
+    it("should exchange riTokens for treasuryTokens at the target exchange rate if more than the full debt is paid", async () => {
+      const expectedTreasuryRedemption = wmul(redemptionAmount, targetExchangeRate);
+
+      // pay more than the full debt
+      const moreThanDebt = (await riPool.couponDebt()).add(parseUnits("1000", treasuryTokenDecimals));
+      await riPool.depositToTreasury(moreThanDebt);
+
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+
+      await riPool.connect(redeemer).redeem(redemptionAmount);
+
+      const redeemerTreasuryBalance = await treasuryToken.balanceOf(redeemer.address);
+      expect(redeemerTreasuryBalance).to.equal(expectedTreasuryRedemption);
+    });
+
+    it("should exchange riTokens for treasuryTokens at the final exchange rate if debt is not fully paid", async () => {
+      const expectedTreasuryRedemption = wmul(redemptionAmount, targetExchangeRate.div(2));
+
+      // pay half the debt
+      const halfDebt = (await riPool.couponDebt()).div(2);
+      await riPool.depositToTreasury(halfDebt);
+
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+
+      await riPool.connect(redeemer).redeem(redemptionAmount);
+
+      const redeemerTreasuryBalance = await treasuryToken.balanceOf(redeemer.address);
+      expect(redeemerTreasuryBalance).to.equal(expectedTreasuryRedemption);
+    });
+
+    it("should emit a redemption event", async () => {
+      const expectedTreasuryRedemption = wmul(redemptionAmount, targetExchangeRate);
+
+      // pay the full debt
+      await riPool.depositToTreasury(await riPool.couponDebt());
+
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+
+      await expect(riPool.connect(redeemer).redeem(redemptionAmount))
+        .to.emit(riPool, "Redemption")
+        .withArgs(redeemer.address, redemptionAmount, expectedTreasuryRedemption);
     });
   });
 });
