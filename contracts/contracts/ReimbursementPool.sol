@@ -102,6 +102,7 @@ contract ReimbursementPool {
   // ======================================= External functions ====================================
 
   function depositToTreasury(uint256 _amount) external {
+    require(!hasMatured, "ReimbursementPool: Cannot deposit to treasury after maturity");
     treasuryBalance += _amount;
 
     emit TreasuryDeposit(msg.sender, _amount);
@@ -114,6 +115,8 @@ contract ReimbursementPool {
 
   function mature() external {
     require(block.timestamp >= maturity, "ReimbursementPool: Cannot mature before maturity date");
+    require(!hasMatured, "ReimbursementPool: Already matured");
+
     hasMatured = true;
     (finalShortfall, finalSurplus) = currentShortfallOrSurplus();
 

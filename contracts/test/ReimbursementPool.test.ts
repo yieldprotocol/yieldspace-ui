@@ -218,6 +218,13 @@ describe("ReimbursementToken", () => {
   });
 
   describe("maturity", () => {
+    it("should not be mature before maturing", async () => {
+      expect(await riPool.hasMatured()).to.equal(false);
+      expect(await riPool.finalExchangeRate()).to.equal(0);
+      expect(await riPool.finalShortfall()).to.equal(0);
+      expect(await riPool.finalSurplus()).to.equal(0);
+    });
+
     it("should not mature before the maturity date", async () => {
       await expect(riPool.mature()).to.be.revertedWith("ReimbursementPool: Cannot mature before maturity date");
     });
@@ -226,6 +233,13 @@ describe("ReimbursementToken", () => {
       await fastForward(maturityTimeDiff);
       await riPool.mature();
       expect(await riPool.hasMatured()).to.be.true;
+    });
+
+    it("should not mature twice", async () => {
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+
+      await expect(riPool.mature()).to.be.revertedWith("ReimbursementPool: Already matured");
     });
 
     it("should show the right final exchange rate after the maturity date", async () => {
@@ -238,30 +252,71 @@ describe("ReimbursementToken", () => {
       await fastForward(maturityTimeDiff);
       await riPool.mature();
 
-      // Exchange rate should be half that expected and 0 surplus
+      // Exchange rate should be half the target
       const finalExchangeRate = await riPool.finalExchangeRate();
       expect(finalExchangeRate.mul(2)).to.equal(targetExchangeRate);
-      // TODO: final shortfall
+
+      // Should be 0 surplus and shortfall of half the debt
       expect(await riPool.finalSurplus()).to.equal(0);
+      expect(await riPool.finalShortfall()).to.equal(totalDebt.div(2));
     });
 
     it("should show the final surplus if there is one", async () => {
-      // pay more than debt
-      // mature
-      // final surplus is correct
-      // final exchange rate is target exchange
+      // Pay more than debt
+      const extraPayment = parseUnits("1000", treasuryTokenDecimals);
+      const moreThanDebt = (await riPool.totalDebtFaceValue()).add(extraPayment);
+      await riPool.depositToTreasury(moreThanDebt);
+
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+
+      // Final shortfall/surplus is correct
+      expect(await riPool.finalShortfall()).to.equal(0);
+      expect(await riPool.finalSurplus()).to.equal(extraPayment);
+
+      // Final exchange rate is target exchange
+      expect(await riPool.finalExchangeRate()).to.equal(targetExchangeRate);
     });
 
     it("should show no final surplus if exact debt paid", async () => {
-      // pay exactly the debt
-      // mature
-      // final surplus is 0
-      // final exchange rate is target exchange
+      // Pay exactly the debt
+      riPool.depositToTreasury(await riPool.totalDebtFaceValue());
+
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+
+      // Final shortfall and final surplus are 0
+      expect(await riPool.finalShortfall()).to.equal(0);
+      expect(await riPool.finalSurplus()).to.equal(0);
+
+      // Final exchange rate is target exchange
+      expect(await riPool.finalExchangeRate()).to.equal(targetExchangeRate);
+    });
+
+    it("should show full debt if no deposits are made", async () => {
+      // Reach maturity w/o deposits
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+
+      // Final shortfall is total debt and final surplus is 0
+      expect(await riPool.finalShortfall()).to.equal(await riPool.totalDebtFaceValue());
+      expect(await riPool.finalSurplus()).to.equal(0);
+
+      // Exchange rate is 0
+      expect(await riPool.finalExchangeRate()).to.equal(0);
     });
 
     it("should not allow contributions after maturity", async () => {
-      // mature
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+
       // test contribution reverts
+      await expect(riPool.depositToTreasury(treasuryTokenDepositAmount)).to.be.revertedWith(
+        "ReimbursementPool: Cannot deposit to treasury after maturity",
+      );
     });
   });
 
@@ -296,7 +351,7 @@ describe("ReimbursementToken", () => {
     it("should exchange riTokens for treasuryTokens at the target exchange rate if the full debt is paid", async () => {
       const expectedTreasuryRedemption = wmul(redemptionAmount, targetExchangeRate);
 
-      // pay the full debt
+      // Pay the full debt
       await riPool.depositToTreasury(await riPool.totalDebtFaceValue());
 
       // Reach maturity
@@ -312,7 +367,7 @@ describe("ReimbursementToken", () => {
     it("should exchange riTokens for treasuryTokens at the target exchange rate if more than the full debt is paid", async () => {
       const expectedTreasuryRedemption = wmul(redemptionAmount, targetExchangeRate);
 
-      // pay more than the full debt
+      // Pay more than the full debt
       const moreThanDebt = (await riPool.totalDebtFaceValue()).add(parseUnits("1000", treasuryTokenDecimals));
       await riPool.depositToTreasury(moreThanDebt);
 
@@ -329,7 +384,7 @@ describe("ReimbursementToken", () => {
     it("should exchange riTokens for treasuryTokens at the final exchange rate if debt is not fully paid", async () => {
       const expectedTreasuryRedemption = wmul(redemptionAmount, targetExchangeRate.div(2));
 
-      // pay half the debt
+      // Pay half the debt
       const halfDebt = (await riPool.totalDebtFaceValue()).div(2);
       await riPool.depositToTreasury(halfDebt);
 
@@ -343,10 +398,23 @@ describe("ReimbursementToken", () => {
       expect(redeemerTreasuryBalance).to.equal(expectedTreasuryRedemption);
     });
 
+    it("should allow a zero redemption if no treasury deposits were made", async () => {
+      // Reach maturity w/o paying any of the debt
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+
+      await expect(riPool.connect(redeemer).redeem(redemptionAmount))
+        .to.emit(riPool, "Redemption")
+        .withArgs(redeemer.address, redemptionAmount, 0);
+
+      const redeemerTreasuryBalance = await treasuryToken.balanceOf(redeemer.address);
+      expect(redeemerTreasuryBalance).to.equal(0);
+    });
+
     it("should emit a redemption event", async () => {
       const expectedTreasuryRedemption = wmul(redemptionAmount, targetExchangeRate);
 
-      // pay the full debt
+      // Pay the full debt
       await riPool.depositToTreasury(await riPool.totalDebtFaceValue());
 
       // Reach maturity
