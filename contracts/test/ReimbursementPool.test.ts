@@ -181,28 +181,26 @@ describe("ReimbursementToken", () => {
     });
 
     it("should reduce the shortfall when a contribution is made", async () => {
-      const preShortfall = await riPool.currentShortfall();
+      const [preShortfall] = await riPool.currentShortfallOrSurplus();
 
       expect(preShortfall).to.equal(await riPool.totalDebtFaceValue());
 
       await riPool.depositToTreasury(treasuryTokenDepositAmount);
 
-      const postShortfall = await riPool.currentShortfall();
+      const [postShortfall, postSurplus] = await riPool.currentShortfallOrSurplus();
       expect(preShortfall.sub(treasuryTokenDepositAmount)).to.equal(postShortfall);
-      expect(await riPool.currentSurplus()).to.equal(0);
+      expect(postSurplus).to.equal(0);
     });
 
     it("should show a surplus if greater than face value debt is contributed", async () => {
-      const preShortfall = await riPool.currentShortfall();
-      const preSurplus = await riPool.currentSurplus();
+      const [preShortfall, preSurplus] = await riPool.currentShortfallOrSurplus();
 
       expect(preSurplus).to.equal(0);
 
       await riPool.depositToTreasury(preShortfall); // pay the full debt
       await riPool.depositToTreasury(treasuryTokenDepositAmount); // pay some extra
 
-      const postShortfall = await riPool.currentShortfall();
-      const postSurplus = await riPool.currentSurplus();
+      const [postShortfall, postSurplus] = await riPool.currentShortfallOrSurplus();
 
       expect(postShortfall).to.equal(0);
       expect(postSurplus).to.equal(treasuryTokenDepositAmount);
@@ -212,8 +210,7 @@ describe("ReimbursementToken", () => {
       // pay the full debt
       await riPool.depositToTreasury(await riPool.totalDebtFaceValue());
 
-      const shortfall = await riPool.currentShortfall();
-      const surplus = await riPool.currentSurplus();
+      const [shortfall, surplus] = await riPool.currentShortfallOrSurplus();
 
       expect(shortfall).to.equal(0);
       expect(surplus).to.equal(0);

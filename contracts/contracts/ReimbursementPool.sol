@@ -94,8 +94,7 @@ contract ReimbursementPool {
   function mature() external {
     require(block.timestamp >= maturity, "ReimbursementPool: Cannot mature before maturity date");
     hasMatured = true;
-    finalShortfall = currentShortfall();
-    finalSurplus = currentSurplus();
+    (finalShortfall, finalSurplus) = currentShortfallOrSurplus();
 
     if (finalShortfall == 0) {
       finalExchangeRate = targetExchangeRate;
@@ -109,24 +108,18 @@ contract ReimbursementPool {
     return wmul(riToken.totalSupply(), targetExchangeRate) / 10**(18 - treasuryToken.decimals());
   }
 
-  // TODO: combine shortfall/surplus to one method returning a tuple
-  function currentShortfall() public view returns (uint256) {
+  function currentShortfallOrSurplus() public view returns (uint256 shortfall, uint256 surplus) {
     uint256 _totalDebtFaceValue = totalDebtFaceValue();
 
-    if (treasuryBalance >= _totalDebtFaceValue) {
-      return 0;
-    } else {
-      return _totalDebtFaceValue - treasuryBalance;
-    }
-  }
-
-  function currentSurplus() public view returns (uint256) {
-    uint256 _totalDebtFaceValue = totalDebtFaceValue();
-
-    if (treasuryBalance <= _totalDebtFaceValue) {
-      return 0;
-    } else {
-      return treasuryBalance - _totalDebtFaceValue;
+    // Our if/else prevents overflow, so we can save gas w/ unchecked
+    unchecked {
+      if (treasuryBalance >= _totalDebtFaceValue) {
+        // surplus or exact face value debt paid
+        return (0, treasuryBalance - _totalDebtFaceValue);
+      } else {
+        // shortfall
+        return (_totalDebtFaceValue - treasuryBalance, 0);
+      }
     }
   }
 
