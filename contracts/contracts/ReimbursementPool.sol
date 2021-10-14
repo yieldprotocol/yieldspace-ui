@@ -105,28 +105,28 @@ contract ReimbursementPool {
     }
   }
 
-  function couponDebt() public view returns (uint256) {
+  function totalDebtFaceValue() public view returns (uint256) {
     return wmul(riToken.totalSupply(), targetExchangeRate) / 10**(18 - treasuryToken.decimals());
   }
 
   // TODO: combine shortfall/surplus to one method returning a tuple
   function currentShortfall() public view returns (uint256) {
-    uint256 _couponDebt = couponDebt();
+    uint256 _totalDebtFaceValue = totalDebtFaceValue();
 
-    if (treasuryBalance >= _couponDebt) {
+    if (treasuryBalance >= _totalDebtFaceValue) {
       return 0;
     } else {
-      return _couponDebt - treasuryBalance;
+      return _totalDebtFaceValue - treasuryBalance;
     }
   }
 
   function currentSurplus() public view returns (uint256) {
-    uint256 _couponDebt = couponDebt();
+    uint256 _totalDebtFaceValue = totalDebtFaceValue();
 
-    if (treasuryBalance <= _couponDebt) {
+    if (treasuryBalance <= _totalDebtFaceValue) {
       return 0;
     } else {
-      return treasuryBalance - _couponDebt;
+      return treasuryBalance - _totalDebtFaceValue;
     }
   }
 

@@ -183,7 +183,7 @@ describe("ReimbursementToken", () => {
     it("should reduce the shortfall when a contribution is made", async () => {
       const preShortfall = await riPool.currentShortfall();
 
-      expect(preShortfall).to.equal(await riPool.couponDebt());
+      expect(preShortfall).to.equal(await riPool.totalDebtFaceValue());
 
       await riPool.depositToTreasury(treasuryTokenDepositAmount);
 
@@ -192,7 +192,7 @@ describe("ReimbursementToken", () => {
       expect(await riPool.currentSurplus()).to.equal(0);
     });
 
-    it("should show a surplus if greater than coupon debt is contributed", async () => {
+    it("should show a surplus if greater than face value debt is contributed", async () => {
       const preShortfall = await riPool.currentShortfall();
       const preSurplus = await riPool.currentSurplus();
 
@@ -208,9 +208,9 @@ describe("ReimbursementToken", () => {
       expect(postSurplus).to.equal(treasuryTokenDepositAmount);
     });
 
-    it("should show no shortfall or surplus if exactly the coupon debt has been contributed", async () => {
+    it("should show no shortfall or surplus if exactly the face value debt has been contributed", async () => {
       // pay the full debt
-      await riPool.depositToTreasury(await riPool.couponDebt());
+      await riPool.depositToTreasury(await riPool.totalDebtFaceValue());
 
       const shortfall = await riPool.currentShortfall();
       const surplus = await riPool.currentSurplus();
@@ -232,7 +232,7 @@ describe("ReimbursementToken", () => {
     });
 
     it("should show the right final exchange rate after the maturity date", async () => {
-      const totalDebt = await riPool.couponDebt();
+      const totalDebt = await riPool.totalDebtFaceValue();
 
       // Pay half the debt
       riPool.depositToTreasury(totalDebt.div(2));
@@ -273,7 +273,7 @@ describe("ReimbursementToken", () => {
 
     it("should not allow redemption before maturity", async () => {
       // pay the full debt
-      await riPool.depositToTreasury(await riPool.couponDebt());
+      await riPool.depositToTreasury(await riPool.totalDebtFaceValue());
 
       await expect(riPool.connect(redeemer).redeem(redemptionAmount)).to.be.revertedWith(
         "ReimbursementPool: No redemptions before maturity",
@@ -282,7 +282,7 @@ describe("ReimbursementToken", () => {
 
     it("should take the redeemers riTokens", async () => {
       // pay the full debt
-      await riPool.depositToTreasury(await riPool.couponDebt());
+      await riPool.depositToTreasury(await riPool.totalDebtFaceValue());
 
       // Reach maturity
       await fastForward(maturityTimeDiff);
@@ -300,7 +300,7 @@ describe("ReimbursementToken", () => {
       const expectedTreasuryRedemption = wmul(redemptionAmount, targetExchangeRate);
 
       // pay the full debt
-      await riPool.depositToTreasury(await riPool.couponDebt());
+      await riPool.depositToTreasury(await riPool.totalDebtFaceValue());
 
       // Reach maturity
       await fastForward(maturityTimeDiff);
@@ -316,7 +316,7 @@ describe("ReimbursementToken", () => {
       const expectedTreasuryRedemption = wmul(redemptionAmount, targetExchangeRate);
 
       // pay more than the full debt
-      const moreThanDebt = (await riPool.couponDebt()).add(parseUnits("1000", treasuryTokenDecimals));
+      const moreThanDebt = (await riPool.totalDebtFaceValue()).add(parseUnits("1000", treasuryTokenDecimals));
       await riPool.depositToTreasury(moreThanDebt);
 
       // Reach maturity
@@ -333,7 +333,7 @@ describe("ReimbursementToken", () => {
       const expectedTreasuryRedemption = wmul(redemptionAmount, targetExchangeRate.div(2));
 
       // pay half the debt
-      const halfDebt = (await riPool.couponDebt()).div(2);
+      const halfDebt = (await riPool.totalDebtFaceValue()).div(2);
       await riPool.depositToTreasury(halfDebt);
 
       // Reach maturity
@@ -350,7 +350,7 @@ describe("ReimbursementToken", () => {
       const expectedTreasuryRedemption = wmul(redemptionAmount, targetExchangeRate);
 
       // pay the full debt
-      await riPool.depositToTreasury(await riPool.couponDebt());
+      await riPool.depositToTreasury(await riPool.totalDebtFaceValue());
 
       // Reach maturity
       await fastForward(maturityTimeDiff);
