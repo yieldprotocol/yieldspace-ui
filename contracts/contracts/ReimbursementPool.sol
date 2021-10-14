@@ -78,7 +78,28 @@ contract ReimbursementPool {
     targetExchangeRate = _targetExchangeRate;
   }
 
-  // ======================================= Public functions ======================================
+  // ======================================= Public view ===========================================
+
+  function totalDebtFaceValue() public view returns (uint256) {
+    return wmul(riToken.totalSupply(), targetExchangeRate) / 10**(18 - treasuryToken.decimals());
+  }
+
+  function currentShortfallOrSurplus() public view returns (uint256 shortfall, uint256 surplus) {
+    uint256 _totalDebtFaceValue = totalDebtFaceValue();
+
+    // Our if/else prevents overflow, so we can save gas w/ unchecked
+    unchecked {
+      if (treasuryBalance >= _totalDebtFaceValue) {
+        // surplus or exact face value debt paid
+        return (0, treasuryBalance - _totalDebtFaceValue);
+      } else {
+        // shortfall
+        return (_totalDebtFaceValue - treasuryBalance, 0);
+      }
+    }
+  }
+
+  // ======================================= External functions ====================================
 
   function depositToTreasury(uint256 _amount) external {
     treasuryBalance += _amount;
@@ -104,25 +125,6 @@ contract ReimbursementPool {
     }
   }
 
-  function totalDebtFaceValue() public view returns (uint256) {
-    return wmul(riToken.totalSupply(), targetExchangeRate) / 10**(18 - treasuryToken.decimals());
-  }
-
-  function currentShortfallOrSurplus() public view returns (uint256 shortfall, uint256 surplus) {
-    uint256 _totalDebtFaceValue = totalDebtFaceValue();
-
-    // Our if/else prevents overflow, so we can save gas w/ unchecked
-    unchecked {
-      if (treasuryBalance >= _totalDebtFaceValue) {
-        // surplus or exact face value debt paid
-        return (0, treasuryBalance - _totalDebtFaceValue);
-      } else {
-        // shortfall
-        return (_totalDebtFaceValue - treasuryBalance, 0);
-      }
-    }
-  }
-
   function redeem(uint256 _amount) external {
     require(hasMatured, "ReimbursementPool: No redemptions before maturity");
 
@@ -136,6 +138,8 @@ contract ReimbursementPool {
 
     emit Redemption(msg.sender, _amount, _redemptionAmount);
   }
+
+  // ======================================= Utility functions =====================================
 
   function wmul(uint256 x, uint256 y) internal pure returns (uint256 z) {
     z = x * y;
