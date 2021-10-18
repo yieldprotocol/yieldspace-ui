@@ -13,7 +13,7 @@ import "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 contract ReimbursementPool {
   // ======================================= Events ================================================
 
-  event TreasuryDeposit(address indexed despositer, uint256 amount);
+  event TreasuryDeposit(address indexed depositor, uint256 amount);
 
   event Redemption(address indexed redeemer, uint256 riTokenAmount, uint256 treasuryTokenAmount);
 
