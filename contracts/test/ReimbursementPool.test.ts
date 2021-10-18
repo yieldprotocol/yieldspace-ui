@@ -7,6 +7,7 @@ import { expect } from "chai";
 import { ReimbursementToken, MockToken, ReimbursementPool } from "../typechain/";
 import { deployMockToken, deployRiToken, toWad, wmul } from "./utils";
 import { BigNumberish } from "ethers";
+import { parse } from "path/posix";
 
 // Conevenience variables
 const { deployContract, loadFixture, deployMockContract } = waffle;
@@ -27,6 +28,7 @@ const collateralTokenSupply = parseUnits("21000000", collateralTokenDecimals); /
 const humanTargetExchangeRate = "3";
 const targetExchangeRate = toWad(parseUnits(humanTargetExchangeRate, treasuryTokenDecimals), treasuryTokenDecimals);
 const treasuryTokenDepositAmount = parseUnits("1000", treasuryTokenDecimals);
+const collateralTokenDepositAmount = parseUnits("200", collateralTokenDecimals);
 
 const deployPool = (deployer: SignerWithAddress, params: Array<any>) => {
   const artifact = artifacts.readArtifactSync("ReimbursementPool");
@@ -83,10 +85,13 @@ describe("ReimbursementToken", () => {
 
     // approve riPool for deployer
     await treasuryToken.approve(riPool.address, MaxUint256);
+    await collateralToken.approve(riPool.address, MaxUint256);
 
-    // tranfer tokens & approve riPool for supplier
+    // transfer tokens & approve riPool for supplier
     await treasuryToken.transfer(supplier.address, treasuryTokenDepositAmount);
     await treasuryToken.connect(supplier).approve(riPool.address, MaxUint256);
+    await collateralToken.transfer(supplier.address, collateralTokenDepositAmount);
+    await collateralToken.connect(supplier).approve(riPool.address, MaxUint256);
 
     // approve riPool to transfer riTokens for redeemer
     await riToken.connect(redeemer).approve(riPool.address, MaxUint256);
@@ -174,12 +179,43 @@ describe("ReimbursementToken", () => {
       expect(await treasuryToken.balanceOf(riPool.address)).to.equal(treasuryBalance);
     });
 
-    it("should emit an event when a contribution is made", async () => {
+    it("should emit an event when a treasury contribution is made", async () => {
       await expect(riPool.connect(supplier).depositToTreasury(treasuryTokenDepositAmount))
         .to.emit(riPool, "TreasuryDeposit")
         .withArgs(supplier.address, treasuryTokenDepositAmount);
     });
 
+    it("should allow contributions of the collateral token", async () => {
+      await riPool.depositCollateral(collateralTokenDepositAmount);
+
+      // check internal accounting
+      const collateralBalance = await riPool.collateralBalance();
+      expect(collateralBalance).to.equal(collateralTokenDepositAmount);
+
+      // check actual transfer
+      expect(await collateralToken.balanceOf(riPool.address)).to.equal(collateralBalance);
+    });
+
+    it("should allow collateral contributions from anyone", async () => {
+      await riPool.depositCollateral(collateralTokenDepositAmount);
+      await riPool.connect(supplier).depositCollateral(collateralTokenDepositAmount);
+
+      // check internal accounting
+      const collateralBalance = await riPool.collateralBalance();
+      expect(collateralBalance).to.equal(collateralTokenDepositAmount.mul(2));
+
+      // check actual transfer
+      expect(await collateralToken.balanceOf(riPool.address)).to.equal(collateralBalance);
+    });
+
+    it("should emit an event when a collateral contribution is made", async () => {
+      await expect(riPool.connect(supplier).depositCollateral(collateralTokenDepositAmount))
+        .to.emit(riPool, "CollateralDeposit")
+        .withArgs(supplier.address, collateralTokenDepositAmount);
+    });
+  });
+
+  describe("treasury calculations", async () => {
     it("should reduce the shortfall when a contribution is made", async () => {
       const [preShortfall] = await riPool.currentShortfallOrSurplus();
 
@@ -308,7 +344,7 @@ describe("ReimbursementToken", () => {
       expect(await riPool.finalExchangeRate()).to.equal(0);
     });
 
-    it("should not allow contributions after maturity", async () => {
+    it("should not allow treasury contributions after maturity", async () => {
       // Reach maturity
       await fastForward(maturityTimeDiff);
       await riPool.mature();
@@ -316,6 +352,17 @@ describe("ReimbursementToken", () => {
       // test contribution reverts
       await expect(riPool.depositToTreasury(treasuryTokenDepositAmount)).to.be.revertedWith(
         "ReimbursementPool: Cannot deposit to treasury after maturity",
+      );
+    });
+
+    it("should not allow collateral contributions after maturity", async () => {
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+
+      // test contribution reverts
+      await expect(riPool.depositCollateral(collateralTokenDepositAmount)).to.be.revertedWith(
+        "ReimbursementPool: Cannot deposit collateral after maturity",
       );
     });
   });

@@ -15,6 +15,8 @@ contract ReimbursementPool {
 
   event TreasuryDeposit(address indexed depositor, uint256 amount);
 
+  event CollateralDeposit(address indexed depositor, uint256 amount);
+
   event Redemption(address indexed redeemer, uint256 riTokenAmount, uint256 treasuryTokenAmount);
 
   // ======================================= State variables =======================================
@@ -39,6 +41,8 @@ contract ReimbursementPool {
   /// @notice The quantity of treasury tokens that have been deposited to the pool as payment toward the
   /// face value debt
   uint256 public treasuryBalance;
+
+  uint256 public collateralBalance;
 
   /// @notice Flag indicating whether this pool is considered mature; can only be flipped after maturity
   bool public hasMatured;
@@ -135,6 +139,22 @@ contract ReimbursementPool {
     require(
       treasuryToken.transferFrom(msg.sender, address(this), _amount) == true,
       "ReimbursementPool: Treasury Token Transfer Failed"
+    );
+  }
+
+  /**
+   * @notice Make a deposit of collateral to the pool
+   * @param _amount The quantity of collateral tokens to deposit
+   */
+  function depositCollateral(uint256 _amount) external {
+    require(!hasMatured, "ReimbursementPool: Cannot deposit collateral after maturity");
+    collateralBalance += _amount;
+
+    emit CollateralDeposit(msg.sender, _amount);
+
+    require(
+      collateralToken.transferFrom(msg.sender, address(this), _amount) == true,
+      "ReimbursementPool: Collateral Token Transfer Failed"
     );
   }
 
