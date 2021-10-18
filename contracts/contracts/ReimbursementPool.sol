@@ -28,21 +28,32 @@ contract ReimbursementPool {
   /// @notice An optional collateral token, used to compensate holders in the case of treasury shortfall
   IERC20Metadata public immutable collateralToken;
 
-  /// @notice Unix time at which redemption of tokens for treasury/collateral tokens is possible
+  /// @notice Unix time at which toggling of the hasMatured flag becomes possible, enabling redemption of
+  /// the treasury/collateral tokens stored in the pool
   uint256 public immutable maturity;
 
   /// @notice The maximum rate at which Reimbursement Tokens will be exchanged for treasury tokens at maturity,
   /// stored as a WAD; so 1 treasury token for 1 riToken = 1e18, 0.5 treasury tokens for 1 riToken = 0.5e18, etc...
   uint256 public immutable targetExchangeRate;
 
+  /// @notice The quantity of treasury tokens that have been deposited to the pool as payment toward the
+  /// face value debt
   uint256 public treasuryBalance;
 
+  /// @notice Flag indicating whether this pool is considered mature; can only be flipped after maturity
   bool public hasMatured;
 
+  /// @notice The final shortfall of treasury tokens compared to the face value debt, which is
+  /// calculated and populated at maturity
   uint256 public finalShortfall;
 
+  /// @notice The final surplus of treasury tokens compared to the face value debt, which is
+  /// calculated and populated at maturity
   uint256 public finalSurplus;
 
+  /// @notice The final exchange rate at which Reimbursement Tokens can be exchanged for treasury tokens,
+  /// stored in the pool; this value is calculated at maturity and is equal to the target exchange rate if
+  /// at least the face value debt was deposited to the pool
   uint256 public finalExchangeRate;
 
   /**
@@ -80,10 +91,20 @@ contract ReimbursementPool {
 
   // ======================================= Public view ===========================================
 
+  /**
+   * @return The total debt of the system at face value, denominated in the underlying, i.e. the treasury token
+   */
   function totalDebtFaceValue() public view returns (uint256) {
     return wmul(riToken.totalSupply(), targetExchangeRate) / 10**(18 - treasuryToken.decimals());
   }
 
+  /**
+   * @notice Returns the pool's current shortfall or surplus, denominated in the underlying, i.e. the treasury token,
+   * expressed as tuple where the first value is the shortfall, the second value is the surplus, and at least
+   * one of them will always be 0.
+   * @return shortfall The pool's current treasury token shortfall, compared to the face value debt
+   * @return surplus The pool's current treasury token surplus, compared to the face value debt
+   */
   function currentShortfallOrSurplus() public view returns (uint256 shortfall, uint256 surplus) {
     uint256 _totalDebtFaceValue = totalDebtFaceValue();
 
@@ -101,6 +122,10 @@ contract ReimbursementPool {
 
   // ======================================= External functions ====================================
 
+  /**
+   * @notice Make a deposit of treasury tokens to the pool
+   * @param _amount The quantity of treasury tokens to deposit
+   */
   function depositToTreasury(uint256 _amount) external {
     require(!hasMatured, "ReimbursementPool: Cannot deposit to treasury after maturity");
     treasuryBalance += _amount;
@@ -113,6 +138,10 @@ contract ReimbursementPool {
     );
   }
 
+  /**
+   * @notice Causes the reimbursement pool to reach maturity. Can only be called after the maturity
+   * date, and can only be called once in the lifetime of a pool.
+   */
   function mature() external {
     require(block.timestamp >= maturity, "ReimbursementPool: Cannot mature before maturity date");
     require(!hasMatured, "ReimbursementPool: Already matured");
@@ -128,6 +157,11 @@ contract ReimbursementPool {
     }
   }
 
+  /**
+   * @notice Redeems the caller's Reimbursement Tokens for their share of the underlying, based on the
+   * the final exchange rate. Can only be called once the pool has matured.
+   * @param _amount The quantity of Reimbursement Tokens to redeem
+   */
   function redeem(uint256 _amount) external {
     require(hasMatured, "ReimbursementPool: No redemptions before maturity");
 
@@ -144,6 +178,11 @@ contract ReimbursementPool {
 
   // ======================================= Utility functions =====================================
 
+  /**
+   * @notice Multiply two numbers where, one has WAD precision and one has precision less than or
+   * equal to a WAD, while maintaining the precision of the latter.
+   * @dev Sourced via https://github.com/yieldprotocol/yield-utils-v2/blob/main/contracts/math/WMul.sol
+   */
   function wmul(uint256 x, uint256 y) internal pure returns (uint256 z) {
     z = x * y;
     unchecked {
@@ -151,6 +190,11 @@ contract ReimbursementPool {
     }
   }
 
+  /**
+   * @notice Divide x by y, where y has WAD precision and x has precision less than or equal to a WAD,
+   * while maintaining the precision of y.
+   * @dev Sourced via https://github.com/yieldprotocol/yield-utils-v2/blob/main/contracts/math/WDiv.sol
+   */
   function wdiv(uint256 x, uint256 y) internal pure returns (uint256 z) {
     z = (x * 1e18) / y;
   }
