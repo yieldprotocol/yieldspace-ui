@@ -30,6 +30,10 @@ export const toWad = (amount: BigNumberish, decimals: BigNumberish): BigNumber =
   return BigNumber.from(10).pow(wadDecimals.sub(decimals)).mul(amount);
 };
 
-export const wmul = (x: BigNumber, y: BigNumber): BigNumberish => {
+export const wmul = (x: BigNumber, y: BigNumber): BigNumber => {
   return x.mul(y).div(wad);
+};
+
+export const wdiv = (x: BigNumber, y: BigNumber): BigNumber => {
+  return x.mul(wad).div(y);
 };

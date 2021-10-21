@@ -63,6 +63,16 @@ contract ReimbursementPool {
   /// at least the face value debt was deposited to the pool
   uint256 public finalExchangeRate;
 
+  /// @notice The quoted exchange rate of collateral tokens, denominated in treasury tokens, recorded at time
+  /// of maturity if and only if collateral tokens will be used to make up for a treasury shortfall
+  uint256 public collateralQuoteRate;
+
+  /// @notice The final exchange rate at which Reimbursement Tokens can be exchanged for collateral tokens,
+  /// stored in the pool; this value is calculated at maturity and is equal to zero if at least the face value
+  /// debt was deposited to the pool; if there was a shortfall, this rate is determined based on the size of
+  /// the shortfall, and the price of the collateral at maturity according to the collateral oracle
+  uint256 public collateralExchangeRate;
+
   /**
    * @param _riToken The Reimbursement Token associated with this pool
    * @param _collateralToken An optional collateral token, used to compensate holders in the case of treasury shortfall;
@@ -193,8 +203,27 @@ contract ReimbursementPool {
     if (finalShortfall == 0) {
       finalExchangeRate = targetExchangeRate;
     } else {
-      uint256 wadTreasuryBalance = treasuryBalance * 10**(18 - treasuryToken.decimals());
-      finalExchangeRate = wdiv(wadTreasuryBalance, riToken.totalSupply());
+      uint256 _wadTreasuryBalance = treasuryBalance * 10**(18 - treasuryToken.decimals());
+      finalExchangeRate = wdiv(_wadTreasuryBalance, riToken.totalSupply());
+
+      // there's a shortfall and there is collateral, so do collateral calculations
+      if (address(collateralToken) != address(0) && collateralBalance > 0) {
+        // price of collat token as a wad
+        collateralQuoteRate = collateralOracle.getOracleQuote(address(collateralToken), address(treasuryToken));
+
+        uint256 _wadCollateralBalance = toWad(collateralBalance, collateralToken.decimals());
+        uint256 _wadCollateralValue = wmul(_wadCollateralBalance, collateralQuoteRate);
+        uint256 _wadFinalShortfall = toWad(finalShortfall, treasuryToken.decimals());
+
+        if (_wadFinalShortfall >= _wadCollateralValue) {
+          // the shortfall is so big all collateral will be distributed
+          collateralExchangeRate = wdiv(_wadCollateralBalance, riToken.totalSupply());
+        } else {
+          // only some of collateral needs to be distributed
+          uint256 _wadTokenCount = wdiv(wmul(_wadFinalShortfall, _wadCollateralBalance), _wadCollateralValue);
+          collateralExchangeRate = wdiv(_wadTokenCount, riToken.totalSupply());
+        }
+      }
     }
   }
 
@@ -238,5 +267,9 @@ contract ReimbursementPool {
    */
   function wdiv(uint256 x, uint256 y) internal pure returns (uint256 z) {
     z = (x * 1e18) / y;
+  }
+
+  function toWad(uint256 amount, uint256 decimals) internal pure returns (uint256) {
+    return amount * 10**(18 - decimals);
   }
 }

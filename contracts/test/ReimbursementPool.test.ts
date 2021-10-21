@@ -5,7 +5,7 @@ import { expect } from "chai";
 
 // Internal imports
 import { ReimbursementToken, MockToken, ReimbursementPool, MockOracle } from "../typechain/";
-import { deployMockToken, deployRiToken, toWad, wmul } from "./utils";
+import { deployMockToken, deployRiToken, toWad, wmul, wdiv } from "./utils";
 import { BigNumberish } from "ethers";
 
 // Conevenience variables
@@ -27,7 +27,13 @@ const collateralTokenSupply = parseUnits("21000000", collateralTokenDecimals); /
 const humanTargetExchangeRate = "3";
 const targetExchangeRate = toWad(parseUnits(humanTargetExchangeRate, treasuryTokenDecimals), treasuryTokenDecimals);
 const treasuryTokenDepositAmount = parseUnits("1000", treasuryTokenDecimals);
-const collateralTokenDepositAmount = parseUnits("200", collateralTokenDecimals);
+const collateralTokenDepositAmount = parseUnits("2000", collateralTokenDecimals);
+// "Price" of one collateral token, denominated in treasury tokens, in human readable form
+const humanCollateralTokenPrice = "600";
+const collateralTokenQuoteRate = toWad(
+  parseUnits(humanCollateralTokenPrice, treasuryTokenDecimals),
+  treasuryTokenDecimals,
+);
 
 const deployPool = (deployer: SignerWithAddress, params: Array<any>) => {
   const artifact = artifacts.readArtifactSync("ReimbursementPool");
@@ -86,7 +92,7 @@ describe("ReimbursementToken", () => {
     await collateralToken.mint(deployer.address, collateralTokenSupply);
 
     // create mock oracle
-    const mockOracle = await deployMockOracle(deployer, 1);
+    const mockOracle = await deployMockOracle(deployer, collateralTokenQuoteRate);
 
     // create riPool
     const riPool = await deployPool(deployer, [
@@ -301,7 +307,7 @@ describe("ReimbursementToken", () => {
     });
   });
 
-  describe("maturity", () => {
+  describe("maturity rules", () => {
     it("should not be mature before maturing", async () => {
       expect(await riPool.hasMatured()).to.equal(false);
       expect(await riPool.finalExchangeRate()).to.equal(0);
@@ -326,11 +332,35 @@ describe("ReimbursementToken", () => {
       await expect(riPool.mature()).to.be.revertedWith("ReimbursementPool: Already matured");
     });
 
+    it("should not allow treasury contributions after maturity", async () => {
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+
+      // test contribution reverts
+      await expect(riPool.depositToTreasury(treasuryTokenDepositAmount)).to.be.revertedWith(
+        "ReimbursementPool: Cannot deposit to treasury after maturity",
+      );
+    });
+
+    it("should not allow collateral contributions after maturity", async () => {
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+
+      // test contribution reverts
+      await expect(riPool.depositCollateral(collateralTokenDepositAmount)).to.be.revertedWith(
+        "ReimbursementPool: Cannot deposit collateral after maturity",
+      );
+    });
+  });
+
+  describe("maturity treasury calculations", () => {
     it("should show the right final exchange rate after the maturity date", async () => {
       const totalDebt = await riPool.totalDebtFaceValue();
 
       // Pay half the debt
-      riPool.depositToTreasury(totalDebt.div(2));
+      await riPool.depositToTreasury(totalDebt.div(2));
 
       // Reach maturity
       await fastForward(maturityTimeDiff);
@@ -365,7 +395,7 @@ describe("ReimbursementToken", () => {
 
     it("should show no final surplus if exact debt paid", async () => {
       // Pay exactly the debt
-      riPool.depositToTreasury(await riPool.totalDebtFaceValue());
+      await riPool.depositToTreasury(await riPool.totalDebtFaceValue());
 
       // Reach maturity
       await fastForward(maturityTimeDiff);
@@ -391,31 +421,165 @@ describe("ReimbursementToken", () => {
       // Exchange rate is 0
       expect(await riPool.finalExchangeRate()).to.equal(0);
     });
+  });
 
-    it("should not allow treasury contributions after maturity", async () => {
+  describe("maturity collateral calculations", () => {
+    it("should show zero collateral exchange rate if exact debt paid", async () => {
+      // Deposit collateral
+      await riPool.depositCollateral(collateralTokenDepositAmount);
+
+      // Pay exactly the debt
+      await riPool.depositToTreasury(await riPool.totalDebtFaceValue());
+
       // Reach maturity
       await fastForward(maturityTimeDiff);
       await riPool.mature();
 
-      // test contribution reverts
-      await expect(riPool.depositToTreasury(treasuryTokenDepositAmount)).to.be.revertedWith(
-        "ReimbursementPool: Cannot deposit to treasury after maturity",
-      );
+      // Collateral exchange rate is zero
+      expect(await riPool.collateralQuoteRate()).to.equal(0);
+      expect(await riPool.collateralExchangeRate()).to.equal(0);
     });
 
-    it("should not allow collateral contributions after maturity", async () => {
+    it("should show zero collateral exchange rate if more than the debt is paid", async () => {
+      // Deposit collateral
+      await riPool.depositCollateral(collateralTokenDepositAmount);
+
+      // Pay more than debt
+      const extraPayment = parseUnits("1000", treasuryTokenDecimals);
+      const moreThanDebt = (await riPool.totalDebtFaceValue()).add(extraPayment);
+      await riPool.depositToTreasury(moreThanDebt);
+
       // Reach maturity
       await fastForward(maturityTimeDiff);
       await riPool.mature();
 
-      // test contribution reverts
-      await expect(riPool.depositCollateral(collateralTokenDepositAmount)).to.be.revertedWith(
-        "ReimbursementPool: Cannot deposit collateral after maturity",
+      // Collateral quote and exchange rate is zero
+      expect(await riPool.collateralQuoteRate()).to.equal(0);
+      expect(await riPool.collateralExchangeRate()).to.equal(0);
+    });
+
+    it("should show zero collateral exchange rate if no collateral is deposited", async () => {
+      // Pay half the debt
+      const totalDebt = await riPool.totalDebtFaceValue();
+      await riPool.depositToTreasury(totalDebt.div(2));
+
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+
+      // Collateral quote and exchange rate is zero
+      expect(await riPool.collateralQuoteRate()).to.equal(0);
+      expect(await riPool.collateralExchangeRate()).to.equal(0);
+    });
+
+    it("should show zero collateral exchange rate if there is no collateral token", async () => {
+      // deploy new riPool w/o collateral token
+      const riPool = await deployPool(deployer, [riToken.address, AddressZero, AddressZero, targetExchangeRate]);
+
+      // approve this riPool for deployer
+      await treasuryToken.approve(riPool.address, MaxUint256);
+
+      // Pay half the debt
+      const totalDebt = await riPool.totalDebtFaceValue();
+      await riPool.depositToTreasury(totalDebt.div(2));
+
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+
+      // Collateral quote and exchange rate is zero
+      expect(await riPool.collateralQuoteRate()).to.equal(0);
+      expect(await riPool.collateralExchangeRate()).to.equal(0);
+    });
+
+    it("should record oracle quoted rate if there is a shortfall", async () => {
+      // Deposit collateral
+      await riPool.depositCollateral(collateralTokenDepositAmount);
+
+      // Pay half the debt
+      const totalDebt = await riPool.totalDebtFaceValue();
+      await riPool.depositToTreasury(totalDebt.div(2));
+
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+
+      expect(await riPool.collateralQuoteRate()).to.equal(collateralTokenQuoteRate);
+    });
+
+    it("should split all the collateral if the shortfall is greater than the collateral value", async () => {
+      // Deposit collateral
+      await riPool.depositCollateral(collateralTokenDepositAmount);
+
+      // Pay half the debt
+      const totalDebt = await riPool.totalDebtFaceValue();
+      await riPool.depositToTreasury(totalDebt.div(2));
+
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+
+      // Sanity check the test constant parameters defined above
+      const finalShortfall = toWad(await riPool.finalShortfall(), treasuryTokenDecimals);
+      const collateralValue = toWad(
+        wmul(collateralTokenDepositAmount, collateralTokenQuoteRate),
+        collateralTokenDecimals,
       );
+
+      // If you're seeing this expectation fail, it means the constants you chose for test parameters
+      // don't match the assumptions of this test's author. Make sure paying half the debt means
+      // the collateral deposit is worth less than the shortfall.
+      expect(finalShortfall.gt(collateralValue)).to.equal(true, "Test inputs do not result in expected test cases");
+
+      // we assume the full collateral balance will be used
+      // we convert the collateral balance to a wad, then divide it by the supply of riTokens
+      // this is the expected collateral exchange rate as a wad
+      const expectedCollateralExchangeRate = wdiv(
+        toWad(collateralTokenDepositAmount, collateralTokenDecimals),
+        riTokenSupply,
+      );
+      expect(await riPool.collateralExchangeRate()).to.equal(expectedCollateralExchangeRate);
+    });
+
+    it("should split some of the collateral if the shortfall is less than the collateral value", async () => {
+      // Deposit collateral
+      await riPool.depositCollateral(collateralTokenDepositAmount);
+
+      // Pay two thirds of the debt
+      const totalDebt = await riPool.totalDebtFaceValue();
+      await riPool.depositToTreasury(totalDebt.mul(2).div(3));
+
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+
+      // Sanity check the test constant parameters defined above
+      const wadFinalShortfall = toWad(await riPool.finalShortfall(), treasuryTokenDecimals);
+      const collateralValue = toWad(
+        wmul(collateralTokenDepositAmount, collateralTokenQuoteRate),
+        collateralTokenDecimals,
+      );
+
+      // If you're seeing this expectation fail, it means the constants you chose for test parameters
+      // don't match the assumptions of this test's author. Make sure paying 2/3's of the debt means
+      // the collateral deposit is worth more than the shortfall.
+      expect(wadFinalShortfall.lt(collateralValue)).to.equal(true, "Test inputs do not result in expected test cases");
+
+      // The number of collateral tokens to be distributed is the fraction of them needed to cover the
+      // shortfall in treasury tokens, that is: collateral balance * (remaining debt / collateral value).
+      // We calculate that here, maintaining maximum precision with wads by doing multiplication first.
+      const wadCollateralDepositAmount = toWad(collateralTokenDepositAmount, collateralTokenDecimals);
+      const wadCollateralToBeDistributed = wdiv(wmul(wadFinalShortfall, wadCollateralDepositAmount), collateralValue);
+
+      // The expected exchange rate is the number of collateral tokens to be distributed divided by the
+      // supply of riTokens
+      const expectedCollateralExchangeRate = wdiv(wadCollateralToBeDistributed, riTokenSupply);
+
+      expect(await riPool.collateralExchangeRate()).to.equal(expectedCollateralExchangeRate);
     });
   });
 
-  describe("redemption", async () => {
+  describe("redemption", () => {
     const redemptionAmount = parseUnits("5000", treasuryTokenDecimals);
 
     it("should not allow redemption before maturity", async () => {
