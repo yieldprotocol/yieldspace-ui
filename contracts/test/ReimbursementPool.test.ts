@@ -4,10 +4,9 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-wit
 import { expect } from "chai";
 
 // Internal imports
-import { ReimbursementToken, MockToken, ReimbursementPool } from "../typechain/";
+import { ReimbursementToken, MockToken, ReimbursementPool, MockOracle } from "../typechain/";
 import { deployMockToken, deployRiToken, toWad, wmul } from "./utils";
 import { BigNumberish } from "ethers";
-import { parse } from "path/posix";
 
 // Conevenience variables
 const { deployContract, loadFixture, deployMockContract } = waffle;
@@ -43,6 +42,11 @@ const deployMockRiToken = async (deployer: SignerWithAddress, maturity: BigNumbe
   return mockContract;
 };
 
+const deployMockOracle = async (deployer: SignerWithAddress, quote: BigNumberish) => {
+  const artifact = artifacts.readArtifactSync("MockOracle");
+  return deployContract(deployer, artifact, [quote]) as Promise<MockOracle>;
+};
+
 const fastForward = async (seconds: number): Promise<void> => {
   await ethers.provider.send("evm_increaseTime", [seconds]);
   await ethers.provider.send("evm_mine", []);
@@ -56,6 +60,7 @@ describe("ReimbursementToken", () => {
   let riPool: ReimbursementPool;
   let treasuryToken: MockToken;
   let collateralToken: MockToken;
+  let mockOracle: MockOracle;
 
   before(async () => {
     [deployer, supplier, redeemer] = await ethers.getSigners();
@@ -80,8 +85,16 @@ describe("ReimbursementToken", () => {
     const collateralToken = await deployMockToken(deployer, "Governance Token", "GOV", collateralTokenDecimals);
     await collateralToken.mint(deployer.address, collateralTokenSupply);
 
+    // create mock oracle
+    const mockOracle = await deployMockOracle(deployer, 1);
+
     // create riPool
-    const riPool = await deployPool(deployer, [riToken.address, collateralToken.address, targetExchangeRate]);
+    const riPool = await deployPool(deployer, [
+      riToken.address,
+      collateralToken.address,
+      mockOracle.address,
+      targetExchangeRate,
+    ]);
 
     // approve riPool for deployer
     await treasuryToken.approve(riPool.address, MaxUint256);
@@ -96,11 +109,11 @@ describe("ReimbursementToken", () => {
     // approve riPool to transfer riTokens for redeemer
     await riToken.connect(redeemer).approve(riPool.address, MaxUint256);
 
-    return { treasuryToken, riToken, collateralToken, riPool };
+    return { treasuryToken, riToken, collateralToken, mockOracle, riPool };
   }
 
   beforeEach(async () => {
-    ({ treasuryToken, riToken, collateralToken, riPool } = await loadFixture(setup));
+    ({ treasuryToken, riToken, collateralToken, mockOracle, riPool } = await loadFixture(setup));
   });
 
   describe("deployment and setup", () => {
@@ -108,31 +121,66 @@ describe("ReimbursementToken", () => {
       expect(await riPool.riToken()).to.equal(riToken.address);
       expect(await riPool.treasuryToken()).to.equal(treasuryToken.address);
       expect(await riPool.collateralToken()).to.equal(collateralToken.address);
+      expect(await riPool.collateralOracle()).to.equal(mockOracle.address);
       expect(await riPool.maturity()).to.equal(maturityDate);
       expect(await riPool.targetExchangeRate()).to.equal(targetExchangeRate);
     });
 
     it("should allow the pool contract to be deployed with no collateral token", async () => {
-      const riPool = await deployPool(deployer, [riToken.address, AddressZero, targetExchangeRate]);
+      const riPool = await deployPool(deployer, [riToken.address, AddressZero, AddressZero, targetExchangeRate]);
       expect(await riPool.collateralToken()).to.equal(AddressZero);
+      expect(await riPool.collateralOracle()).to.equal(AddressZero);
     });
 
     it("should revert if the collateral token is set to a non-contract address", async () => {
       const fakeCollateralTokenAddr = ethers.Wallet.createRandom().address;
-      await expect(deployPool(deployer, [riToken.address, fakeCollateralTokenAddr, targetExchangeRate])).to.be.reverted;
+      await expect(
+        deployPool(deployer, [riToken.address, fakeCollateralTokenAddr, mockOracle.address, targetExchangeRate]),
+      ).to.be.reverted;
     });
 
     it("should revert if the collateral token has 0 supply", async () => {
       const badCollateralToken = await deployMockToken(deployer);
       await expect(
-        deployPool(deployer, [riToken.address, badCollateralToken.address, targetExchangeRate]),
+        deployPool(deployer, [riToken.address, badCollateralToken.address, mockOracle.address, targetExchangeRate]),
       ).to.be.revertedWith("ReimbursementPool: Collateral Token must have non-zero supply");
     });
 
+    it("should revert if a collateral token is supplied but not an oracle", async () => {
+      await expect(
+        deployPool(deployer, [riToken.address, collateralToken.address, AddressZero, targetExchangeRate]),
+      ).to.be.revertedWith("ReimbursementPool: Collateral token/oracle mismatch");
+    });
+
+    it("should revert if a collateral token is not supplied but an oracle is", async () => {
+      await expect(
+        deployPool(deployer, [riToken.address, AddressZero, mockOracle.address, targetExchangeRate]),
+      ).to.be.revertedWith("ReimbursementPool: Collateral token/oracle mismatch");
+    });
+
+    it("should revert if the collateral oracle is not a contract", async () => {
+      const fakeCollateralOracleAddr = ethers.Wallet.createRandom().address;
+      await expect(
+        deployPool(deployer, [riToken.address, collateralToken.address, fakeCollateralOracleAddr, targetExchangeRate]),
+      ).to.be.reverted;
+    });
+
+    it("should revert if the collateral oracle quote is 0", async () => {
+      const badCollateralOracle = await deployMockOracle(deployer, 0);
+      await expect(
+        deployPool(deployer, [
+          riToken.address,
+          collateralToken.address,
+          badCollateralOracle.address,
+          targetExchangeRate,
+        ]),
+      ).to.be.revertedWith("ReimbursementPool: Oracle must return positive quote");
+    });
+
     it("should revert if the maturity exchange rate is 0", async () => {
-      await expect(deployPool(deployer, [riToken.address, collateralToken.address, 0])).to.be.revertedWith(
-        "ReimbursementPool: Target exchange rate must be non-zero",
-      );
+      await expect(
+        deployPool(deployer, [riToken.address, collateralToken.address, mockOracle.address, 0]),
+      ).to.be.revertedWith("ReimbursementPool: Target exchange rate must be non-zero");
     });
 
     it("should revert if the treasury token has 0 supply", async () => {
@@ -140,7 +188,7 @@ describe("ReimbursementToken", () => {
       const mockRiToken = await deployMockRiToken(deployer, maturityDate, badTreasuryToken.address);
 
       await expect(
-        deployPool(deployer, [mockRiToken.address, collateralToken.address, targetExchangeRate]),
+        deployPool(deployer, [mockRiToken.address, collateralToken.address, mockOracle.address, targetExchangeRate]),
       ).to.be.revertedWith("ReimbursementPool: Treasury Token must have non-zero supply");
     });
 
@@ -150,7 +198,7 @@ describe("ReimbursementToken", () => {
       const mockRiToken = await deployMockRiToken(deployer, recentPast, treasuryToken.address);
 
       await expect(
-        deployPool(deployer, [mockRiToken.address, collateralToken.address, targetExchangeRate]),
+        deployPool(deployer, [mockRiToken.address, collateralToken.address, mockOracle.address, targetExchangeRate]),
       ).to.be.revertedWith("ReimbursementPool: Token maturity must be in the future");
     });
   });

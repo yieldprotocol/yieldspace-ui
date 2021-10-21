@@ -2,6 +2,7 @@
 pragma solidity >=0.8.7;
 
 import "./interfaces/IReimbursementToken.sol";
+import "./interfaces/IReimbursementOracle.sol";
 import "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 
 /**
@@ -29,6 +30,8 @@ contract ReimbursementPool {
 
   /// @notice An optional collateral token, used to compensate holders in the case of treasury shortfall
   IERC20Metadata public immutable collateralToken;
+
+  IReimbursementOracle public immutable collateralOracle;
 
   /// @notice Unix time at which toggling of the hasMatured flag becomes possible, enabling redemption of
   /// the treasury/collateral tokens stored in the pool
@@ -63,13 +66,16 @@ contract ReimbursementPool {
   /**
    * @param _riToken The Reimbursement Token associated with this pool
    * @param _collateralToken An optional collateral token, used to compensate holders in the case of treasury shortfall;
-   * should be the zero address if no collateral token will be used.
+   * should be the zero address if no collateral token will be used
+   * @param _collateralOracle An oracle to provide price quotes of the collateral token denominated in the treasury token;
+   * should be the zero address if no collateral token is used
    * @param _targetExchangeRate The maximum rate at which Reimbursement Tokens will be exchanged for treasury tokens
    * at maturity
    */
   constructor(
     IReimbursementToken _riToken,
     IERC20Metadata _collateralToken,
+    IReimbursementOracle _collateralOracle,
     uint256 _targetExchangeRate
   ) {
     require(
@@ -82,6 +88,20 @@ contract ReimbursementPool {
       "ReimbursementPool: Collateral Token must have non-zero supply"
     );
 
+    bool collateralFieldsEmpty = (address(_collateralToken) == address(0)) &&
+      (address(_collateralOracle) == address(0));
+    bool collateralFieldsPopulated = (address(_collateralToken) != address(0)) &&
+      (address(_collateralOracle) != address(0));
+
+    require(collateralFieldsEmpty || collateralFieldsPopulated, "ReimbursementPool: Collateral token/oracle mismatch");
+
+    if (collateralFieldsPopulated) {
+      require(
+        _collateralOracle.getOracleQuote(_riToken.underlying(), address(_collateralToken)) > 0,
+        "ReimbursementPool: Oracle must return positive quote"
+      );
+    }
+
     require(_riToken.maturity() > block.timestamp, "ReimbursementPool: Token maturity must be in the future");
 
     require(_targetExchangeRate > 0, "ReimbursementPool: Target exchange rate must be non-zero");
@@ -89,6 +109,7 @@ contract ReimbursementPool {
     riToken = _riToken;
     treasuryToken = IERC20Metadata(_riToken.underlying());
     collateralToken = IERC20Metadata(_collateralToken);
+    collateralOracle = _collateralOracle;
     maturity = _riToken.maturity();
     targetExchangeRate = _targetExchangeRate;
   }
