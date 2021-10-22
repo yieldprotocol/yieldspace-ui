@@ -18,7 +18,12 @@ contract ReimbursementPool {
 
   event CollateralDeposit(address indexed depositor, uint256 amount);
 
-  event Redemption(address indexed redeemer, uint256 riTokenAmount, uint256 treasuryTokenAmount);
+  event Redemption(
+    address indexed redeemer,
+    uint256 riTokenAmount,
+    uint256 treasuryTokenAmount,
+    uint256 collateralTokenAmount
+  );
 
   // ======================================= State variables =======================================
 
@@ -220,11 +225,14 @@ contract ReimbursementPool {
           collateralExchangeRate = wdiv(_wadCollateralBalance, riToken.totalSupply());
         } else {
           // only some of collateral needs to be distributed
+          // TODO: Record this amount, or the supply minus this amount, to be used for reclaim
           uint256 _wadTokenCount = wdiv(wmul(_wadFinalShortfall, _wadCollateralBalance), _wadCollateralValue);
           collateralExchangeRate = wdiv(_wadTokenCount, riToken.totalSupply());
         }
       }
     }
+
+    // TODO: Emit a Mature event
   }
 
   /**
@@ -243,7 +251,13 @@ contract ReimbursementPool {
     uint256 _redemptionAmount = wmul(_amount, finalExchangeRate);
     treasuryToken.transfer(msg.sender, _redemptionAmount);
 
-    emit Redemption(msg.sender, _amount, _redemptionAmount);
+    uint256 _collateralRedemptionAmount = 0;
+    if (collateralExchangeRate > 0) {
+      _collateralRedemptionAmount = wmul(_amount, collateralExchangeRate);
+      collateralToken.transfer(msg.sender, _collateralRedemptionAmount);
+    }
+
+    emit Redemption(msg.sender, _amount, _redemptionAmount, _collateralRedemptionAmount);
   }
 
   // ======================================= Utility functions =====================================

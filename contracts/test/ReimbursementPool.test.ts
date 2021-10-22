@@ -519,7 +519,7 @@ describe("ReimbursementToken", () => {
       await fastForward(maturityTimeDiff);
       await riPool.mature();
 
-      // Sanity check the test constant parameters defined above
+      // Sanity check the test constant parameters defined at the top of the tests
       const finalShortfall = toWad(await riPool.finalShortfall(), treasuryTokenDecimals);
       const collateralValue = toWad(
         wmul(collateralTokenDepositAmount, collateralTokenQuoteRate),
@@ -553,7 +553,7 @@ describe("ReimbursementToken", () => {
       await fastForward(maturityTimeDiff);
       await riPool.mature();
 
-      // Sanity check the test constant parameters defined above
+      // Sanity check the test constant parameters defined at the top of the tests
       const wadFinalShortfall = toWad(await riPool.finalShortfall(), treasuryTokenDecimals);
       const collateralValue = toWad(
         wmul(collateralTokenDepositAmount, collateralTokenQuoteRate),
@@ -664,7 +664,7 @@ describe("ReimbursementToken", () => {
 
       await expect(riPool.connect(redeemer).redeem(redemptionAmount))
         .to.emit(riPool, "Redemption")
-        .withArgs(redeemer.address, redemptionAmount, 0);
+        .withArgs(redeemer.address, redemptionAmount, 0, 0);
 
       const redeemerTreasuryBalance = await treasuryToken.balanceOf(redeemer.address);
       expect(redeemerTreasuryBalance).to.equal(0);
@@ -682,7 +682,106 @@ describe("ReimbursementToken", () => {
 
       await expect(riPool.connect(redeemer).redeem(redemptionAmount))
         .to.emit(riPool, "Redemption")
-        .withArgs(redeemer.address, redemptionAmount, expectedTreasuryRedemption);
+        .withArgs(redeemer.address, redemptionAmount, expectedTreasuryRedemption, 0);
+    });
+
+    it("should redeem collateral if the no debt is ever paid", async () => {
+      // Deposit collateral; no debt is paid
+      await riPool.depositCollateral(collateralTokenDepositAmount);
+
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+
+      // Caculate redemption amount
+      const collateralExchangeRate = await riPool.collateralExchangeRate();
+      const expectedCollateralRedemption = wmul(redemptionAmount, collateralExchangeRate);
+
+      // Redeem
+      await riPool.connect(redeemer).redeem(redemptionAmount);
+
+      const redeemerCollateralBalance = await collateralToken.balanceOf(redeemer.address);
+      expect(redeemerCollateralBalance).to.equal(expectedCollateralRedemption);
+    });
+
+    it("should redeem collateral if the shortfall is greater than the collateral value", async () => {
+      // Deposit collateral
+      await riPool.depositCollateral(collateralTokenDepositAmount);
+
+      // Pay half the debt
+      const totalDebt = await riPool.totalDebtFaceValue();
+      await riPool.depositToTreasury(totalDebt.div(2));
+
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+
+      // Sanity check the test constant parameters defined at the top of the tests
+      const finalShortfall = toWad(await riPool.finalShortfall(), treasuryTokenDecimals);
+      const collateralValue = toWad(
+        wmul(collateralTokenDepositAmount, collateralTokenQuoteRate),
+        collateralTokenDecimals,
+      );
+      expect(finalShortfall.gt(collateralValue)).to.equal(true, "Test inputs do not result in expected test cases");
+
+      // Caculate redemption amount
+      const collateralExchangeRate = await riPool.collateralExchangeRate();
+      const expectedCollateralRedemption = wmul(redemptionAmount, collateralExchangeRate);
+
+      // Redeem
+      await riPool.connect(redeemer).redeem(redemptionAmount);
+
+      const redeemerCollateralBalance = await collateralToken.balanceOf(redeemer.address);
+      expect(redeemerCollateralBalance).to.equal(expectedCollateralRedemption);
+    });
+
+    it("should redeem collateral if the shortfall is less than the collateral value", async () => {
+      // Deposit collateral
+      await riPool.depositCollateral(collateralTokenDepositAmount);
+
+      // Pay two thirds of the debt
+      const totalDebt = await riPool.totalDebtFaceValue();
+      await riPool.depositToTreasury(totalDebt.mul(2).div(3));
+
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+
+      // Sanity check the test constant parameters defined at the top of the tests
+      const wadFinalShortfall = toWad(await riPool.finalShortfall(), treasuryTokenDecimals);
+      const collateralValue = toWad(
+        wmul(collateralTokenDepositAmount, collateralTokenQuoteRate),
+        collateralTokenDecimals,
+      );
+      expect(wadFinalShortfall.lt(collateralValue)).to.equal(true, "Test inputs do not result in expected test cases");
+
+      // Caculate redemption amount
+      const collateralExchangeRate = await riPool.collateralExchangeRate();
+      const expectedCollateralRedemption = wmul(redemptionAmount, collateralExchangeRate);
+
+      // Redeem
+      await riPool.connect(redeemer).redeem(redemptionAmount);
+
+      const redeemerCollateralBalance = await collateralToken.balanceOf(redeemer.address);
+      expect(redeemerCollateralBalance).to.equal(expectedCollateralRedemption);
+    });
+
+    it("should emit a redemption event with the correct collateral amount", async () => {
+      // Deposit collateral; no debt is paid
+      await riPool.depositCollateral(collateralTokenDepositAmount);
+
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
+
+      // Caculate redemption amount
+      const collateralExchangeRate = await riPool.collateralExchangeRate();
+      const expectedCollateralRedemption = wmul(redemptionAmount, collateralExchangeRate);
+
+      // Redeem
+      await expect(riPool.connect(redeemer).redeem(redemptionAmount))
+        .to.emit(riPool, "Redemption")
+        .withArgs(redeemer.address, redemptionAmount, 0, expectedCollateralRedemption);
     });
   });
 });
