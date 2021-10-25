@@ -18,6 +18,8 @@ contract ReimbursementPool {
 
   event CollateralDeposit(address indexed depositor, uint256 amount);
 
+  event Maturation(uint256 timestamp);
+
   event Redemption(
     address indexed redeemer,
     uint256 riTokenAmount,
@@ -237,7 +239,7 @@ contract ReimbursementPool {
       }
     }
 
-    // TODO: Emit a Mature event
+    emit Maturation(block.timestamp);
   }
 
   /**

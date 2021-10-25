@@ -325,6 +325,11 @@ describe("ReimbursementToken", () => {
       expect(await riPool.hasMatured()).to.be.true;
     });
 
+    it("should emit an event when it matures", async () => {
+      await fastForward(maturityTimeDiff);
+      await expect(riPool.mature()).to.emit(riPool, "Maturation");
+    });
+
     it("should not mature twice", async () => {
       await fastForward(maturityTimeDiff);
       await riPool.mature();
