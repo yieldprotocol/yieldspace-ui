@@ -14,12 +14,16 @@ import "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 contract ReimbursementPool {
   // ======================================= Events ================================================
 
+  /// @notice Emitted when treasury tokens are deposited to the pool
   event TreasuryDeposit(address indexed depositor, uint256 amount);
 
+  /// @notice Emitted when collateral tokens are deposited to the pool
   event CollateralDeposit(address indexed depositor, uint256 amount);
 
+  /// @notice Emitted when the pool matures— can only occur once in the pool contract's lifetime
   event Maturation(uint256 timestamp);
 
+  /// @notice Emitted when a holder redeems riTokens for treasury and collateral after maturation
   event Redemption(
     address indexed redeemer,
     uint256 riTokenAmount,
@@ -38,9 +42,11 @@ contract ReimbursementPool {
   /// @notice An optional collateral token, used to compensate holders in the case of treasury shortfall
   IERC20Metadata public immutable collateralToken;
 
+  /// @notice The price oracle that will supply the value of collateral tokens, denominated in in treasury
+  /// tokens, at the time of maturation
   IReimbursementOracle public immutable collateralOracle;
 
-  /// @notice Unix time at which toggling of the hasMatured flag becomes possible, enabling redemption of
+  /// @notice Unix time at which calling the `mature` method becomes possible, enabling redemption of
   /// the treasury/collateral tokens stored in the pool
   uint256 public immutable maturity;
 
@@ -52,6 +58,8 @@ contract ReimbursementPool {
   /// face value debt
   uint256 public treasuryBalance;
 
+  /// @notice The quantity of collateral tokens that have been deposited to the pool as backing value that
+  /// will be distributed if the face value debt is not fully paid
   uint256 public collateralBalance;
 
   /// @notice Flag indicating whether this pool is considered mature; can only be flipped after maturity
@@ -88,8 +96,8 @@ contract ReimbursementPool {
    * @param _riToken The Reimbursement Token associated with this pool
    * @param _collateralToken An optional collateral token, used to compensate holders in the case of treasury shortfall;
    * should be the zero address if no collateral token will be used
-   * @param _collateralOracle An oracle to provide price quotes of the collateral token denominated in the treasury token;
-   * should be the zero address if no collateral token is used
+   * @param _collateralOracle An oracle to provide price quotes of the collateral token denominated in the treasury
+   * token; should be the zero address if no collateral token is used
    * @param _targetExchangeRate The maximum rate at which Reimbursement Tokens will be exchanged for treasury tokens
    * at maturity
    */
@@ -109,14 +117,17 @@ contract ReimbursementPool {
       "ReimbursementPool: Collateral Token must have non-zero supply"
     );
 
-    bool collateralFieldsEmpty = (address(_collateralToken) == address(0)) &&
+    bool _collateralFieldsEmpty = (address(_collateralToken) == address(0)) &&
       (address(_collateralOracle) == address(0));
-    bool collateralFieldsPopulated = (address(_collateralToken) != address(0)) &&
+    bool _collateralFieldsPopulated = (address(_collateralToken) != address(0)) &&
       (address(_collateralOracle) != address(0));
 
-    require(collateralFieldsEmpty || collateralFieldsPopulated, "ReimbursementPool: Collateral token/oracle mismatch");
+    require(
+      _collateralFieldsEmpty || _collateralFieldsPopulated,
+      "ReimbursementPool: Collateral token/oracle mismatch"
+    );
 
-    if (collateralFieldsPopulated) {
+    if (_collateralFieldsPopulated) {
       require(
         _collateralOracle.getOracleQuote(_riToken.underlying(), address(_collateralToken)) > 0,
         "ReimbursementPool: Oracle must return positive quote"
@@ -219,7 +230,7 @@ contract ReimbursementPool {
 
       // there's a shortfall and there is collateral, so do collateral calculations
       if (address(collateralToken) != address(0) && collateralBalance > 0) {
-        // price of collat token as a wad
+        // price of collateral token as a wad
         collateralQuoteRate = collateralOracle.getOracleQuote(address(collateralToken), address(treasuryToken));
 
         uint256 _wadCollateralBalance = toWad(collateralBalance, collateralToken.decimals());
@@ -243,8 +254,7 @@ contract ReimbursementPool {
   }
 
   /**
-   * @notice Redeems the caller's Reimbursement Tokens for their share of the underlying, based on the
-   * the final exchange rate. Can only be called once the pool has matured.
+   * @notice Redeems the caller's Reimbursement Tokens for their share of the underlying and collateral
    * @param _amount The quantity of Reimbursement Tokens to redeem
    */
   function redeem(uint256 _amount) external {
@@ -290,6 +300,10 @@ contract ReimbursementPool {
     z = (x * 1e18) / y;
   }
 
+  /**
+   * @notice Convert a number stored in `decimals` precision to WAD precision, where decimals
+   * must be less than or equal to 18
+   */
   function toWad(uint256 amount, uint256 decimals) internal pure returns (uint256) {
     return amount * 10**(18 - decimals);
   }
