@@ -437,6 +437,7 @@ describe("ReimbursementToken", () => {
 
       // Collateral exchange rate is zero
       expect(await riPool.collateralQuoteRate()).to.equal(0);
+      expect(await riPool.redeemableCollateral()).to.equal(0);
       expect(await riPool.collateralExchangeRate()).to.equal(0);
     });
 
@@ -455,6 +456,7 @@ describe("ReimbursementToken", () => {
 
       // Collateral quote and exchange rate is zero
       expect(await riPool.collateralQuoteRate()).to.equal(0);
+      expect(await riPool.redeemableCollateral()).to.equal(0);
       expect(await riPool.collateralExchangeRate()).to.equal(0);
     });
 
@@ -469,6 +471,7 @@ describe("ReimbursementToken", () => {
 
       // Collateral quote and exchange rate is zero
       expect(await riPool.collateralQuoteRate()).to.equal(0);
+      expect(await riPool.redeemableCollateral()).to.equal(0);
       expect(await riPool.collateralExchangeRate()).to.equal(0);
     });
 
@@ -489,6 +492,7 @@ describe("ReimbursementToken", () => {
 
       // Collateral quote and exchange rate is zero
       expect(await riPool.collateralQuoteRate()).to.equal(0);
+      expect(await riPool.redeemableCollateral()).to.equal(0);
       expect(await riPool.collateralExchangeRate()).to.equal(0);
     });
 
@@ -539,6 +543,7 @@ describe("ReimbursementToken", () => {
         riTokenSupply,
       );
       expect(await riPool.collateralExchangeRate()).to.equal(expectedCollateralExchangeRate);
+      expect(await riPool.redeemableCollateral()).to.equal(collateralTokenDepositAmount);
     });
 
     it("should split some of the collateral if the shortfall is less than the collateral value", async () => {
@@ -571,11 +576,15 @@ describe("ReimbursementToken", () => {
       const wadCollateralDepositAmount = toWad(collateralTokenDepositAmount, collateralTokenDecimals);
       const wadCollateralToBeDistributed = wdiv(wmul(wadFinalShortfall, wadCollateralDepositAmount), collateralValue);
 
+      // Amount to be distributed in its own native decimals
+      const collateralToBeDistributed = wmul(wadCollateralToBeDistributed, parseUnits("1", collateralTokenDecimals));
+
       // The expected exchange rate is the number of collateral tokens to be distributed divided by the
       // supply of riTokens
       const expectedCollateralExchangeRate = wdiv(wadCollateralToBeDistributed, riTokenSupply);
 
       expect(await riPool.collateralExchangeRate()).to.equal(expectedCollateralExchangeRate);
+      expect(await riPool.redeemableCollateral()).to.equal(collateralToBeDistributed);
     });
   });
 

@@ -78,6 +78,10 @@ contract ReimbursementPool {
   /// the shortfall, and the price of the collateral at maturity according to the collateral oracle
   uint256 public collateralExchangeRate;
 
+  /// @notice The amount of collateral in the pool which will be distributed to make up for a shortfall after
+  /// maturity; always zero before maturity; zero after maturity if no collateral will be distributed
+  uint256 public redeemableCollateral;
+
   /**
    * @param _riToken The Reimbursement Token associated with this pool
    * @param _collateralToken An optional collateral token, used to compensate holders in the case of treasury shortfall;
@@ -223,11 +227,12 @@ contract ReimbursementPool {
         if (_wadFinalShortfall >= _wadCollateralValue) {
           // the shortfall is so big all collateral will be distributed
           collateralExchangeRate = wdiv(_wadCollateralBalance, riToken.totalSupply());
+          redeemableCollateral = collateralBalance;
         } else {
           // only some of collateral needs to be distributed
-          // TODO: Record this amount, or the supply minus this amount, to be used for reclaim
           uint256 _wadTokenCount = wdiv(wmul(_wadFinalShortfall, _wadCollateralBalance), _wadCollateralValue);
           collateralExchangeRate = wdiv(_wadTokenCount, riToken.totalSupply());
+          redeemableCollateral = wmul(_wadTokenCount, 10**collateralToken.decimals());
         }
       }
     }
