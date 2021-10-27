@@ -3,6 +3,7 @@ pragma solidity >=0.8.7;
 
 import "./interfaces/IReimbursementToken.sol";
 import "./interfaces/IReimbursementOracle.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 
 /**
@@ -192,10 +193,7 @@ contract ReimbursementPool {
 
     emit TreasuryDeposit(msg.sender, _amount);
 
-    require(
-      treasuryToken.transferFrom(msg.sender, address(this), _amount) == true,
-      "ReimbursementPool: Treasury Token Transfer Failed"
-    );
+    SafeERC20.safeTransferFrom(treasuryToken, msg.sender, address(this), _amount);
   }
 
   /**
@@ -208,10 +206,7 @@ contract ReimbursementPool {
 
     emit CollateralDeposit(msg.sender, _amount);
 
-    require(
-      collateralToken.transferFrom(msg.sender, address(this), _amount) == true,
-      "ReimbursementPool: Collateral Token Transfer Failed"
-    );
+    SafeERC20.safeTransferFrom(collateralToken, msg.sender, address(this), _amount);
   }
 
   /**
@@ -273,12 +268,12 @@ contract ReimbursementPool {
     );
 
     uint256 _redemptionAmount = wmul(_amount, finalExchangeRate);
-    treasuryToken.transfer(msg.sender, _redemptionAmount);
+    SafeERC20.safeTransfer(treasuryToken, msg.sender, _redemptionAmount);
 
     uint256 _collateralRedemptionAmount = 0;
     if (collateralExchangeRate > 0) {
       _collateralRedemptionAmount = wmul(_amount, collateralExchangeRate);
-      collateralToken.transfer(msg.sender, _collateralRedemptionAmount);
+      SafeERC20.safeTransfer(collateralToken, msg.sender, _collateralRedemptionAmount);
     }
 
     emit Redemption(msg.sender, _amount, _redemptionAmount, _collateralRedemptionAmount);
