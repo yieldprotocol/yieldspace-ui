@@ -152,7 +152,7 @@ contract ReimbursementPool {
    * @return The total debt of the system at face value, denominated in the underlying, i.e. the treasury token
    */
   function totalDebtFaceValue() public view returns (uint256) {
-    return wmul(riToken.totalSupply(), targetExchangeRate) / 10**(18 - treasuryToken.decimals());
+    return fromWad(wmul(riToken.totalSupply(), targetExchangeRate), treasuryToken.decimals());
   }
 
   /**
@@ -225,7 +225,7 @@ contract ReimbursementPool {
     if (finalShortfall == 0) {
       finalExchangeRate = targetExchangeRate;
     } else {
-      uint256 _wadTreasuryBalance = treasuryBalance * 10**(18 - treasuryToken.decimals());
+      uint256 _wadTreasuryBalance = toWad(treasuryBalance, treasuryToken.decimals());
       finalExchangeRate = wdiv(_wadTreasuryBalance, riToken.totalSupply());
 
       // there's a shortfall and there is collateral, so do collateral calculations
@@ -245,7 +245,7 @@ contract ReimbursementPool {
           // only some of collateral needs to be distributed
           uint256 _wadTokenCount = wdiv(wmul(_wadFinalShortfall, _wadCollateralBalance), _wadCollateralValue);
           collateralExchangeRate = wdiv(_wadTokenCount, riToken.totalSupply());
-          redeemableCollateral = wmul(_wadTokenCount, 10**collateralToken.decimals());
+          redeemableCollateral = fromWad(_wadTokenCount, collateralToken.decimals());
         }
       }
     }
@@ -293,7 +293,7 @@ contract ReimbursementPool {
 
   /**
    * @notice Divide x by y, where y has WAD precision and x has precision less than or equal to a WAD,
-   * while maintaining the precision of y.
+   * while maintaining the precision of x.
    * @dev Sourced via https://github.com/yieldprotocol/yield-utils-v2/blob/main/contracts/math/WDiv.sol
    */
   function wdiv(uint256 x, uint256 y) internal pure returns (uint256 z) {
@@ -301,10 +301,18 @@ contract ReimbursementPool {
   }
 
   /**
-   * @notice Convert a number stored in `decimals` precision to WAD precision, where decimals
+   * @notice Convert a number stored in decimals precision to WAD precision, where decimals
    * must be less than or equal to 18
    */
   function toWad(uint256 amount, uint256 decimals) internal pure returns (uint256) {
     return amount * 10**(18 - decimals);
+  }
+
+/**
+ * @notice Convert a number stored in WAD precision to decimals precision, where decimals must
+ * be less than or equal to 18
+ */
+  function fromWad(uint256 amount, uint256 decimals) internal pure returns (uint256) {
+    return (amount * 10**decimals) / 1e18;
   }
 }
