@@ -59,7 +59,7 @@ contract ReimbursementPool {
   uint256 public treasuryBalance;
 
   /// @notice The quantity of collateral tokens that have been deposited to the pool as backing value that
-  /// will be distributed if the face value debt is not fully paid
+  /// will be distributed if the face value debt is not fully covered by the treasury token
   uint256 public collateralBalance;
 
   /// @notice Flag indicating whether this pool is considered mature; can only be flipped after maturity
@@ -73,7 +73,7 @@ contract ReimbursementPool {
   /// calculated and populated at maturity
   uint256 public finalSurplus;
 
-  /// @notice The final exchange rate at which Reimbursement Tokens can be exchanged for treasury tokens,
+  /// @notice The final exchange rate at which Reimbursement Tokens can be exchanged for treasury tokens
   /// stored in the pool; this value is calculated at maturity and is equal to the target exchange rate if
   /// at least the face value debt was deposited to the pool
   uint256 public finalExchangeRate;
@@ -82,14 +82,17 @@ contract ReimbursementPool {
   /// of maturity if and only if collateral tokens will be used to make up for a treasury shortfall
   uint256 public collateralQuoteRate;
 
-  /// @notice The final exchange rate at which Reimbursement Tokens can be exchanged for collateral tokens,
-  /// stored in the pool; this value is calculated at maturity and is equal to zero if at least the face value
-  /// debt was deposited to the pool; if there was a shortfall, this rate is determined based on the size of
-  /// the shortfall, and the price of the collateral at maturity according to the collateral oracle
+  /// @notice The final exchange rate at which Reimbursement Tokens can be exchanged for collateral tokens
+  /// stored in the pool; this value is calculated at maturity and is equal to zero if at least the face
+  /// value of the debt was deposited to the pool as treasury tokens; if there was a shortfall, this
+  /// rate is determined based on the size of the shortfall, and the price of the collateral at maturity
+  /// according to the collateral oracle
   uint256 public collateralExchangeRate;
 
   /// @notice The amount of collateral in the pool which will be distributed to make up for a shortfall after
-  /// maturity; always zero before maturity; zero after maturity if no collateral will be distributed
+  /// maturity; always zero before maturity; zero after maturity if no collateral will be distributed; will be
+  /// equal to the full balance of the deposited collateral if the shortfall greater than the total collateral
+  /// value at maturity
   uint256 public redeemableCollateral;
 
   /**
@@ -308,10 +311,10 @@ contract ReimbursementPool {
     return amount * 10**(18 - decimals);
   }
 
-/**
- * @notice Convert a number stored in WAD precision to decimals precision, where decimals must
- * be less than or equal to 18
- */
+  /**
+   * @notice Convert a number stored in WAD precision to decimals precision, where decimals must
+   * be less than or equal to 18
+   */
   function fromWad(uint256 amount, uint256 decimals) internal pure returns (uint256) {
     return (amount * 10**decimals) / 1e18;
   }
