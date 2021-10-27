@@ -246,6 +246,10 @@ contract ReimbursementPool {
           redeemableCollateral = collateralBalance;
         } else {
           // only some of collateral needs to be distributed
+
+          // the number of collateral tokens to be distributed is the fraction of them needed to cover the
+          // shortfall in treasury tokens, that is: collateral balance * (remaining debt / collateral value)
+          // we calculate that here, maintaining maximum precision with wads by doing multiplication first
           uint256 _wadTokenCount = wdiv(wmul(_wadFinalShortfall, _wadCollateralBalance), _wadCollateralValue);
           collateralExchangeRate = wdiv(_wadTokenCount, riToken.totalSupply());
           redeemableCollateral = fromWad(_wadTokenCount, collateralToken.decimals());
