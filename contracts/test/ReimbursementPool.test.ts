@@ -59,9 +59,9 @@ const fastForward = async (seconds: number): Promise<void> => {
 };
 
 describe("ReimbursementToken", () => {
-  let deployer: SignerWithAddress;
-  let supplier: SignerWithAddress;
-  let redeemer: SignerWithAddress;
+  let deployer: SignerWithAddress; // contract deployer & default account
+  let supplier: SignerWithAddress; // deposits treasury & collateral tokens in supply tests
+  let redeemer: SignerWithAddress; // redeems riTokens in redemption tests
   let riToken: ReimbursementToken;
   let riPool: ReimbursementPool;
   let treasuryToken: MockToken;
