@@ -97,6 +97,12 @@ contract ReimbursementPool {
   /// value at maturity
   uint256 public redeemableCollateral;
 
+  /// @notice The address which can reclaim treasury surplus and non-committed collateral after maturity
+  address public backer;
+
+  /// @notice Flag indicating whether the backer has reclaimed; can only be flipped after maturity
+  bool public hasReclaimed;
+
   /**
    * @param _riToken The Reimbursement Token associated with this pool
    * @param _collateralToken An optional collateral token, used to compensate holders in the case of treasury shortfall;
@@ -110,7 +116,8 @@ contract ReimbursementPool {
     IReimbursementToken _riToken,
     IERC20Metadata _collateralToken,
     IReimbursementOracle _collateralOracle,
-    uint256 _targetExchangeRate
+    uint256 _targetExchangeRate,
+    address _backer
   ) {
     require(
       IERC20(_riToken.underlying()).totalSupply() > 0,
@@ -149,6 +156,7 @@ contract ReimbursementPool {
     collateralOracle = _collateralOracle;
     maturity = _riToken.maturity();
     targetExchangeRate = _targetExchangeRate;
+    backer = _backer;
   }
 
   // ======================================= Public view ===========================================
@@ -278,6 +286,24 @@ contract ReimbursementPool {
     }
 
     emit Redemption(msg.sender, _amount, _redemptionAmount, _collateralRedemptionAmount);
+  }
+
+  function reclaim() external {
+    require(msg.sender == backer, "ReimbursementPool: only backer");
+    require(hasMatured, "ReimbursementPool: No reclaim before maturity");
+    require(!hasReclaimed, "ReimbursemenetPool: Already reclaimed");
+    
+    hasReclaimed = true;
+    (finalShortfall, finalSurplus) = currentShortfallOrSurplus();
+    uint256 _collateralReclaimAmount = collateralBalance - redeemableCollateral;
+    if (finalSurplus > 0) {
+      // reclaim treasury surplus
+      SafeERC20.safeTransfer(treasuryToken, backer, finalSurplus);
+    }
+    if (_collateralReclaimAmount > 0) {
+      // reclaim collateral
+      SafeERC20.safeTransfer(collateralToken, msg.sender, _collateralReclaimAmount);
+    }
   }
 
   // ======================================= Utility functions =====================================
