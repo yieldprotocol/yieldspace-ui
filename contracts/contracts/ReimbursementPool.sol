@@ -32,6 +32,12 @@ contract ReimbursementPool {
     uint256 collateralTokenAmount
   );
 
+  event Reclaim(
+    address indexed backer,
+    uint256 treasuryTokenAmount,
+    uint256 collateralTokenAmount
+  );
+
   // ======================================= State variables =======================================
 
   /// @notice The Reimbursement Token associated with this pool
@@ -54,6 +60,9 @@ contract ReimbursementPool {
   /// @notice The maximum rate at which Reimbursement Tokens will be exchanged for treasury tokens at maturity,
   /// stored as a WAD; so 1 treasury token for 1 riToken = 1e18, 0.5 treasury tokens for 1 riToken = 0.5e18, etc...
   uint256 public immutable targetExchangeRate;
+
+  /// @notice The address which can reclaim treasury surplus and non-committed collateral after maturity
+  address public immutable backer;
 
   /// @notice The quantity of treasury tokens that have been deposited to the pool as payment toward the
   /// face value debt
@@ -97,10 +106,8 @@ contract ReimbursementPool {
   /// value at maturity
   uint256 public redeemableCollateral;
 
-  /// @notice The address which can reclaim treasury surplus and non-committed collateral after maturity
-  address public backer;
-
-  /// @notice Flag indicating whether the backer has reclaimed; can only be flipped after maturity
+  /// @notice Flag indicating whether the backer has reclaimed treasury surplus (if any) and non-committed 
+  /// collateral (if any); can only be flipped after maturity
   bool public hasReclaimed;
 
   /**
@@ -288,21 +295,26 @@ contract ReimbursementPool {
     emit Redemption(msg.sender, _amount, _redemptionAmount, _collateralRedemptionAmount);
   }
 
-  function reclaim() external {
+  /**
+   * @notice Reclaims treasury surplus (if any) and non-committed collateral (if any) to backer
+   */  function reclaim() external {
     require(msg.sender == backer, "ReimbursementPool: only backer");
     require(hasMatured, "ReimbursementPool: No reclaim before maturity");
     require(!hasReclaimed, "ReimbursemenetPool: Already reclaimed");
     
     hasReclaimed = true;
     (finalShortfall, finalSurplus) = currentShortfallOrSurplus();
-    uint256 _collateralReclaimAmount = collateralBalance - redeemableCollateral;
-    if (finalSurplus > 0) {
-      // reclaim treasury surplus
-      SafeERC20.safeTransfer(treasuryToken, backer, finalSurplus);
-    }
-    if (_collateralReclaimAmount > 0) {
-      // reclaim collateral
-      SafeERC20.safeTransfer(collateralToken, msg.sender, _collateralReclaimAmount);
+    unchecked {
+      uint256 _collateralReclaimAmount = collateralBalance - redeemableCollateral;
+      if (finalSurplus > 0) {
+        // reclaim treasury surplus
+        SafeERC20.safeTransfer(treasuryToken, backer, finalSurplus);
+      }
+      if (_collateralReclaimAmount > 0) {
+        // reclaim collateral
+        SafeERC20.safeTransfer(collateralToken, msg.sender, _collateralReclaimAmount);
+      }
+      emit Reclaim(msg.sender, finalSurplus, _collateralReclaimAmount);
     }
   }
 
