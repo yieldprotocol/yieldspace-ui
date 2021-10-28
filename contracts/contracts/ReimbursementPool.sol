@@ -5,6 +5,7 @@ import "./interfaces/IReimbursementToken.sol";
 import "./interfaces/IReimbursementOracle.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
+import "hardhat/console.sol";
 
 /**
  * @notice A ReimbursementPool manages the mechanics of paying out the redemption value of its associated
@@ -298,7 +299,7 @@ contract ReimbursementPool {
   /**
    * @notice Reclaims treasury surplus (if any) and non-committed collateral (if any) to backer
    */  function reclaim() external {
-    require(msg.sender == backer, "ReimbursementPool: only backer");
+    require(msg.sender == backer, "ReimbursementPool: Only backer");
     require(hasMatured, "ReimbursementPool: No reclaim before maturity");
     require(!hasReclaimed, "ReimbursemenetPool: Already reclaimed");
     
@@ -306,6 +307,7 @@ contract ReimbursementPool {
     (finalShortfall, finalSurplus) = currentShortfallOrSurplus();
     unchecked {
       uint256 _collateralReclaimAmount = collateralBalance - redeemableCollateral;
+      console.log("finalShortfall: %s, finalSurplus: %s, collateralReclaimAmount: %s", finalShortfall, finalSurplus, _collateralReclaimAmount);
       if (finalSurplus > 0) {
         // reclaim treasury surplus
         SafeERC20.safeTransfer(treasuryToken, backer, finalSurplus);
