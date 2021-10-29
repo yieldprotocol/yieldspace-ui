@@ -536,8 +536,12 @@ describe("ReimbursementToken", () => {
       );
 
       // If you're seeing this expectation fail, it means the constants you chose for test parameters
-      // don't match the assumptions of this test's author. Make sure paying half the debt means
-      // the collateral deposit is worth less than the shortfall.
+      // don't match the assumptions of this test's author. This test assumes that, if only half the debt
+      // is paid back, there will be shortfall large enough that not even all the collateral will cover it.
+      // In other words, the test has an internal invariant that can be broken based on the test constants.
+      // this expectation isn't exercising anything in the contracts, but rather asserting that the test's
+      // internal invariant has not been broken by changes to the test constants. If it's failing, make sure
+      // paying half the debt means the collateral deposit is worth less than the shortfall.
       expect(finalShortfall.gt(collateralValue)).to.equal(true, "Test inputs do not result in expected test cases");
 
       // we assume the full collateral balance will be used
@@ -571,8 +575,12 @@ describe("ReimbursementToken", () => {
       );
 
       // If you're seeing this expectation fail, it means the constants you chose for test parameters
-      // don't match the assumptions of this test's author. Make sure paying 2/3's of the debt means
-      // the collateral deposit is worth more than the shortfall.
+      // don't match the assumptions of this test's author. This test assumes that, if 2/3's of the debt
+      // is paid back, there will be shortfall that some portion of the collateral value will cover.
+      // In other words, the test has an internal invariant that can be broken based on the test constants.
+      // this expectation isn't exercising anything in the contracts, but rather asserting that the test's
+      // internal invariant has not been broken by changes to the test constants. If it's failing, make sure
+      // paying 2/3's of the debt means the collateral deposit is worth more than the shortfall.
       expect(wadFinalShortfall.lt(collateralValue)).to.equal(true, "Test inputs do not result in expected test cases");
 
       // The number of collateral tokens to be distributed is the fraction of them needed to cover the
@@ -699,7 +707,7 @@ describe("ReimbursementToken", () => {
         .withArgs(redeemer.address, redemptionAmount, expectedTreasuryRedemption, 0);
     });
 
-    it("should redeem collateral if the no debt is ever paid", async () => {
+    it("should redeem collateral if no debt is ever paid", async () => {
       // Deposit collateral; no debt is paid
       await riPool.depositCollateral(collateralTokenDepositAmount);
 

@@ -79,8 +79,9 @@ contract ReimbursementPool {
   /// at least the face value debt was deposited to the pool
   uint256 public finalExchangeRate;
 
-  /// @notice The quoted exchange rate of collateral tokens, denominated in treasury tokens, recorded at time
-  /// of maturity if and only if collateral tokens will be used to make up for a treasury shortfall
+  /// @notice The quoted exchange rate (i.e. price) of collateral tokens, denominated in treasury tokens,
+  /// recorded at time of maturity if and only if collateral tokens will be used to make up for a treasury
+  /// shortfall
   uint256 public collateralQuoteRate;
 
   /// @notice The final exchange rate at which Reimbursement Tokens can be exchanged for collateral tokens
