@@ -859,107 +859,93 @@ describe("ReimbursementPool", () => {
   });
 
   describe("backer reclaim", () => {
-    describe("treasury surplus, no collateral", async () => {
-      it("should let the backer reclaim treasury surplus", async () => {
-        // Pay all debt and then some
-        const totalDebt = await riPool.totalDebtFaceValue();
-        await riPool.depositToTreasury(totalDebt.add(treasuryTokenDepositAmount));
+    it("treasury surplus, no collateral: should let the backer reclaim treasury surplus", async () => {
+      // Pay all debt and then some
+      const totalDebt = await riPool.totalDebtFaceValue();
+      await riPool.depositToTreasury(totalDebt.add(treasuryTokenDepositAmount));
 
-        // Reach maturity
-        await fastForward(maturityTimeDiff);
-        await riPool.mature();
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
 
-        await riPool.connect(backer).reclaim();
-        expect(await treasuryToken.balanceOf(backer.address)).to.equal(treasuryTokenDepositAmount);
-      });
+      await riPool.connect(backer).reclaim();
+      expect(await treasuryToken.balanceOf(backer.address)).to.equal(treasuryTokenDepositAmount);
     });
-    describe("treasury surplus, collateral surplus", async () => {
-      it("should let the backer reclaim both treasury surplus and collateral if treasury surplus", async () => {
-        // Deposit collateral
-        await riPool.depositCollateral(collateralTokenDepositAmount);
+    it("treasury surplus, collateral surplus: should let the backer reclaim both treasury surplus and collateral if treasury surplus", async () => {
+      // Deposit collateral
+      await riPool.depositCollateral(collateralTokenDepositAmount);
 
-        // Pay all debt and then some
-        const totalDebt = await riPool.totalDebtFaceValue();
-        await riPool.depositToTreasury(totalDebt.add(treasuryTokenDepositAmount));
+      // Pay all debt and then some
+      const totalDebt = await riPool.totalDebtFaceValue();
+      await riPool.depositToTreasury(totalDebt.add(treasuryTokenDepositAmount));
 
-        // Reach maturity
-        await fastForward(maturityTimeDiff);
-        await riPool.mature();
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
 
-        await riPool.connect(backer).reclaim();
-        expect(await treasuryToken.balanceOf(backer.address)).to.equal(treasuryTokenDepositAmount);
-        expect(await collateralToken.balanceOf(backer.address)).to.equal(collateralTokenDepositAmount);
-      });
+      await riPool.connect(backer).reclaim();
+      expect(await treasuryToken.balanceOf(backer.address)).to.equal(treasuryTokenDepositAmount);
+      expect(await collateralToken.balanceOf(backer.address)).to.equal(collateralTokenDepositAmount.sub(1));
     });
-    describe("treasury shortfall, collateral surplus", async () => {
-      it("should let the backer reclaim no treasury and some collateral if treasury shortfall and collateral surplus", async () => {
-        // Deposit collateral
-        await riPool.depositCollateral(collateralTokenDepositAmount);
+    it("treasury shortfall, collateral surplus: should let the backer reclaim no treasury and some collateral if treasury shortfall and collateral surplus", async () => {
+      // Deposit collateral
+      await riPool.depositCollateral(collateralTokenDepositAmount);
 
-        // Pay two thirds of the debt
-        const totalDebt = await riPool.totalDebtFaceValue();
-        await riPool.depositToTreasury(totalDebt.mul(2).div(3));
+      // Pay two thirds of the debt
+      const totalDebt = await riPool.totalDebtFaceValue();
+      await riPool.depositToTreasury(totalDebt.mul(2).div(3));
 
-        // Reach maturity
-        await fastForward(maturityTimeDiff);
-        await riPool.mature();
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
 
-        // Sanity check the test constant parameters defined at the top of the tests
-        const wadFinalShortfall = toWad(await riPool.finalShortfall(), treasuryTokenDecimals);
-        const collateralValue = toWad(
-          wmul(collateralTokenDepositAmount, collateralTokenQuoteRate),
-          collateralTokenDecimals,
-        );
+      // Sanity check the test constant parameters defined at the top of the tests
+      const wadFinalShortfall = toWad(await riPool.finalShortfall(), treasuryTokenDecimals);
+      const collateralValue = toWad(
+        wmul(collateralTokenDepositAmount, collateralTokenQuoteRate),
+        collateralTokenDecimals,
+      );
 
-        // If you're seeing this expectation fail, it means the constants you chose for test parameters
-        // don't match the assumptions of this test's author. Make sure paying 2/3's of the debt means
-        // the collateral deposit is worth more than the shortfall.
-        expect(wadFinalShortfall.lt(collateralValue)).to.equal(
-          true,
-          "Test inputs do not result in expected test cases",
-        );
+      // If you're seeing this expectation fail, it means the constants you chose for test parameters
+      // don't match the assumptions of this test's author. Make sure paying 2/3's of the debt means
+      // the collateral deposit is worth more than the shortfall.
+      expect(wadFinalShortfall.lt(collateralValue)).to.equal(true, "Test inputs do not result in expected test cases");
 
-        const redeemableCollateral = await riPool.redeemableCollateral();
+      const redeemableCollateral = await riPool.redeemableCollateral();
 
-        await riPool.connect(backer).reclaim();
-        expect(await treasuryToken.balanceOf(backer.address)).to.equal(0);
-        expect(await collateralToken.balanceOf(backer.address)).to.equal(
-          collateralTokenDepositAmount.sub(redeemableCollateral),
-        );
-      });
+      await riPool.connect(backer).reclaim();
+      expect(await treasuryToken.balanceOf(backer.address)).to.equal(0);
+      expect(await collateralToken.balanceOf(backer.address)).to.equal(
+        collateralTokenDepositAmount.sub(redeemableCollateral).sub(1),
+      );
     });
-    describe("treasury shortfall, collateral shortfall", async () => {
-      it("should let the backer reclaim no treasury and no collateral if treasury shortfall and collateral deficit", async () => {
-        // Deposit collateral
-        await riPool.depositCollateral(collateralTokenDepositAmount);
+    it("treasury shortfall, collateral shortfall: should let the backer reclaim no treasury and no collateral if treasury shortfall and collateral deficit", async () => {
+      // Deposit collateral
+      await riPool.depositCollateral(collateralTokenDepositAmount);
 
-        // Pay one fifth of the debt
-        const totalDebt = await riPool.totalDebtFaceValue();
-        await riPool.depositToTreasury(totalDebt.div(5));
+      // Pay one fifth of the debt
+      const totalDebt = await riPool.totalDebtFaceValue();
+      await riPool.depositToTreasury(totalDebt.div(5));
 
-        // Reach maturity
-        await fastForward(maturityTimeDiff);
-        await riPool.mature();
+      // Reach maturity
+      await fastForward(maturityTimeDiff);
+      await riPool.mature();
 
-        // Sanity check the test constant parameters defined at the top of the tests
-        const wadFinalShortfall = toWad(await riPool.finalShortfall(), treasuryTokenDecimals);
-        const collateralValue = toWad(
-          wmul(collateralTokenDepositAmount, collateralTokenQuoteRate),
-          collateralTokenDecimals,
-        );
+      // Sanity check the test constant parameters defined at the top of the tests
+      const wadFinalShortfall = toWad(await riPool.finalShortfall(), treasuryTokenDecimals);
+      const collateralValue = toWad(
+        wmul(collateralTokenDepositAmount, collateralTokenQuoteRate),
+        collateralTokenDecimals,
+      );
 
-        // If you're seeing this expectation fail, it means the constants you chose for test parameters
-        // don't match the assumptions of this test's author. Make sure paying 2/3's of the debt means
-        // the collateral deposit is worth more than the shortfall.
-        expect(wadFinalShortfall.gt(collateralValue)).to.equal(
-          true,
-          "Test inputs do not result in expected test cases",
-        );
+      // If you're seeing this expectation fail, it means the constants you chose for test parameters
+      // don't match the assumptions of this test's author. Make sure paying 1/5's of the debt means
+      // the collateral deposit is worth more than the shortfall.
+      expect(wadFinalShortfall.gt(collateralValue)).to.equal(true, "Test inputs do not result in expected test cases");
 
-        await riPool.connect(backer).reclaim();
-        expect(await treasuryToken.balanceOf(backer.address)).to.equal(0);
-        expect(await collateralToken.balanceOf(backer.address)).to.equal(0);
-      });
+      await riPool.connect(backer).reclaim();
+      expect(await treasuryToken.balanceOf(backer.address)).to.equal(0);
+      expect(await collateralToken.balanceOf(backer.address)).to.equal(0);
     });
     it("should emit a reclaim event with correct amounts", async () => {
       // Deposit collateral
@@ -975,9 +961,9 @@ describe("ReimbursementPool", () => {
 
       await expect(riPool.connect(backer).reclaim())
         .to.emit(riPool, "Reclaim")
-        .withArgs(backer.address, treasuryTokenDepositAmount, collateralTokenDepositAmount);
+        .withArgs(treasuryTokenDepositAmount, collateralTokenDepositAmount);
     });
-    it("should error if the backer double reclaims", async () => {
+    it("should revert if the backer double reclaims", async () => {
       const totalDebt = await riPool.totalDebtFaceValue();
       await riPool.depositToTreasury(totalDebt.add(treasuryTokenDepositAmount));
 
@@ -988,7 +974,7 @@ describe("ReimbursementPool", () => {
       await riPool.connect(backer).reclaim();
       await expect(riPool.connect(backer).reclaim()).to.be.revertedWith("ReimbursemenetPool: Already reclaimed");
     });
-    it("should error if someone other than backer reclaims", async () => {
+    it("should revert if someone other than backer reclaims", async () => {
       const totalDebt = await riPool.totalDebtFaceValue();
       await riPool.depositToTreasury(totalDebt.add(treasuryTokenDepositAmount));
 
@@ -998,7 +984,7 @@ describe("ReimbursementPool", () => {
 
       await expect(riPool.connect(supplier).reclaim()).to.be.revertedWith("ReimbursementPool: Only backer");
     });
-    it("should error if reclaiming before maturity", async () => {
+    it("should revert if reclaiming before maturity", async () => {
       const totalDebt = await riPool.totalDebtFaceValue();
       await riPool.depositToTreasury(totalDebt.add(treasuryTokenDepositAmount));
 

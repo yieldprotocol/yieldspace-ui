@@ -32,11 +32,7 @@ contract ReimbursementPool {
     uint256 collateralTokenAmount
   );
 
-  event Reclaim(
-    address indexed backer,
-    uint256 treasuryTokenAmount,
-    uint256 collateralTokenAmount
-  );
+  event Reclaim(uint256 treasuryTokenAmount, uint256 collateralTokenAmount);
 
   // ======================================= State variables =======================================
 
@@ -106,7 +102,7 @@ contract ReimbursementPool {
   /// value at maturity
   uint256 public redeemableCollateral;
 
-  /// @notice Flag indicating whether the backer has reclaimed treasury surplus (if any) and non-committed 
+  /// @notice Flag indicating whether the backer has reclaimed treasury surplus (if any) and non-committed
   /// collateral (if any); can only be flipped after maturity
   bool public hasReclaimed;
 
@@ -118,6 +114,7 @@ contract ReimbursementPool {
    * token; should be the zero address if no collateral token is used
    * @param _targetExchangeRate The maximum rate at which Reimbursement Tokens will be exchanged for treasury tokens
    * at maturity
+   * @param _backer The address which can reclaim treasury surplus and non-committed collateral after maturity
    */
   constructor(
     IReimbursementToken _riToken,
@@ -297,25 +294,27 @@ contract ReimbursementPool {
 
   /**
    * @notice Reclaims treasury surplus (if any) and non-committed collateral (if any) to backer
-   */  function reclaim() external {
+   */
+  function reclaim() external {
     require(msg.sender == backer, "ReimbursementPool: Only backer");
     require(hasMatured, "ReimbursementPool: No reclaim before maturity");
     require(!hasReclaimed, "ReimbursemenetPool: Already reclaimed");
-    
+
     hasReclaimed = true;
-    (finalShortfall, finalSurplus) = currentShortfallOrSurplus();
-    unchecked {
-      uint256 _collateralReclaimAmount = collateralBalance - redeemableCollateral;
-      if (finalSurplus > 0) {
-        // reclaim treasury surplus
-        SafeERC20.safeTransfer(treasuryToken, backer, finalSurplus);
-      }
-      if (_collateralReclaimAmount > 0) {
-        // reclaim collateral
-        SafeERC20.safeTransfer(collateralToken, msg.sender, _collateralReclaimAmount);
-      }
-      emit Reclaim(msg.sender, finalSurplus, _collateralReclaimAmount);
+    uint256 _collateralReclaimAmount = collateralBalance - redeemableCollateral;
+    if (finalSurplus > 0) {
+      // reclaim treasury surplus
+      SafeERC20.safeTransfer(treasuryToken, backer, finalSurplus);
     }
+    if (_collateralReclaimAmount > 0) {
+      // reclaim collateral
+      // Note: If the calculation of the redeemableCollateral was rounded down due to lack of precision,
+      // then calculating the _collateralReclaimAmount will overestimate the reclaimable amount by ~1 absolute unit
+      // (i.e. the smallest division of the collateral tokens decimal). Therefore we subtract 1 weilike from the reclaim.
+      SafeERC20.safeTransfer(collateralToken, backer, _collateralReclaimAmount - 1);
+    }
+
+    emit Reclaim(finalSurplus, _collateralReclaimAmount);
   }
 
   // ======================================= Utility functions =====================================
