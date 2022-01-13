@@ -1,11 +1,14 @@
 import deployment from '@reimbursement-token/contracts/deploys/localhost.json';
+import tw from 'tailwind-styled-components';
+
+const Container = tw.div`text-green-800`;
 
 const Index = () => {
   return (
-    <div>
-      <p className="text-green-800">Contract deployments:</p>
+    <Container>
+      <p>Contract deployments:</p>
       <ul>{JSON.stringify(deployment)}</ul>
-    </div>
+    </Container>
   );
 };
 
