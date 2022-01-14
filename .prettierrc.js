@@ -1,17 +1,17 @@
 module.exports = {
   overrides: [
     {
-      files: "**/*.sol",
+      files: '**/*.sol',
       options: {
         printWidth: 120,
         tabWidth: 2,
       },
     },
     {
-      files: ["**/*.js", "**/*.ts", "**/*.tsx", "**/*.vue"],
+      files: ['**/*.js', '**/*.ts', '**/*.tsx', '**/*.vue'],
       options: {
         bracketSpacing: true,
-        trailingComma: "es5",
+        trailingComma: 'es5',
         tabWidth: 2,
         printWidth: 120,
         singleQuote: true,
@@ -19,4 +19,4 @@ module.exports = {
       },
     },
   ],
-};
+}

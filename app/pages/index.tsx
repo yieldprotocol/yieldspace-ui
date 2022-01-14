@@ -1,14 +1,21 @@
-import deployment from '@reimbursement-token/contracts/deploys/localhost.json';
+import Head from 'next/head';
 import tw from 'tailwind-styled-components';
+import Navigation from '../components/Navigation';
 
-const Container = tw.div`text-green-800`;
+const Container = tw.div`h-full w-full text-center antialiased text-zinc-500 dark:text-zinc-400 bg-white dark:bg-zinc-900`;
 
 const Index = () => {
   return (
-    <Container>
-      <p>Contract deployments:</p>
-      <ul>{JSON.stringify(deployment)}</ul>
-    </Container>
+    <>
+      <Head>
+        <title>Yield Reimbursement Tokens</title>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+
+      <Container>
+        <Navigation />
+      </Container>
+    </>
   );
 };
 
