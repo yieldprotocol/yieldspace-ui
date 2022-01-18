@@ -5,9 +5,16 @@ import { ActionType } from '../actionTypes/chain';
 const INITIAL_STATE = {
   provider: null as ethers.providers.JsonRpcProvider | null,
   chainId: 1,
-
-  /* flags */
   chainLoading: true,
+  connection: {
+    provider: null as ethers.providers.Web3Provider | null,
+    chainId: null as number | null,
+    fallbackProvider: null as ethers.providers.Web3Provider | null,
+    fallbackChainId: Number(process.env.NEXT_PUBLIC_DEFAULT_CHAINID) as number | null,
+    signer: null as ethers.providers.JsonRpcSigner | null,
+    account: null as string | null,
+    connectionName: null as string | null,
+  },
 };
 
 export default function rootReducer(state: IChainState = INITIAL_STATE, action: IChainAction): IChainState {
@@ -17,6 +24,9 @@ export default function rootReducer(state: IChainState = INITIAL_STATE, action: 
     case ActionType.CHAIN_ID:
       return { ...state, chainId: action.payload };
     case ActionType.CHAIN_LOADING:
+      return { ...state, chainLoading: action.payload };
+    case ActionType.CONNECTION:
+      return { ...state, connection: { ...state.connection, ...action.payload } };
     default:
       return state;
   }
