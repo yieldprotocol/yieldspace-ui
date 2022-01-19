@@ -1,6 +1,5 @@
 import tw from 'tailwind-styled-components';
 import Link from 'next/link';
-import Connect from './Connect';
 import Account from './Account';
 
 const Container = tw.div`

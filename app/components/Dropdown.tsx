@@ -14,12 +14,16 @@ interface ButtonProps {
 const Button = tw.button<ButtonProps>`${(p) =>
   p.$active ? 'text-gray-50' : 'text-gray-400'} flex rounded-md items-center w-full px-2 py-2`;
 
-const Dropdown: FC = () => {
+const Dropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setModalOpen }) => {
   const {
     connection: { chainId, account },
   } = useAppSelector(({ chain }) => chain);
   const { copied, copy } = useCopy(account);
 
+  const handleModalOpen = () => {
+    console.log('opening modal');
+    setModalOpen(true);
+  };
   return (
     <div>
       <Menu as="div" className="relative inline-block text-left">
@@ -47,7 +51,13 @@ const Dropdown: FC = () => {
               </Menu.Item>
             </div>
             <div className="px-1 py-1">
-              <Menu.Item>{({ active }) => <Button $active={active}>Change Wallet</Button>}</Menu.Item>
+              <Menu.Item>
+                {({ active }) => (
+                  <Button onClick={handleModalOpen} $active={active}>
+                    Change Wallet
+                  </Button>
+                )}
+              </Menu.Item>
             </div>
             <div className="px-1 py-1">
               <Menu.Item>
@@ -58,9 +68,9 @@ const Dropdown: FC = () => {
                 )}
               </Menu.Item>
             </div>
-            <div className="px-1 py-1">
+            {/* <div className="px-1 py-1">
               <Menu.Item>{({ active }) => <Button $active={active}>Disconnect</Button>}</Menu.Item>
-            </div>
+            </div> */}
           </Menu.Items>
         </Transition>
       </Menu>

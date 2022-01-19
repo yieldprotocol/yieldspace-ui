@@ -9,6 +9,7 @@ const INITIAL_CONNECTION_STATE = {
   fallbackChainId: Number(process.env.NEXT_PUBLIC_DEFAULT_CHAINID) as number | null,
   signer: null as ethers.providers.JsonRpcSigner | null,
   account: null as string | null,
+  ensName: null as string | null,
   connectionName: null as string | null,
 };
 

@@ -2297,6 +2297,13 @@
   dependencies:
     zustand "^4.0.0-beta.0"
 
+"@web3-react/walletconnect@^8.0.1-beta.0":
+  version "8.0.1-beta.0"
+  resolved "https://registry.yarnpkg.com/@web3-react/walletconnect/-/walletconnect-8.0.1-beta.0.tgz#472b5e9ba31350ad31793b433189c66245829fc0"
+  integrity sha512-GZKtxXW6GRfSv68kmfTbZBDR/MPgSb4AOX7TVjxShX0UQB10BGmxjd/EK1BRucwijAIXo9ERDU0plbKjC1S8bA==
+  dependencies:
+    "@web3-react/types" "^8.0.0-beta.0"
+
 "@yarnpkg/lockfile@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@yarnpkg/lockfile/-/lockfile-1.1.0.tgz#e77a97fbd345b76d83245edcd17d393b1b41fb31"

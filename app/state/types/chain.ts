@@ -33,11 +33,12 @@ export interface IChainChainLoadingAction {
 export interface IChainConnection {
   provider: ethers.providers.Web3Provider | null;
   chainId: number | null;
-  fallbackProvider: ethers.providers.JsonRpcProvider | null;
-  fallbackChainId: number | null;
+  fallbackProvider?: ethers.providers.JsonRpcProvider | null;
+  fallbackChainId?: number | null;
   signer?: ethers.providers.JsonRpcSigner | null;
   account: string | null;
-  connectionName: string | null;
+  connectionName?: string | null;
+  ensName?: string | null;
 }
 
 export interface IChainConnectionAction {
