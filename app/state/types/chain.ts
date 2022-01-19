@@ -5,10 +5,15 @@ export interface IChainState {
   provider: ethers.providers.JsonRpcProvider | null;
   chainId: number;
   chainLoading: boolean;
-  connection: IConnection;
+  connection: IChainConnection;
 }
 
-export type IChainAction = IChainProviderAction | IChainChainIdAction | IChainChainLoadingAction;
+export type IChainAction =
+  | IChainProviderAction
+  | IChainChainIdAction
+  | IChainChainLoadingAction
+  | IChainConnectionAction
+  | IChainResetConnectionAction;
 
 export interface IChainProviderAction {
   type: ActionType.PROVIDER;
@@ -25,7 +30,7 @@ export interface IChainChainLoadingAction {
   payload: boolean;
 }
 
-export interface IConnection {
+export interface IChainConnection {
   provider: ethers.providers.Web3Provider | null;
   chainId: number | null;
   fallbackProvider: ethers.providers.JsonRpcProvider | null;
@@ -37,5 +42,9 @@ export interface IConnection {
 
 export interface IChainConnectionAction {
   type: ActionType.CONNECTION;
-  payload: IConnection;
+  payload: IChainConnection;
+}
+
+export interface IChainResetConnectionAction {
+  type: ActionType.RESET_CONNECTION;
 }

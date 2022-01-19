@@ -7,7 +7,10 @@ class MyDocument extends Document {
   render() {
     return (
       <Html>
-        <Head />
+        <Head>
+          <title>Yield Reimbursement Tokens</title>
+          <link rel="icon" href="/favicon.ico" />
+        </Head>
         <Body>
           <Main />
           <NextScript />
