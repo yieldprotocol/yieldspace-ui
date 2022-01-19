@@ -196,7 +196,7 @@ function Connection({ connector, hooks }: { connector: Connector; hooks: Web3Rea
   );
 }
 
-const Connect = ({ modalOpen, setModalOpen }: { modalOpen: boolean; setModalOpen: (isOpen: boolean) => void }) => {
+const ConnectModal = ({ modalOpen, setModalOpen }: { modalOpen: boolean; setModalOpen: (isOpen: boolean) => void }) => {
   return (
     <Modal isOpen={modalOpen} setIsOpen={setModalOpen}>
       <Inner>
@@ -210,4 +210,4 @@ const Connect = ({ modalOpen, setModalOpen }: { modalOpen: boolean; setModalOpen
   );
 };
 
-export default Connect;
+export default ConnectModal;
