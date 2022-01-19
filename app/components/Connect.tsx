@@ -1,5 +1,5 @@
 import { utils } from 'ethers';
-
+import Image from 'next/image';
 import type { Web3ReactHooks } from '@web3-react/core';
 import { MetaMask } from '@web3-react/metamask';
 import { Network } from '@web3-react/network';
@@ -7,19 +7,21 @@ import type { Connector } from '@web3-react/types';
 import { useCallback, useState } from 'react';
 import { CHAINS, getAddChainParameters, URLS } from '../config/chains';
 import { connectors } from '../connectors';
-
-import Image from 'next/image';
 import { useAppDispatch, useAppSelector } from 'state/hooks/general';
 import tw from 'tailwind-styled-components';
 import Modal from './Modal';
 import { updateConnection } from 'state/actions/chain';
 import useBalances from '../hooks/useBalances';
+import { XCircleIcon, CheckCircleIcon } from '@heroicons/react/solid';
+import metamaskLogo from '../public/logos/metamask.png';
+import { connected } from 'process';
 
 const ConnectButton = tw.button`bg-primary-500/25 align-middle px-4 py-2 text-primary-500 rounded-md hover:bg-primary-600/25`;
 const Inner = tw.div`p-2 space-y-2`;
-const ConnectionButton = tw.button`w-full gap-4 bg-gray-500/25 align-middle px-4 py-3 text-primary-500 rounded-md hover:bg-gray-600/25  flex`;
+const ConnectorButton = tw.button`w-full gap-4 bg-gray-500/25 align-middle px-4 py-3 text-primary-500 rounded-md hover:bg-gray-600/25 flex`;
+const ConnectorButtonText = tw.span`align-middle text-gray-50`;
 
-function getName(connector: Connector) {
+const getName = (connector: Connector) => {
   if (connector instanceof MetaMask) {
     return 'MetaMask';
   } else if (connector instanceof Network) {
@@ -27,7 +29,7 @@ function getName(connector: Connector) {
   } else {
     return 'Unknown';
   }
-}
+};
 
 function Status({
   connector,
@@ -48,21 +50,17 @@ function Status({
       <br />
       {error ? (
         <>
-          🛑 {error.name ?? 'Error'}: {error.message}
+          <XCircleIcon /> {error.name ?? 'Error'}: {error.message}
         </>
       ) : connected ? (
-        <>✅ Connected</>
+        <>
+          <CheckCircleIcon />
+        </>
       ) : (
-        <>⚠️ Disconnected</>
+        <>Disconnected</>
       )}
     </div>
   );
-}
-
-function ChainId({ hooks: { useChainId } }: { hooks: Web3ReactHooks }) {
-  const chainId = useChainId();
-
-  return <div>Chain Id: {chainId ? <b>{chainId}</b> : '-'}</div>;
 }
 
 function Accounts({ hooks: { useAccounts, useProvider, useENSNames } }: { hooks: Web3ReactHooks }) {
@@ -86,32 +84,6 @@ function Accounts({ hooks: { useAccounts, useProvider, useENSNames } }: { hooks:
             </ul>
           ))}
     </div>
-  );
-}
-
-function MetaMaskSelect({ chainId, setChainId }: { chainId: number; setChainId?: (chainId: number) => void }) {
-  return (
-    <label>
-      Chain:{' '}
-      <select
-        value={`${chainId}`}
-        onChange={
-          setChainId
-            ? (event) => {
-                setChainId(Number(event.target.value));
-              }
-            : undefined
-        }
-        disabled={!setChainId}
-      >
-        <option value={-1}>Default</option>
-        {Object.keys(URLS).map((chainId) => (
-          <option key={chainId} value={chainId}>
-            {CHAINS[Number(chainId)].name}
-          </option>
-        ))}
-      </select>
-    </label>
   );
 }
 
@@ -139,118 +111,28 @@ function MetaMaskConnect({
     [setDesiredChainId, currentChainId, connector]
   );
 
-  if (error) {
-    return (
-      <>
-        <MetaMaskSelect chainId={desiredChainId} setChainId={setChainId} />
-        <br />
-        <button
-          onClick={() => connector.activate(desiredChainId === -1 ? undefined : getAddChainParameters(desiredChainId))}
-        >
-          Try Again?
-        </button>
-      </>
-    );
-  } else if (active) {
-    return (
-      <>
-        <MetaMaskSelect chainId={desiredChainId === -1 ? -1 : currentChainId} setChainId={setChainId} />
-        <br />
-        <button disabled>Connected</button>
-      </>
-    );
-  } else {
-    return (
-      <>
-        <MetaMaskSelect chainId={desiredChainId} setChainId={isActivating ? undefined : setChainId} />
-        <br />
-        <button
-          onClick={
-            isActivating
-              ? undefined
-              : () => connector.activate(desiredChainId === -1 ? undefined : getAddChainParameters(desiredChainId))
-          }
-          disabled={isActivating}
-        >
-          {isActivating ? 'Connecting...' : 'Connect'}
-        </button>
-      </>
-    );
-  }
-}
+  const status = () => {
+    if (error) {
+      return `Try again?`;
+    } else if (active) {
+      return 'Connected';
+    } else {
+      return isActivating ? 'Connecting...' : 'Connect';
+    }
+  };
 
-function NetworkSelect({ chainId, setChainId }: { chainId: number; setChainId?: (chainId: number) => void }) {
   return (
-    <label>
-      Chain:{' '}
-      <select
-        value={`${chainId}`}
-        onChange={
-          setChainId
-            ? (event) => {
-                setChainId(Number(event.target.value));
-              }
-            : undefined
-        }
-        disabled={!setChainId}
-      >
-        {Object.keys(URLS).map((chainId) => (
-          <option key={chainId} value={chainId}>
-            {CHAINS[Number(chainId)].name}
-          </option>
-        ))}
-      </select>
-    </label>
+    <ConnectorButton
+      onClick={() => connector.activate(desiredChainId === -1 ? undefined : getAddChainParameters(desiredChainId))}
+      disabled={isActivating || active}
+    >
+      <Image src={metamaskLogo} height={20} width={20} />
+      <div className="flex w-full justify-between">
+        <ConnectorButtonText>{getName(connector)}</ConnectorButtonText>
+        <ConnectorButtonText>{status()}</ConnectorButtonText>
+      </div>
+    </ConnectorButton>
   );
-}
-
-function NetworkConnect({
-  connector,
-  hooks: { useChainId, useError, useIsActive },
-}: {
-  connector: Network;
-  hooks: Web3ReactHooks;
-}) {
-  const currentChainId = useChainId();
-  const error = useError();
-  const active = useIsActive();
-
-  const [desiredChainId, setDesiredChainId] = useState<number>(1);
-
-  const setChainId = useCallback(
-    (chainId: number) => {
-      setDesiredChainId(chainId);
-      return connector.activate(chainId);
-    },
-    [setDesiredChainId, connector]
-  );
-
-  if (error) {
-    return (
-      <>
-        <NetworkSelect chainId={desiredChainId} setChainId={setChainId} />
-        <br />
-        <button onClick={() => connector.activate(desiredChainId)}>Try Again?</button>
-      </>
-    );
-  } else if (active) {
-    return (
-      <>
-        <NetworkSelect chainId={currentChainId} setChainId={setChainId} />
-        <br />
-        <button disabled>Connected</button>
-      </>
-    );
-  } else {
-    // because network connector connects eagerly, we should only see this when activating
-    return (
-      <>
-        <NetworkSelect chainId={desiredChainId} />
-        <br />
-        <button disabled>Connecting...</button>
-      </>
-    );
-  }
 }
 
 function GenericConnect({
@@ -303,29 +185,7 @@ const Connect = () => {
       <Modal isOpen={modalOpen} setIsOpen={setModalOpen}>
         <Inner>
           {connectors.map(([connector, hooks], i) => (
-            <div
-              key={i}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                width: '20rem',
-                padding: '1rem',
-                margin: '1rem',
-                overflow: 'auto',
-                border: '1px solid',
-                borderRadius: '1rem',
-              }}
-            >
-              <div>
-                <Status connector={connector} hooks={hooks} />
-                <br />
-                <ChainId hooks={hooks} />
-                <Accounts hooks={hooks} />
-                <br />
-              </div>
-              <Connection connector={connector} hooks={hooks} />
-            </div>
+            <Connection connector={connector} hooks={hooks} key={i} />
           ))}
         </Inner>
       </Modal>
