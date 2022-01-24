@@ -17,7 +17,7 @@ interface BasicChainInformation {
   name: string;
 }
 
-interface ExtendedChainInformation extends BasicChainInformation {
+export interface ExtendedChainInformation extends BasicChainInformation {
   nativeCurrency: AddEthereumChainParameter['nativeCurrency'];
   blockExplorerUrls: AddEthereumChainParameter['blockExplorerUrls'];
 }
@@ -51,22 +51,27 @@ export const CHAINS: { [chainId: number]: BasicChainInformation | ExtendedChainI
       'https://cloudflare-eth.com',
     ],
     name: 'Mainnet',
+    blockExplorerUrls: ['https://etherscan.io'],
   },
   3: {
     urls: [process.env.infuraKey ? `https://ropsten.infura.io/v3/${process.env.infuraKey}` : undefined],
     name: 'Ropsten',
+    blockExplorerUrls: ['https://ropsten.etherscan.io'],
   },
   4: {
     urls: [process.env.infuraKey ? `https://rinkeby.infura.io/v3/${process.env.infuraKey}` : undefined],
     name: 'Rinkeby',
+    blockExplorerUrls: ['https://rinkeby.etherscan.io'],
   },
   5: {
     urls: [process.env.infuraKey ? `https://goerli.infura.io/v3/${process.env.infuraKey}` : undefined],
     name: 'Görli',
+    blockExplorerUrls: ['https://goerli.etherscan.io'],
   },
   42: {
     urls: [process.env.infuraKey ? `https://kovan.infura.io/v3/${process.env.infuraKey}` : undefined],
     name: 'Kovan',
+    blockExplorerUrls: ['https://kovan.etherscan.io'],
   },
   // Optimism
   10: {
