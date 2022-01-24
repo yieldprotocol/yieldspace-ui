@@ -6,6 +6,7 @@ import tw from 'tailwind-styled-components';
 import useCopy from '../hooks/useCopy';
 import { useAppSelector } from 'state/hooks/general';
 import { abbreviateHash } from 'utils/appUtils';
+import useConnector from 'hooks/useConnector';
 
 interface ButtonProps {
   $active: boolean;
@@ -15,9 +16,7 @@ const Button = tw.button<ButtonProps>`${(p) =>
   p.$active ? 'text-gray-50' : 'text-gray-400'} flex rounded-md items-center w-full px-2 py-2`;
 
 const Dropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setModalOpen }) => {
-  const {
-    connection: { chainId, account },
-  } = useAppSelector(({ chain }) => chain);
+  const { account, ensName } = useConnector();
   const { copied, copy } = useCopy(account);
 
   const handleModalOpen = () => {
@@ -28,7 +27,7 @@ const Dropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setModalOpe
     <div>
       <Menu as="div" className="relative inline-block text-left">
         <Menu.Button className="inline-flex justify-center align-middle w-full bg-gray-500/25 px-4 py-2 text-gray-50 rounded-md hover:bg-gray-600/25">
-          {abbreviateHash(account)}
+          {ensName || abbreviateHash(account)}
           <ChevronDownIcon className="w-5 h-5 ml-2 -mr-1 text-gray-50" aria-hidden="true" />
         </Menu.Button>
         <Transition
