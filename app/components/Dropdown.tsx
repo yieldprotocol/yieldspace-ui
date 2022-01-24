@@ -6,7 +6,7 @@ import tw from 'tailwind-styled-components';
 import useCopy from '../hooks/useCopy';
 import { useAppSelector } from 'state/hooks/general';
 import { abbreviateHash } from 'utils/appUtils';
-import useConnector from 'hooks/useConnector';
+import useConnector from '../hooks/useConnector';
 
 interface ButtonProps {
   $active: boolean;
