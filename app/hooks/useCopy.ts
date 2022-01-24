@@ -5,7 +5,6 @@ const useCopy = (value: string) => {
   const [copied, setCopied] = useState<boolean>(false);
 
   const copy = (e: any) => {
-    e.stopPropagation();
     setCopied(true);
     copyToClipboard(value);
   };
