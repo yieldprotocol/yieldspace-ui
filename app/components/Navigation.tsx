@@ -20,7 +20,7 @@ const LinkWrap = tw.div`flex space-x-8`;
 const LinkItem = tw.a`dark:text-gray-100 text-gray-900 hover:text-primary-500 dark:hover:text-primary-400`;
 
 const Navigation = () => {
-  const links = ['Trade', 'Create'];
+  const links = ['Pool', 'Swap', 'Claim'];
   return (
     <Container>
       <InnerContainer>

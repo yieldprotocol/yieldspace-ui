@@ -1,9 +1,5 @@
 import Navigation from './Navigation';
 
-const Home = () => (
-  <>
-    <Navigation />
-  </>
-);
+const Home = () => <>some home page</>;
 
 export default Home;
