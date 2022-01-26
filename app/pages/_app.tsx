@@ -1,8 +1,8 @@
 import { Provider } from 'react-redux';
 import store from '../state/store';
 import { AppProps } from 'next/dist/shared/lib/router/router';
-import Layout from '../components/Layout';
 import '../styles/globals.css';
+import Layout from '../components/Layout';
 
 const MyApp = ({ Component, pageProps }: AppProps) => {
   return (

@@ -1,4 +1,4 @@
-import { getPriorityConnector } from '@web3-react/core';
+import { getPriorityConnector, Web3ReactHooks } from '@web3-react/core';
 import { MetaMask } from '@web3-react/metamask';
 import type { Connector } from '@web3-react/types';
 // import { WalletConnect } from '@web3-react/walletconnect'
@@ -11,10 +11,10 @@ function getName(connector: Connector) {
   return 'Unknown';
 }
 
-const useConnector = () => {
+const useConnector: any = () => {
   const { usePriorityConnector, usePriorityChainId, usePriorityAccount, usePriorityENSName, usePriorityProvider } =
     getPriorityConnector(
-      [metaMask, metaMaskHooks]
+      [metaMask as any, metaMaskHooks]
       //   [walletConnect, walletConnectHooks],
     );
 
