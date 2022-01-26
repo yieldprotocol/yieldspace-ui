@@ -10,36 +10,30 @@ const InputWrap = tw.div`my-4`;
 const ButtonWrap = tw.div`m-2`;
 const Button = tw.button`w-full bg-primary-500/25 align-middle px-4 py-2 text-primary-500 rounded-md hover:bg-primary-600/25`;
 
-const Pool = () => {
+const Redeem = () => {
   return (
     <Container>
       <BorderWrap>
         <Inner>
           <Header>
-            <HeaderText>Create Reimbursement Token Pool</HeaderText>
+            <HeaderText>Redeem Reimbursement Token for Treasury Token if after maturity only</HeaderText>
           </Header>
           <InputsWrap>
             <BorderWrap>
               <Header>
-                <HeaderText>riToken (reimbursement token)</HeaderText>
+                <HeaderText>choose riToken</HeaderText>
               </Header>
-              <InputWrap>name (derived from treasury token underlying)</InputWrap>
-              <InputWrap>symbol (derived from treasury token underlying)</InputWrap>
-              <InputWrap>maturity (input)</InputWrap>
-              <InputWrap>supply (input)</InputWrap>
-              <InputWrap>receiver (derived from pool creator)</InputWrap>
+              <InputWrap>amount</InputWrap>
+              <InputWrap>value</InputWrap>
             </BorderWrap>
-            <InputWrap>Collateral Token (optional)</InputWrap>
-            <InputWrap>Collateral Oracle (optional)</InputWrap>
-            <InputWrap>Target Exchange Rate (optional)</InputWrap>
           </InputsWrap>
         </Inner>
         <ButtonWrap>
-          <Button>Create Pool</Button>
+          <Button>Redeem</Button>
         </ButtonWrap>
       </BorderWrap>
     </Container>
   );
 };
 
-export default Pool;
+export default Redeem;
