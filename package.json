@@ -11,7 +11,7 @@
     "build": "next build",
     "start": "next start",
     "type-check": "tsc",
-    "type-contracts": "typechain --target=ethers-v5 './contracts/abis/*.json' --out-dir './contracts/'"
+    "type-contracts": "typechain --target=ethers-v5 './contracts/abis/*.json' --out-dir './contracts/types/'"
   },
   "dependencies": {
     "@headlessui/react": "^1.4.3",
