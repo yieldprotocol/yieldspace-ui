@@ -2,12 +2,14 @@
   "name": "yieldspace-ui",
   "version": "0.0.1",
   "description": "Frontend for YieldSpace",
+  "private": true,
   "author": {
     "name": "Yield, Inc."
   },
   "scripts": {
     "build": "next build",
-    "dev": "next dev"
+    "dev": "next dev",
+    "type-contracts": "typechain --target=ethers-v5 './app/contracts/abis/*.json' --out-dir './app/contracts/'"
   },
   "dependencies": {
     "@headlessui/react": "^1.4.2",
