@@ -3,9 +3,9 @@ import { Menu, Transition } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/solid';
 import tw from 'tailwind-styled-components';
 import useCopy from '../hooks/useCopy';
-import { abbreviateHash } from 'utils/appUtils';
+import { abbreviateHash } from '../utils/appUtils';
 import useConnector from '../hooks/useConnector';
-import { CHAINS, ExtendedChainInformation } from 'config/chains';
+import { CHAINS, ExtendedChainInformation } from '../config/chains';
 
 interface ButtonProps {
   $active: boolean;

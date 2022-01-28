@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { copyToClipboard } from 'utils/appUtils';
+import { copyToClipboard } from '../utils/appUtils';
 
 const useCopy = (value: string) => {
   const [copied, setCopied] = useState<boolean>(false);
