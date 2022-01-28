@@ -7,8 +7,10 @@
     "name": "Yield, Inc."
   },
   "scripts": {
+    "dev": "next",
     "build": "next build",
-    "dev": "next dev",
+    "start": "next start",
+    "type-check": "tsc",
     "type-contracts": "typechain --target=ethers-v5 './app/contracts/abis/*.json' --out-dir './app/contracts/'"
   },
   "dependencies": {
