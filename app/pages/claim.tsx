@@ -1,7 +1,8 @@
+import ClaimTable from '../components/ClaimTable';
 import tw from 'tailwind-styled-components';
 
 const Container = tw.div`text-center align-middle justify-center`;
-const BorderWrap = tw.div`mx-auto max-w-md border-2 border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
+const BorderWrap = tw.div`flex border-2 border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
 const Inner = tw.div`m-4 text-center align-middle`;
 const Header = tw.div`text-lg justify-items-start`;
 const HeaderText = tw.span``;
@@ -17,30 +18,13 @@ const Claim = () => {
       <Inner>
         <Header>
           <HeaderText>Claim Reimbursement Tokens</HeaderText>
+          {' - '}
+          <HeaderText>Show All Claimed/Claimable Reimbursement Tokens in Table Form</HeaderText>
         </Header>
       </Inner>
-      <InnerWrap>
-        <BorderWrap>
-          <Inner>
-            <Header>
-              <HeaderText>Show All Claimed/Claimable Reimbursement Tokens</HeaderText>
-            </Header>
-            <InputsWrap>
-              <BorderWrap>
-                <InputWrap>token</InputWrap>
-                <InputWrap>amount</InputWrap>
-                <InputWrap>value</InputWrap>
-                <InputWrap>value now</InputWrap>
-                <InputWrap>value at maturity</InputWrap>
-                <InputWrap>implied apr</InputWrap>
-                <ButtonWrap>
-                  <Button>Claim</Button>
-                </ButtonWrap>
-              </BorderWrap>
-            </InputsWrap>
-          </Inner>
-        </BorderWrap>
-      </InnerWrap>
+      <BorderWrap>
+        <ClaimTable />
+      </BorderWrap>
     </Container>
   );
 };

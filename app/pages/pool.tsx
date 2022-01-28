@@ -1,43 +1,35 @@
+import Pools from '../components/Pools';
 import tw from 'tailwind-styled-components';
+import Link from 'next/link';
 
 const Container = tw.div`p-20 text-center align-middle justify-center`;
-const BorderWrap = tw.div`mx-auto max-w-md border-2 border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
-const Inner = tw.div`m-4 text-center align-middle`;
-const Header = tw.div`text-lg justify-items-start`;
-const HeaderText = tw.span``;
-const InputsWrap = tw.div`mt-4 gap-4`;
-const InputWrap = tw.div`my-4`;
-const ButtonWrap = tw.div`m-2`;
+const BorderWrap = tw.div`mx-auto p-2 border-2 border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
+const Inner = tw.div`m-4 text-center`;
+const Header = tw.div`text-lg justify-items-start align-middle`;
+const HeaderText = tw.span`align-middle`;
 const Button = tw.button`w-full bg-primary-500/25 align-middle px-4 py-2 text-primary-500 rounded-md hover:bg-primary-600/25`;
+const InnerWrap = tw.div`flex gap-10`;
 
 const Pool = () => {
   return (
     <Container>
-      <BorderWrap>
-        <Inner>
-          <Header>
-            <HeaderText>Create Reimbursement Token Pool</HeaderText>
-          </Header>
-          <InputsWrap>
-            <BorderWrap>
+      <InnerWrap>
+        <BorderWrap>
+          <Inner>
+            <div className="flex justify-between align-middle">
               <Header>
-                <HeaderText>riToken (reimbursement token)</HeaderText>
+                <HeaderText>All Relevant User Pools</HeaderText>
               </Header>
-              <InputWrap>name (derived from treasury token underlying)</InputWrap>
-              <InputWrap>symbol (derived from treasury token underlying)</InputWrap>
-              <InputWrap>maturity (input)</InputWrap>
-              <InputWrap>supply (input)</InputWrap>
-              <InputWrap>receiver (derived from pool creator)</InputWrap>
-            </BorderWrap>
-            <InputWrap>Collateral Token (optional)</InputWrap>
-            <InputWrap>Collateral Oracle (optional)</InputWrap>
-            <InputWrap>Target Exchange Rate (optional)</InputWrap>
-          </InputsWrap>
-        </Inner>
-        <ButtonWrap>
-          <Button>Create Pool</Button>
-        </ButtonWrap>
-      </BorderWrap>
+              <Link href="/create">
+                <div className="w-30">
+                  <Button>Create Pool</Button>
+                </div>
+              </Link>
+            </div>
+          </Inner>
+          <Pools />
+        </BorderWrap>
+      </InnerWrap>
     </Container>
   );
 };
