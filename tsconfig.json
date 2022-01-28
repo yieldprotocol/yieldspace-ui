@@ -1,5 +1,0 @@
-{
-  "files": [],
-  "references": [{ "path": "contracts" }, { "path": "app" }],
-  "exclude": ["node_modules"]
-}
