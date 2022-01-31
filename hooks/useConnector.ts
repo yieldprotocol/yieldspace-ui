@@ -11,10 +11,10 @@ function getName(connector: Connector) {
   return 'Unknown';
 }
 
-const useConnector: any = () => {
+const useConnector = () => {
   const { usePriorityConnector, usePriorityChainId, usePriorityAccount, usePriorityENSName, usePriorityProvider } =
     getPriorityConnector(
-      [metaMask as any, metaMaskHooks]
+      [metaMask as MetaMask, metaMaskHooks]
       //   [walletConnect, walletConnectHooks],
     );
 

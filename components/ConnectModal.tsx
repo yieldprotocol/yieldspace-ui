@@ -10,7 +10,7 @@ import { CHAINS, getAddChainParameters, URLS } from '../config/chains';
 import { connectors } from '../connectors';
 import { useAppDispatch, useAppSelector } from 'state/hooks/general';
 import tw from 'tailwind-styled-components';
-import Modal from './Modal';
+import Modal from './common/Modal';
 import { updateConnection } from 'state/actions/chain';
 import useBalances from '../hooks/useBalances';
 import { XCircleIcon, CheckCircleIcon } from '@heroicons/react/solid';

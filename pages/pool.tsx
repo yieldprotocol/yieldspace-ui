@@ -1,4 +1,4 @@
-import Pools from '../components/Pools';
+import Pools from '../components/pool/Pools';
 import tw from 'tailwind-styled-components';
 import Link from 'next/link';
 
@@ -18,11 +18,11 @@ const Pool = () => {
           <Inner>
             <div className="flex justify-between align-middle">
               <Header>
-                <HeaderText>All Relevant User Pools</HeaderText>
+                <HeaderText>Your Positions</HeaderText>
               </Header>
-              <Link href="/create">
+              <Link href="/add">
                 <div className="w-30">
-                  <Button>Create Pool</Button>
+                  <Button>+New Position</Button>
                 </div>
               </Link>
             </div>
