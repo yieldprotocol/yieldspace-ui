@@ -1,6 +1,8 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import tw from 'tailwind-styled-components';
+import useConnector from '../../hooks/useConnector';
+import useContracts from '../../hooks/protocol/useContracts';
 import { getPools } from '../../lib/protocol';
 import AssetSelect from '../common/AssetSelect';
 import BackButton from '../common/BackButton';
@@ -19,6 +21,9 @@ const ClearButton = tw.button`text-sm`;
 
 const AddLiquidity = () => {
   const router = useRouter();
+  const { provider, chainId } = useConnector();
+  const contracts = useContracts(provider, chainId);
+  console.log('🦄 ~ file: AddLiquidity.tsx ~ line 26 ~ AddLiquidity ~ contracts', contracts);
 
   const INITIAL_FORM_STATE = {
     baseAmount: null,
@@ -47,7 +52,7 @@ const AddLiquidity = () => {
   }, [base, fyToken]);
 
   useEffect(() => {
-    getPools(provider, contractMap);
+    getPools(provider, contracts);
   }, []);
 
   return (
