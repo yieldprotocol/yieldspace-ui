@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import tw from 'tailwind-styled-components';
+import { getPools } from '../../lib/protocol';
 import AssetSelect from '../common/AssetSelect';
 import BackButton from '../common/BackButton';
 import Button from '../common/Button';
@@ -13,7 +14,7 @@ const HeaderText = tw.span`align-middle`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
 
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
-const TopRow = tw.div`flex justify-between align-middle text-center`;
+const TopRow = tw.div`flex justify-between align-middle text-center items-center`;
 const ClearButton = tw.button`text-sm`;
 
 const AddLiquidity = () => {
@@ -45,6 +46,10 @@ const AddLiquidity = () => {
     setFyTokenBalance(_getBalance(fyToken));
   }, [base, fyToken]);
 
+  useEffect(() => {
+    getPools(provider, contractMap);
+  }, []);
+
   return (
     <BorderWrap>
       <Inner>
@@ -59,12 +64,8 @@ const AddLiquidity = () => {
         <Grid>
           <HeaderSmall>Select Pair</HeaderSmall>
           <div className="flex justify-between gap-5 align-middle">
-            <AssetSelect asset={base} setAsset={setBase} hasCaret={true}>
-              Select Base
-            </AssetSelect>
-            <AssetSelect asset={fyToken} setAsset={setFyToken} hasCaret={true}>
-              Select fyToken
-            </AssetSelect>
+            <AssetSelect asset={base} setAsset={setBase} hasCaret={true} />
+            <AssetSelect asset={fyToken} setAsset={setFyToken} hasCaret={true} />
           </div>
         </Grid>
 

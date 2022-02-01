@@ -6,7 +6,7 @@ import { IContractMap, IPool } from './types';
 export const getPools = async (
   provider: ethers.providers.JsonRpcProvider,
   contractMap: IContractMap,
-  blockNum: number | null
+  blockNum?: number | undefined
 ) => {
   const Cauldron = contractMap[CAULDRON];
   const Ladle = contractMap[LADLE];

@@ -5,7 +5,7 @@ import AssetLogo from './AssetLogo';
 import AssetSelectModal from './AssetSelectModal';
 import Button from './Button';
 
-const Selected = tw.button`h-full w-full p-2 bg-gray-600 rounded-md flex gap-2 align-middle justify-between justify-items-center`;
+const Selected = tw.button`h-full w-full p-2 bg-gray-600 rounded-md flex gap-2 justify-between items-center`;
 
 type IAssetSelect = {
   asset: string | null;
@@ -13,18 +13,18 @@ type IAssetSelect = {
   setAsset: (asset: string) => void;
 };
 
-const AssetSelect: FC<IAssetSelect> = ({ asset, setAsset, hasCaret, children }) => {
+const AssetSelect: FC<IAssetSelect> = ({ asset, setAsset, hasCaret }) => {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
 
   return (
     <>
       {asset ? (
         <Selected onClick={() => setModalOpen(true)}>
-          <div className="flex gap-3 align-middle">
+          <div className="flex gap-3">
             <AssetLogo image={asset} />
-            <span className="text-md font-bold">{asset}</span>
+            <span className="text-md font-bold align-middle">{asset}</span>
           </div>
-          {hasCaret && <ChevronDownIcon className="h-5 w-5" />}
+          {hasCaret && <ChevronDownIcon className="my-auto h-5 w-5" />}
         </Selected>
       ) : (
         <Button action={() => setModalOpen(true)}>Select Asset</Button>

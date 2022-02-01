@@ -1,6 +1,9 @@
 import { FC } from 'react';
+import tw from 'tailwind-styled-components';
 import AssetLogo from './AssetLogo';
 import Modal from './Modal';
+
+const Button = tw.button`bg-gray-700 hover:bg-gray-500/25 border-2 border-gray-700 hover:border-secondary-500 text-gray-50`;
 
 type IAssetSelectModal = {
   open: boolean;
@@ -12,8 +15,8 @@ const AssetSelectModal: FC<IAssetSelectModal> = ({ open, setOpen, action }) => {
   return (
     <Modal isOpen={open} setIsOpen={setOpen}>
       {['ETH', 'USDC'].map((asset: string) => (
-        <button
-          className="flex my-2 p-2 bg-gray-700 rounded-md gap-3 align-middle w-full"
+        <Button
+          className="flex my-2 p-4 bg-gray-700 rounded-md gap-3 align-middle w-full items-center"
           onClick={() => {
             action(asset);
             setOpen(false);
@@ -22,7 +25,7 @@ const AssetSelectModal: FC<IAssetSelectModal> = ({ open, setOpen, action }) => {
         >
           <AssetLogo image={asset} />
           {asset}
-        </button>
+        </Button>
       ))}
     </Modal>
   );

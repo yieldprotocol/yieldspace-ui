@@ -29,9 +29,9 @@ const Dropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setModalOpe
       <Menu as="div" className="relative inline-block text-left">
         {({ open }) => (
           <>
-            <Menu.Button className="inline-flex justify-center align-middle w-full bg-gray-500/25 px-4 py-2 text-gray-50 rounded-md hover:bg-gray-600/25">
+            <Menu.Button className="inline-flex justify-between gap-2 align-middle w-full bg-gray-500/25 px-4 py-2 text-gray-50 rounded-md hover:bg-gray-600/25">
               {ensName || abbreviateHash(account)}
-              <ChevronDownIcon className="w-5 h-5 ml-2 -mr-1 text-gray-50" aria-hidden="true" />
+              <ChevronDownIcon className="my-auto w-5 h-5 text-gray-50" aria-hidden="true" />
             </Menu.Button>
             <Transition
               show={open}

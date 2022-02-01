@@ -1,7 +1,7 @@
 import tw from 'tailwind-styled-components';
 import AssetSelect from '../common/AssetSelect';
 
-const Input = tw.input`text-xl font-bold appearance-none w-full bg-gray-700 focus:text-gray-50 text-gray-300  py-3 px-4 leading-tight focus:outline-none `;
+const Input = tw.input`text-2xl font-bold appearance-none w-full bg-gray-700 focus:text-gray-50 text-gray-300  py-3 px-4 leading-tight focus:outline-none `;
 
 interface IDeposit {
   asset: string | null;
@@ -12,14 +12,15 @@ interface IDeposit {
 }
 
 const Deposit = ({ asset, amount, balance, setAsset, setAmount }: IDeposit) => (
-  <div className="flex bg-gray-700 rounded-md justify-between p-1 w-full gap-10 align-middle">
+  <div className="flex bg-gray-700 rounded-md justify-between p-1 w-full gap-5 align-middle hover:border-2 hover:border-secondary-500 border-2 border-gray-700">
     <div className="ml-3 text-center text-lg align-middle my-auto">
       <Input
-        type="text"
+        type="number"
         inputMode="decimal"
         value={amount}
         placeholder="0.0"
         onChange={(e) => setAmount(e.target.value)}
+        min="0"
       />
     </div>
     <div className="w-44 p-1">
