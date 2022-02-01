@@ -18,6 +18,7 @@ const AssetSelectModal: FC<IAssetSelectModal> = ({ open, setOpen, action }) => {
             action(asset);
             setOpen(false);
           }}
+          key={asset}
         >
           <AssetLogo image={asset} />
           {asset}

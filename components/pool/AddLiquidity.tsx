@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 import tw from 'tailwind-styled-components';
 import AssetSelect from '../common/AssetSelect';
 import BackButton from '../common/BackButton';
@@ -16,29 +17,39 @@ const TopRow = tw.div`flex justify-between align-middle text-center`;
 const ClearButton = tw.button`text-sm`;
 
 const AddLiquidity = () => {
-  const [base, setBase] = useState<string | null>(null);
-  const [fyToken, setFyToken] = useState<string | null>(null);
+  const router = useRouter();
 
-  const [baseAmount, setBaseAmount] = useState<string | null>('0');
-  const [fyTokenAmount, setFyTokenAmount] = useState<string | null>('0');
+  const INITIAL_FORM_STATE = {
+    baseAmount: null,
+    fyTokenAmount: null,
+  };
+
+  const [base, setBase] = useState<string | null>(INITIAL_FORM_STATE.baseAmount);
+  const [fyToken, setFyToken] = useState<string | null>(INITIAL_FORM_STATE.fyTokenAmount);
+
+  const [baseAmount, setBaseAmount] = useState<string | undefined>(undefined);
+  const [fyTokenAmount, setFyTokenAmount] = useState<string | undefined>(undefined);
 
   // balances
   const [baseBalance, setBaseBalance] = useState<string | undefined>(undefined);
   const [fyTokenBalance, setFyTokenBalance] = useState<string | undefined>(undefined);
 
-  const handleGoBack = () => {
-    console.log('going back');
+  const handleClearAll = () => {
+    setBase;
   };
 
-  const handleClearAll = () => {
-    console.log('clearing all state');
-  };
+  useEffect(() => {
+    const _getBalance = (asset: string) => '0';
+
+    setBaseBalance(_getBalance(base));
+    setFyTokenBalance(_getBalance(fyToken));
+  }, [base, fyToken]);
 
   return (
     <BorderWrap>
       <Inner>
         <TopRow>
-          <BackButton onClick={handleGoBack} />
+          <BackButton onClick={() => router.push('pool')} />
           <Header>
             <HeaderText>Add Liquidity</HeaderText>
           </Header>
@@ -47,11 +58,11 @@ const AddLiquidity = () => {
 
         <Grid>
           <HeaderSmall>Select Pair</HeaderSmall>
-          <div className="flex justify-between gap-5">
-            <AssetSelect asset={base} setAsset={setBase}>
+          <div className="flex justify-between gap-5 align-middle">
+            <AssetSelect asset={base} setAsset={setBase} hasCaret={true}>
               Select Base
             </AssetSelect>
-            <AssetSelect asset={fyToken} setAsset={setFyToken}>
+            <AssetSelect asset={fyToken} setAsset={setFyToken} hasCaret={true}>
               Select fyToken
             </AssetSelect>
           </div>
@@ -59,8 +70,20 @@ const AddLiquidity = () => {
 
         <Grid>
           <HeaderSmall>Deposit Amounts</HeaderSmall>
-          <Deposit symbol="ETH" amount={baseAmount} balance={baseBalance} setAsset={setBase} />
-          <Deposit symbol="ETH" amount={fyTokenAmount} balance={fyTokenBalance} setAsset={setFyToken} />
+          <Deposit
+            amount={baseAmount}
+            balance={baseBalance}
+            setAsset={setBase}
+            asset={base}
+            setAmount={setBaseAmount}
+          />
+          <Deposit
+            amount={fyTokenAmount}
+            balance={fyTokenBalance}
+            setAsset={setFyToken}
+            asset={fyToken}
+            setAmount={setFyTokenAmount}
+          />
         </Grid>
 
         <Button action={() => console.log('adding liq')}>Add Liquidity</Button>
