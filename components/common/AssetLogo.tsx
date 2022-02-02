@@ -8,7 +8,7 @@ interface IAssetLogo {
 
 const AssetLogo: FC<IAssetLogo> = ({ image, isFyToken }) => (
   <Image
-    className={isFyToken ? 'border-2 border-secondary-600' : undefined}
+    className={isFyToken ? 'rounded-full ring-2 ring-secondary-400 z-10' : ''}
     src={`/logos/assets/${image}.png`}
     height={24}
     width={24}

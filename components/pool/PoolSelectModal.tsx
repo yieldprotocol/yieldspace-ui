@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import tw from 'tailwind-styled-components';
 import { IPool, IPoolMap } from '../../lib/protocol/types';
+import AssetLogo from '../common/AssetLogo';
 import Modal from '../common/Modal';
 import StackedAssetLogos from '../common/StackedAssetLogos';
 
@@ -24,6 +25,8 @@ const PoolSelectModal: FC<IPoolSelectModal> = ({ pools, open, setOpen, action })
         }}
         key={pool.address}
       >
+        {/* <StackedAssetLogos image1={'eth'} image2={'usdc'} /> */}
+        <AssetLogo image="usdc" />
         {pool.name}
       </Button>
     ))}

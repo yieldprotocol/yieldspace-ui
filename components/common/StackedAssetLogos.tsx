@@ -10,10 +10,14 @@ interface IStackedAssetLogos {
 
 const StackedAssetLogos: FC<IStackedAssetLogos> = ({ image1, image2, image1IsFyToken, image2IsFyToken }) => {
   return (
-    <div className="">
-      <AssetLogo image={image1} isFyToken={image1IsFyToken} />
-      <AssetLogo image={image2} isFyToken={image2IsFyToken} />
-    </div>
+    <>
+      <div className="z-0 relative items-center flex">
+        <AssetLogo image={image1} isFyToken={image1IsFyToken} />
+      </div>
+      <div className="z-20 -ml-5 items-center flex">
+        <AssetLogo image={image2} isFyToken={image2IsFyToken} />
+      </div>
+    </>
   );
 };
 
