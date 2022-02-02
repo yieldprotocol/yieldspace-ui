@@ -100,7 +100,11 @@ const AddLiquidity = () => {
             setAmount={setFyTokenAmount}
           />
         </Grid>
-
+        <div className="py-1">
+          <div className="my-2 h-20 flex items-center text-lg border-2 border-gray-700 rounded-md">
+            <span className="mx-auto">lp tokens out and other data</span>
+          </div>
+        </div>
         <Button action={() => console.log('adding liq')}>Add Liquidity</Button>
       </Inner>
     </BorderWrap>
