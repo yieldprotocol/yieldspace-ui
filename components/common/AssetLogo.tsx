@@ -1,10 +1,18 @@
 import Image from 'next/image';
-import tw from 'tailwind-styled-components';
+import { FC } from 'react';
 
-interface ILogo {
+interface IAssetLogo {
   image: string;
+  isFyToken?: boolean;
 }
 
-const AssetLogo = ({ image }: ILogo) => <Image src={`/logos/assets/${image}.png`} height={24} width={24} />;
+const AssetLogo: FC<IAssetLogo> = ({ image, isFyToken }) => (
+  <Image
+    className={isFyToken ? 'border-2 border-secondary-600' : undefined}
+    src={`/logos/assets/${image}.png`}
+    height={24}
+    width={24}
+  />
+);
 
 export default AssetLogo;

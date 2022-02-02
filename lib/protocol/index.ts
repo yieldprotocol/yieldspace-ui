@@ -17,7 +17,11 @@ const { seasonColors } = yieldEnv;
  * @param blockNum
  * @returns  {IPoolMap}
  */
-export const getPools = async (provider: Web3Provider, contractMap: IContractMap, blockNum: number | null = null) => {
+export const getPools = async (
+  provider: Web3Provider,
+  contractMap: IContractMap,
+  blockNum: number | null = null
+): Promise<IPoolMap> => {
   const Ladle = contractMap[LADLE];
   const poolAddedEvents = await Ladle.queryFilter('PoolAdded' as ethers.EventFilter, blockNum);
 

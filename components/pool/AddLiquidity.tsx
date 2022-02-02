@@ -1,15 +1,14 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import tw from 'tailwind-styled-components';
-import useConnector from '../../hooks/useConnector';
-import useContracts from '../../hooks/protocol/useContracts';
-import { getPools } from '../../lib/protocol';
-import AssetSelect from '../common/AssetSelect';
 import BackButton from '../common/BackButton';
 import Button from '../common/Button';
 import Deposit from './Deposit';
 import { PlusIcon } from '@heroicons/react/solid';
 import Toggle from '../common/Toggle';
+import usePools from '../../hooks/protocol/usePools';
+import PoolSelect from './PoolSelect';
+import { IPool } from '../../lib/protocol/types';
 
 const BorderWrap = tw.div`mx-auto max-w-md p-2 border-2 border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
 const Inner = tw.div`m-4 text-center`;
@@ -23,8 +22,7 @@ const ClearButton = tw.button`text-sm`;
 
 const AddLiquidity = () => {
   const router = useRouter();
-  const { provider, chainId } = useConnector();
-  const contracts = useContracts(provider, chainId);
+  const { data: pools, isValidating, error } = usePools();
 
   const [useFyTokenBalance, toggleUseFyTokenBalance] = useState<boolean>(false);
 
@@ -33,8 +31,9 @@ const AddLiquidity = () => {
     fyTokenAmount: null,
   };
 
-  const [base, setBase] = useState<string | null>(INITIAL_FORM_STATE.baseAmount);
-  const [fyToken, setFyToken] = useState<string | null>(INITIAL_FORM_STATE.fyTokenAmount);
+  const [pool, setPool] = useState<IPool | undefined>(undefined);
+  const [base, setBase] = useState<string | undefined>(INITIAL_FORM_STATE.baseAmount);
+  const [fyToken, setFyToken] = useState<string | undefined>(INITIAL_FORM_STATE.fyTokenAmount);
 
   const [baseAmount, setBaseAmount] = useState<string | undefined>(undefined);
   const [fyTokenAmount, setFyTokenAmount] = useState<string | undefined>(undefined);
@@ -54,14 +53,6 @@ const AddLiquidity = () => {
     setFyTokenBalance(_getBalance(fyToken));
   }, [base, fyToken]);
 
-  useEffect(() => {
-    (async () => {
-      if (provider && contracts) {
-        const pools = await getPools(provider, contracts);
-      }
-    })();
-  }, [provider, contracts]);
-
   return (
     <BorderWrap>
       <Inner>
@@ -74,10 +65,7 @@ const AddLiquidity = () => {
         </TopRow>
 
         <Grid>
-          <div className="flex justify-between gap-5 align-middle">
-            <AssetSelect asset={base} setAsset={setBase} hasCaret={true} />
-            {/* <AssetSelect asset={fyToken} setAsset={setFyToken} hasCaret={true} /> */}
-          </div>
+          <PoolSelect pools={pools} pool={pool} setPool={setPool} />
         </Grid>
 
         <Grid>
