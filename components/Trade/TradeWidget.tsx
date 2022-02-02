@@ -5,11 +5,9 @@ import useConnector from '../../hooks/useConnector';
 import useContracts from '../../hooks/protocol/useContracts';
 import { getPools } from '../../lib/protocol';
 import AssetSelect from '../common/AssetSelect';
-import BackButton from '../common/BackButton';
 import Button from '../common/Button';
 import Deposit from '../pool/Deposit';
-import { ArrowCircleDownIcon, ArrowCircleUpIcon, ArrowDownIcon, ArrowUpIcon, PlusIcon } from '@heroicons/react/solid';
-import Toggle from '../common/Toggle';
+import { ArrowCircleDownIcon, ArrowCircleUpIcon } from '@heroicons/react/solid';
 
 const BorderWrap = tw.div`mx-auto max-w-md p-2 border-2 border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
 const Inner = tw.div`m-4 text-center`;
