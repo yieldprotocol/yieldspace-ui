@@ -70,7 +70,7 @@ const Dropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setModalOpe
                 <div className="px-1 py-1">
                   <Menu.Item>
                     {({ active }) => (
-                      <a href={`${blockExplorer}/address/${account}`} target="_blank">
+                      <a href={`${blockExplorer}/address/${account}`} target="_blank" rel="noreferrer">
                         <Button $active={active}>Open In Etherscan</Button>
                       </a>
                     )}

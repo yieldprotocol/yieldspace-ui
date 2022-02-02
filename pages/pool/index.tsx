@@ -10,28 +10,26 @@ const HeaderText = tw.span`align-middle`;
 const Button = tw.button`w-full bg-primary-500/25 align-middle px-4 py-2 text-primary-500 rounded-md hover:bg-primary-600/25`;
 const InnerWrap = tw.div`flex gap-10`;
 
-const Pool = () => {
-  return (
-    <Container>
-      <InnerWrap>
-        <BorderWrap>
-          <Inner>
-            <div className="flex justify-between align-middle">
-              <Header>
-                <HeaderText>Your Positions</HeaderText>
-              </Header>
-              <Link href="/pool/add">
-                <div className="w-30">
-                  <Button>+New Position</Button>
-                </div>
-              </Link>
-            </div>
-          </Inner>
-          <Pools />
-        </BorderWrap>
-      </InnerWrap>
-    </Container>
-  );
-};
+const Pool = () => (
+  <Container>
+    <InnerWrap>
+      <BorderWrap>
+        <Inner>
+          <div className="flex justify-between align-middle">
+            <Header>
+              <HeaderText>Your Positions</HeaderText>
+            </Header>
+            <Link href="/pool/add" passHref>
+              <div className="w-30">
+                <Button>+New Position</Button>
+              </div>
+            </Link>
+          </div>
+        </Inner>
+        <Pools />
+      </BorderWrap>
+    </InnerWrap>
+  </Container>
+);
 
 export default Pool;

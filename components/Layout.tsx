@@ -5,13 +5,11 @@ import Navigation from './Navigation';
 
 const Container = tw.div`text-gray-50 justify-items-center`;
 
-const Layout: FC = ({ children }) => {
-  return (
-    <Container>
-      <Navigation />
-      <Main>{children}</Main>
-    </Container>
-  );
-};
+const Layout: FC = ({ children }) => (
+  <Container>
+    <Navigation />
+    <Main>{children}</Main>
+  </Container>
+);
 
 export default Layout;

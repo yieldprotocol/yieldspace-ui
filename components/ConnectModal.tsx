@@ -4,12 +4,11 @@ import { MetaMask } from '@web3-react/metamask';
 import { WalletConnect } from '@web3-react/walletconnect';
 import { Network } from '@web3-react/network';
 import type { Connector } from '@web3-react/types';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { getAddChainParameters } from '../config/chains';
 import { connectors } from '../connectors';
 import tw from 'tailwind-styled-components';
 import Modal from './common/Modal';
-import { XCircleIcon, CheckCircleIcon } from '@heroicons/react/solid';
 import metamaskLogo from '../public/logos/metamask.png';
 
 const Inner = tw.div`p-2 space-y-2`;
@@ -28,38 +27,6 @@ const getName = (connector: Connector) => {
   }
 };
 
-function Status({
-  connector,
-  hooks: { useChainId, useAccounts, useError },
-}: {
-  connector: Connector;
-  hooks: Web3ReactHooks;
-}) {
-  const chainId = useChainId();
-  const accounts = useAccounts();
-  const error = useError();
-
-  const connected = Boolean(chainId && accounts);
-
-  return (
-    <div>
-      <b>{getName(connector)}</b>
-      <br />
-      {error ? (
-        <>
-          <XCircleIcon /> {error.name ?? 'Error'}: {error.message}
-        </>
-      ) : connected ? (
-        <>
-          <CheckCircleIcon />
-        </>
-      ) : (
-        <>Disconnected</>
-      )}
-    </div>
-  );
-}
-
 function Connection({
   connector,
   hooks: { useChainId, useIsActivating, useError, useIsActive },
@@ -67,22 +34,11 @@ function Connection({
   connector: Connector;
   hooks: Web3ReactHooks;
 }) {
-  const currentChainId = useChainId();
   const isActivating = useIsActivating();
   const error = useError();
   const active = useIsActive();
 
-  const [desiredChainId, setDesiredChainId] = useState<number>(-1);
-
-  const setChainId = useCallback(
-    (chainId: number) => {
-      setDesiredChainId(chainId);
-      if (chainId !== -1 && chainId !== currentChainId) {
-        return connector.activate(getAddChainParameters(chainId));
-      }
-    },
-    [setDesiredChainId, currentChainId, connector]
-  );
+  const [desiredChainId] = useState<number>(-1);
 
   const status = () => {
     if (error) {
@@ -99,7 +55,7 @@ function Connection({
       onClick={() => connector.activate(desiredChainId === -1 ? undefined : getAddChainParameters(desiredChainId))}
       disabled={isActivating || active}
     >
-      <Image src={metamaskLogo} height={20} width={20} />
+      <Image src={metamaskLogo} height={20} width={20} alt="metamask-logo" />
       <div className="flex w-full justify-between">
         <ConnectorButtonText>{getName(connector)}</ConnectorButtonText>
         <ConnectorButtonText>{status()}</ConnectorButtonText>
@@ -108,18 +64,16 @@ function Connection({
   );
 }
 
-const ConnectModal = ({ modalOpen, setModalOpen }: { modalOpen: boolean; setModalOpen: (isOpen: boolean) => void }) => {
-  return (
-    <Modal isOpen={modalOpen} setIsOpen={setModalOpen}>
-      <Inner>
-        {connectors.map(([connector, hooks], i) => (
-          <div key={i}>
-            <Connection connector={connector} hooks={hooks} />
-          </div>
-        ))}
-      </Inner>
-    </Modal>
-  );
-};
+const ConnectModal = ({ modalOpen, setModalOpen }: { modalOpen: boolean; setModalOpen: (isOpen: boolean) => void }) => (
+  <Modal isOpen={modalOpen} setIsOpen={setModalOpen}>
+    <Inner>
+      {connectors.map(([connector, hooks], i) => (
+        <div key={i}>
+          <Connection connector={connector} hooks={hooks} />
+        </div>
+      ))}
+    </Inner>
+  </Modal>
+);
 
 export default ConnectModal;

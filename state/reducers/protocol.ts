@@ -5,6 +5,7 @@ const INITIAL_STATE = {
   pools: null,
 };
 
+// eslint-disable-next-line @typescript-eslint/default-param-last
 export default function rootReducer(state: IProtocolState = INITIAL_STATE, action: IProtocolAction): IProtocolState {
   switch (action.type) {
     case ActionType.POOLS:

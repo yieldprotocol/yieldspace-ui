@@ -11,18 +11,29 @@
     "build": "next build",
     "start": "next start",
     "type-check": "tsc",
-    "type-contracts": "typechain --target=ethers-v5 './contracts/abis/*.json' --out-dir './contracts/types/'"
+    "type-contracts": "typechain --target=ethers-v5 './contracts/abis/*.json' --out-dir './contracts/types/'",
+    "lint": "next lint"
   },
   "dependencies": {
     "@headlessui/react": "^1.4.3",
     "@heroicons/react": "^1.0.5",
     "@typechain/ethers-v5": "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.10.2",
+    "@typescript-eslint/parser": "^5.10.2",
     "@walletconnect/ethereum-provider": "^1.7.1",
     "@web3-react/core": "^8.0.6-beta.0",
     "@web3-react/metamask": "^8.0.3-beta.0",
     "@web3-react/network": "^8.0.2-beta.0",
     "@web3-react/walletconnect": "^8.0.4-beta.0",
     "date-fns": "^2.28.0",
+    "eslint-config-airbnb-typescript": "^16.1.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-config-react-app": "^7.0.0",
+    "eslint-plugin-flowtype": "^8.0.3",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-jsx-a11y": "^6.5.1",
+    "eslint-plugin-react": "^7.28.0",
+    "eslint-plugin-react-hooks": "^4.3.0",
     "ethers": "^5.5.3",
     "next": "latest",
     "react": "^18.0.0-beta-24dd07bd2-20211208",
@@ -40,6 +51,7 @@
   "devDependencies": {
     "@types/node": "^12.12.21",
     "autoprefixer": "^10.4.2",
+    "eslint-config-next": "12.0.10",
     "postcss": "^8.4.5",
     "tailwindcss": "^3.0.18"
   }

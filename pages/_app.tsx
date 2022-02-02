@@ -4,16 +4,14 @@ import { AppProps } from 'next/dist/shared/lib/router/router';
 import '../styles/globals.css';
 import dynamic from 'next/dynamic';
 
-const Layout_ = dynamic(() => import('../components/Layout'), { ssr: false });
+const DynamicLayout = dynamic(() => import('../components/Layout'), { ssr: false });
 
-const MyApp = ({ Component, pageProps }: AppProps) => {
-  return (
-    <Provider store={store}>
-      <Layout_>
-        <Component {...pageProps} />
-      </Layout_>
-    </Provider>
-  );
-};
+const MyApp = ({ Component, pageProps }: AppProps) => (
+  <Provider store={store}>
+    <DynamicLayout>
+      <Component {...pageProps} />
+    </DynamicLayout>
+  </Provider>
+);
 
 export default MyApp;

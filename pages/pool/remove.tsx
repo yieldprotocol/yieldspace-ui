@@ -3,12 +3,10 @@ import RemoveLiquidity from '../../components/pool/RemoveLiquidity';
 
 const Container = tw.div`p-10 text-center align-middle justify-center`;
 
-const Create = () => {
-  return (
-    <Container>
-      <RemoveLiquidity />
-    </Container>
-  );
-};
+const Create = () => (
+  <Container>
+    <RemoveLiquidity />
+  </Container>
+);
 
 export default Create;
