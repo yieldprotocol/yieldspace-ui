@@ -4,6 +4,7 @@ import tw from 'tailwind-styled-components';
 import { IPool, IPoolMap } from '../../lib/protocol/types';
 import AssetLogo from '../common/AssetLogo';
 import Button from '../common/Button';
+import PoolSelectItem from './PoolSelectItem';
 import PoolSelectModal from './PoolSelectModal';
 
 const Selected = tw.button`h-full w-full p-2 bg-gray-600 rounded-md flex gap-2 justify-between items-center`;
@@ -20,11 +21,7 @@ const PoolSelect: FC<IPoolSelect> = ({ pools, pool, setPool }) => {
   return (
     <>
       {pool ? (
-        <Selected onClick={() => setModalOpen(true)}>
-          <div className="flex gap-3">
-            <span className="text-md font-bold align-middle">{pool.name}</span>
-          </div>
-        </Selected>
+        <PoolSelectItem pool={pool} action={() => setModalOpen(true)} />
       ) : (
         <Button action={() => setModalOpen(true)}>Select Pool</Button>
       )}
