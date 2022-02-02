@@ -81,7 +81,6 @@ const Swap = () => {
         </Grid>
 
         <Grid>
-          <HeaderSmall>Deposit Amounts</HeaderSmall>
           <Deposit
             amount={baseAmount}
             balance={baseBalance}
