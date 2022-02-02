@@ -1,7 +1,6 @@
 import tw from 'tailwind-styled-components';
 import Link from 'next/link';
 import Account from './Account';
-import { useState } from 'react';
 import { useRouter } from 'next/router';
 
 const Container = tw.div`
@@ -32,8 +31,6 @@ const Navigation = () => {
     { name: 'Trade', href: '/trade' },
     { name: 'Pool', href: '/pool' },
   ];
-
-  const [activeNav, setActiveNav] = useState(navigation);
 
   return (
     <Container>

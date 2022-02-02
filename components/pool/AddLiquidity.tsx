@@ -22,7 +22,7 @@ const ClearButton = tw.button`text-sm`;
 
 const AddLiquidity = () => {
   const router = useRouter();
-  const { data: pools, isValidating, error } = usePools();
+  const { data: pools } = usePools();
 
   const [useFyTokenBalance, toggleUseFyTokenBalance] = useState<boolean>(false);
 

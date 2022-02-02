@@ -10,7 +10,7 @@ interface IPoolItem {}
 const PoolListItem: FC<IPoolItem> = () => {
   const poolId = 1;
   return (
-    <Link href={`/pool/${poolId}`}>
+    <Link href={`/pool/${poolId}`} passHref>
       <Container>
         <Inner>
           <div className="font-bold">fyToken/Token Pool</div>

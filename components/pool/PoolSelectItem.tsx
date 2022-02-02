@@ -10,23 +10,20 @@ interface IPoolSelectItem {
   action: (pool: IPool) => void;
 }
 
-const PoolSelectItem: FC<IPoolSelectItem> = ({ pool, action }) => {
-  return (
-    <Button
-      className="flex my-2 p-4 rounded-md gap-3 align-middle w-full items-center hover:opacity-80"
-      style={{
-        background: pool.color,
-      }}
-      onClick={() => {
-        action(pool);
-      }}
-      key={pool.address}
-    >
-      <AssetLogo image="usdc" />
-      {pool.name}
-    </Button>
-  );
-  return <div></div>;
-};
+const PoolSelectItem: FC<IPoolSelectItem> = ({ pool, action }) => (
+  <Button
+    className="flex my-2 p-4 rounded-md gap-3 align-middle w-full items-center hover:opacity-80"
+    style={{
+      background: pool.color,
+    }}
+    onClick={() => {
+      action(pool);
+    }}
+    key={pool.address}
+  >
+    <AssetLogo image="usdc" />
+    {pool.name}
+  </Button>
+);
 
 export default PoolSelectItem;

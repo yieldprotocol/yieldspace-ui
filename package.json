@@ -15,6 +15,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ethersproject/providers": "^5.5.3",
     "@headlessui/react": "^1.4.3",
     "@heroicons/react": "^1.0.5",
     "@typechain/ethers-v5": "^9.0.0",

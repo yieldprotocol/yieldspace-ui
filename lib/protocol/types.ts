@@ -1,5 +1,4 @@
 import { BigNumber, Contract } from 'ethers';
-import { FYToken, Pool } from '../../contracts/types';
 
 export interface IContractMap {
   [name: string]: Contract;
@@ -32,8 +31,6 @@ export interface IPool {
   oppStartColor: string;
   oppEndColor: string;
   oppTextColor: string;
-
-  seriesMark: React.ElementType;
 
   // baked in token fns
   getTimeTillMaturity: () => string;

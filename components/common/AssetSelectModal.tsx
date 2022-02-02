@@ -11,24 +11,22 @@ type IAssetSelectModal = {
   action: (asset: string) => void;
 };
 
-const AssetSelectModal: FC<IAssetSelectModal> = ({ open, setOpen, action }) => {
-  return (
-    <Modal isOpen={open} setIsOpen={setOpen}>
-      {['ETH', 'USDC'].map((asset: string) => (
-        <Button
-          className="flex my-2 p-4 bg-gray-700 rounded-md gap-3 align-middle w-full items-center"
-          onClick={() => {
-            action(asset);
-            setOpen(false);
-          }}
-          key={asset}
-        >
-          <AssetLogo image={asset} />
-          {asset}
-        </Button>
-      ))}
-    </Modal>
-  );
-};
+const AssetSelectModal: FC<IAssetSelectModal> = ({ open, setOpen, action }) => (
+  <Modal isOpen={open} setIsOpen={setOpen}>
+    {['ETH', 'USDC'].map((asset: string) => (
+      <Button
+        className="flex my-2 p-4 bg-gray-700 rounded-md gap-3 align-middle w-full items-center"
+        onClick={() => {
+          action(asset);
+          setOpen(false);
+        }}
+        key={asset}
+      >
+        <AssetLogo image={asset} />
+        {asset}
+      </Button>
+    ))}
+  </Modal>
+);
 
 export default AssetSelectModal;

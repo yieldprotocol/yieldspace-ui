@@ -12,6 +12,7 @@ const AssetLogo: FC<IAssetLogo> = ({ image, isFyToken }) => (
     src={`/logos/assets/${image}.png`}
     height={24}
     width={24}
+    alt={image}
   />
 );
 

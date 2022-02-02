@@ -1,9 +1,5 @@
-import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import tw from 'tailwind-styled-components';
-import useConnector from '../../hooks/useConnector';
-import useContracts from '../../hooks/protocol/useContracts';
-import { getPools } from '../../lib/protocol';
 import AssetSelect from '../common/AssetSelect';
 import Button from '../common/Button';
 import Deposit from '../pool/Deposit';
@@ -13,18 +9,12 @@ const BorderWrap = tw.div`mx-auto max-w-md p-2 border-2 border-secondary-400 sha
 const Inner = tw.div`m-4 text-center`;
 const Header = tw.div`text-lg font-bold justify-items-start align-middle`;
 const HeaderText = tw.span`align-middle`;
-const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
 
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
 const TopRow = tw.div`flex justify-between align-middle text-center items-center`;
 const ClearButton = tw.button`text-sm`;
 
-const Swap = () => {
-  const router = useRouter();
-  const { provider, chainId } = useConnector();
-  const contracts = useContracts(provider, chainId);
-
-  const [useFyTokenBalance, toggleUseFyTokenBalance] = useState<boolean>(false);
+const TradeWidget = () => {
   const [isFyTokenOutput, setIsFyTokenOutput] = useState<boolean>(true);
 
   const INITIAL_FORM_STATE = {
@@ -52,14 +42,6 @@ const Swap = () => {
     setBaseBalance(_getBalance(base));
     setFyTokenBalance(_getBalance(fyToken));
   }, [base, fyToken]);
-
-  useEffect(() => {
-    (async () => {
-      if (provider && contracts) {
-        const pools = await getPools(provider, contracts);
-      }
-    })();
-  }, [provider, contracts]);
 
   return (
     <BorderWrap>
@@ -120,4 +102,4 @@ const Swap = () => {
   );
 };
 
-export default Swap;
+export default TradeWidget;

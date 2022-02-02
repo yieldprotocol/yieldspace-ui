@@ -6,14 +6,12 @@ const Container = tw.div`p-2`;
 
 interface IPools {}
 
-const Pools: FC<IPools> = () => {
-  return (
-    <Container>
-      <PoolItem />
-      <PoolItem />
-      <PoolItem />
-    </Container>
-  );
-};
+const Pools: FC<IPools> = () => (
+  <Container>
+    <PoolItem />
+    <PoolItem />
+    <PoolItem />
+  </Container>
+);
 
 export default Pools;

@@ -1,4 +1,4 @@
-import { Router, useRouter } from 'next/router';
+import { useRouter } from 'next/router';
 import tw from 'tailwind-styled-components';
 import Button from '../common/Button';
 

@@ -26,48 +26,46 @@ const Deposit = ({ header, amount }: IDeposit) => (
 
 interface ICreatePoolProps {}
 
-const CreatePool: FC<ICreatePoolProps> = () => {
-  return (
-    <InnerWrap>
-      <BorderWrap>
-        <Inner>
-          <Header>
-            <HeaderText>Create Reimbursement Token Pool</HeaderText>
-          </Header>
-          <InputsWrap>
+const CreatePool: FC<ICreatePoolProps> = () => (
+  <InnerWrap>
+    <BorderWrap>
+      <Inner>
+        <Header>
+          <HeaderText>Create Reimbursement Token Pool</HeaderText>
+        </Header>
+        <InputsWrap>
+          <div className="my-1.5">
             <div className="my-1.5">
-              <div className="my-1.5">
-                <HeaderText>Select Asset from Wallet to be used as treasury token</HeaderText>
-              </div>
-              <div className="w-40 mx-auto">
-                <Button>Select Asset</Button>
-              </div>
+              <HeaderText>Select Asset from Wallet to be used as treasury token</HeaderText>
             </div>
-            <div className="mt-4">
-              <BorderWrap>
-                <div className="p-2">
-                  <Header>
-                    <HeaderText>riToken (reimbursement token)</HeaderText>
-                  </Header>
-                  <InputWrap>name (derived from treasury token underlying)</InputWrap>
-                  <InputWrap>symbol (derived from treasury token underlying)</InputWrap>
-                  <InputWrap>maturity (input)</InputWrap>
-                  <InputWrap>supply (input)</InputWrap>
-                  <InputWrap>receiver (derived from pool creator)</InputWrap>
-                </div>
-              </BorderWrap>
+            <div className="w-40 mx-auto">
+              <Button>Select Asset</Button>
             </div>
-            <Deposit header="Collateral Token (optional)" amount={'100'} />
-            <InputWrap>Collateral Oracle (optional)</InputWrap>
-            <InputWrap>Target Exchange Rate (optional)</InputWrap>
-          </InputsWrap>
-          <ButtonWrap>
-            <Button>Create Pool</Button>
-          </ButtonWrap>
-        </Inner>
-      </BorderWrap>
-    </InnerWrap>
-  );
-};
+          </div>
+          <div className="mt-4">
+            <BorderWrap>
+              <div className="p-2">
+                <Header>
+                  <HeaderText>riToken (reimbursement token)</HeaderText>
+                </Header>
+                <InputWrap>name (derived from treasury token underlying)</InputWrap>
+                <InputWrap>symbol (derived from treasury token underlying)</InputWrap>
+                <InputWrap>maturity (input)</InputWrap>
+                <InputWrap>supply (input)</InputWrap>
+                <InputWrap>receiver (derived from pool creator)</InputWrap>
+              </div>
+            </BorderWrap>
+          </div>
+          <Deposit header="Collateral Token (optional)" amount={'100'} />
+          <InputWrap>Collateral Oracle (optional)</InputWrap>
+          <InputWrap>Target Exchange Rate (optional)</InputWrap>
+        </InputsWrap>
+        <ButtonWrap>
+          <Button>Create Pool</Button>
+        </ButtonWrap>
+      </Inner>
+    </BorderWrap>
+  </InnerWrap>
+);
 
 export default CreatePool;

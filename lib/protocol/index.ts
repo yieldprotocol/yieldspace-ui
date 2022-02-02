@@ -1,8 +1,8 @@
 import { format } from 'date-fns';
 import { ethers } from 'ethers';
-import { CAULDRON, LADLE } from '../../constants';
-import { FYToken__factory, Pool__factory } from '../../contracts/types';
-import { IContractMap, IPool, IPoolMap } from './types';
+import { LADLE } from '../../constants';
+import { Pool__factory } from '../../contracts/types';
+import { IContractMap, IPoolMap } from './types';
 import { getSeason, SeasonType } from '../../utils/appUtils';
 import yieldEnv from '../../config/yieldEnv';
 import { Web3Provider } from '@ethersproject/providers';

@@ -1,9 +1,6 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import tw from 'tailwind-styled-components';
-import useConnector from '../../hooks/useConnector';
-import useContracts from '../../hooks/protocol/useContracts';
-import { getPools } from '../../lib/protocol';
 import AssetSelect from '../common/AssetSelect';
 import BackButton from '../common/BackButton';
 import Button from '../common/Button';
@@ -22,8 +19,6 @@ const ClearButton = tw.button`text-sm`;
 
 const RemoveLiquidity = () => {
   const router = useRouter();
-  const { provider, chainId } = useConnector();
-  const contracts = useContracts(provider, chainId);
 
   const INITIAL_FORM_STATE = {
     baseAmount: null,
@@ -50,14 +45,6 @@ const RemoveLiquidity = () => {
     setBaseBalance(_getBalance(base));
     setFyTokenBalance(_getBalance(fyToken));
   }, [base, fyToken]);
-
-  useEffect(() => {
-    (async () => {
-      if (provider && contracts) {
-        const pools = await getPools(provider, contracts);
-      }
-    })();
-  }, [provider, contracts]);
 
   return (
     <BorderWrap>

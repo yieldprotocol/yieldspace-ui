@@ -1,13 +1,8 @@
-import { ChevronDownIcon } from '@heroicons/react/solid';
 import { FC, useState } from 'react';
-import tw from 'tailwind-styled-components';
 import { IPool, IPoolMap } from '../../lib/protocol/types';
-import AssetLogo from '../common/AssetLogo';
 import Button from '../common/Button';
 import PoolSelectItem from './PoolSelectItem';
 import PoolSelectModal from './PoolSelectModal';
-
-const Selected = tw.button`h-full w-full p-2 bg-gray-600 rounded-md flex gap-2 justify-between items-center`;
 
 interface IPoolSelect {
   pools: IPoolMap;
