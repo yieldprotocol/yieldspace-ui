@@ -5,36 +5,33 @@ export interface IContractMap {
   [name: string]: Contract;
 }
 
+export interface IPoolMap {
+  [address: string]: IPool;
+}
+
 export interface IPool {
-  id: string;
-  displayName: string;
-  displayNameMobile: string;
-  maturity: number;
-
-  fullDate: Date;
-  fyTokenContract: FYToken;
-  fyTokenAddress: string;
-  poolContract: Pool;
-  poolAddress: string;
-  poolName: string;
-  poolVersion: string; // for signing
-  poolSymbol: string; // for signing
-
+  address: string;
+  name: string;
+  symbol: string;
+  version: string;
   decimals: number;
+  maturity: number;
   ts: BigNumber;
   g1: BigNumber;
   g2: BigNumber;
 
-  baseId: string;
+  baseAddress: string;
+  fyTokenAddress: string;
 
-  color: string;
-  textColor: string;
+  displayName: string;
+  season: string;
   startColor: string;
   endColor: string;
-
-  oppositeColor: string;
+  color: string;
+  textColor: string;
   oppStartColor: string;
   oppEndColor: string;
+  oppTextColor: string;
 
   seriesMark: React.ElementType;
 

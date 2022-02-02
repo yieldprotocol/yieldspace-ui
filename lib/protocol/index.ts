@@ -1,77 +1,77 @@
+import { format } from 'date-fns';
 import { ethers } from 'ethers';
 import { CAULDRON, LADLE } from '../../constants';
 import { FYToken__factory, Pool__factory } from '../../contracts/types';
-import { IContractMap, IPool } from './types';
+import { IContractMap, IPool, IPoolMap } from './types';
+import { getSeason, SeasonType } from '../../utils/appUtils';
+import yieldEnv from '../../config/yieldEnv';
+import { Web3Provider } from '@ethersproject/providers';
 
-export const getPools = async (
-  provider: ethers.providers.JsonRpcProvider,
-  contractMap: IContractMap,
-  blockNum?: number | undefined
-) => {
-  const Cauldron = contractMap[CAULDRON];
+const { seasonColors } = yieldEnv;
+
+/**
+ * Gets all pool data
+ *
+ * @param provider
+ * @param contractMap
+ * @param blockNum
+ * @returns  {IPoolMap}
+ */
+export const getPools = async (provider: Web3Provider, contractMap: IContractMap, blockNum: number | null = null) => {
   const Ladle = contractMap[LADLE];
-
   const poolAddedEvents = await Ladle.queryFilter('PoolAdded' as ethers.EventFilter, blockNum);
 
-  /* build a map from the poolAdded event data */
-  const poolMap: Map<string, string> = new Map(
-    poolAddedEvents.map((log) => Ladle.interface.parseLog(log).args) as [[string, string]]
-  );
-  console.log('🦄 ~ file: index.ts ~ line 20 ~ poolMap', poolMap);
+  const poolAddresses: string[] = poolAddedEvents.map((log) => Ladle.interface.parseLog(log).args[1]);
 
-  const newSeriesList: IPool[] = [];
-
-  /* Add in any extra static series */
-  try {
-    await Promise.all([
-      ...poolAddedEvents.map(async (x): Promise<void> => {
-        const { seriesId: id, baseId, fyToken } = Cauldron.interface.parseLog(x).args;
-        const { maturity }: { maturity: number } = await Cauldron.series(id);
-
-        if (poolMap.has(id)) {
-          // only add series if it has a pool
-          const poolAddress: string = poolMap.get(id) as string;
-          const poolContract = Pool__factory.connect(poolAddress, provider);
-          const fyTokenContract = FYToken__factory.connect(fyToken, provider);
-          const [name, symbol, version, decimals, poolName, poolVersion, poolSymbol, ts, g1, g2] = await Promise.all([
-            fyTokenContract.name(),
-            fyTokenContract.symbol(),
-            fyTokenContract.version(),
-            fyTokenContract.decimals(),
-            poolContract.name(),
-            poolContract.version(),
-            poolContract.symbol(),
-            poolContract.ts(),
-            poolContract.g1(),
-            poolContract.g2(),
-          ]);
-
-          const newSeries = {
-            id,
-            baseId,
-            maturity,
-            name,
-            symbol,
-            version,
-            address: fyToken,
-            fyTokenAddress: fyToken,
-            decimals,
-            poolAddress,
-            poolVersion,
-            poolName,
-            poolSymbol,
-            ts,
-            g1,
-            g2,
-          };
-          newSeriesList.push(newSeries);
-        }
-      }),
+  return poolAddresses.reduce(async (pools: any, x) => {
+    const address = x;
+    const poolContract = Pool__factory.connect(address, provider);
+    const [name, symbol, version, decimals, maturity, ts, g1, g2, fyTokenAddress, baseAddress] = await Promise.all([
+      poolContract.name(),
+      poolContract.symbol(),
+      poolContract.version(),
+      poolContract.decimals(),
+      poolContract.maturity(),
+      poolContract.ts(),
+      poolContract.g1(),
+      poolContract.g2(),
+      poolContract.fyToken(),
+      poolContract.base(),
     ]);
-    return newSeriesList;
-  } catch (e) {
-    console.log('Error fetching series data: ', e);
-    return undefined;
-  }
-  console.log('Yield Protocol Series data updated.');
+
+    const newPool = {
+      address,
+      name,
+      symbol,
+      version,
+      decimals,
+      maturity,
+      ts,
+      g1,
+      g2,
+      fyTokenAddress,
+      baseAddress,
+    };
+    return { ...(await pools), [address]: _chargePool(newPool) };
+  }, {});
+};
+
+/* add on extra/calculated ASYNC series info and contract instances */
+const _chargePool = (_pool: { maturity: number }) => {
+  const season = getSeason(_pool.maturity) as SeasonType;
+  const oppSeason = (_season: SeasonType) => getSeason(_pool.maturity + 23670000) as SeasonType;
+  const [startColor, endColor, textColor]: string[] = seasonColors[season];
+  const [oppStartColor, oppEndColor, oppTextColor]: string[] = seasonColors[oppSeason(season)];
+  return {
+    ..._pool,
+    displayName: format(new Date(_pool.maturity * 1000), 'dd MMM yyyy'),
+    season,
+    startColor,
+    endColor,
+    color: `linear-gradient(${startColor}, ${endColor})`,
+    textColor,
+    oppStartColor,
+    oppEndColor,
+    oppTextColor,
+  };
 };

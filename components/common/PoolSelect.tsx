@@ -24,10 +24,9 @@ const AssetSelect: FC<IAssetSelect> = ({ asset, setAsset, hasCaret }) => {
             <AssetLogo image={asset} />
             <span className="text-md font-bold align-middle">{asset}</span>
           </div>
-          {hasCaret && <ChevronDownIcon className="my-auto h-5 w-5" />}
         </Selected>
       ) : (
-        <Button action={() => setModalOpen(true)}>Select Pool</Button>
+        <Button action={() => setModalOpen(true)}>Select Asset</Button>
       )}
       {modalOpen && <AssetSelectModal open={modalOpen} setOpen={setModalOpen} action={setAsset} />}
     </>

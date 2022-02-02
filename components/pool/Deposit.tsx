@@ -23,8 +23,13 @@ const Deposit = ({ asset, amount, balance, setAsset, setAmount }: IDeposit) => (
         min="0"
       />
     </div>
-    <div className="w-44 p-1">
-      <AssetSelect asset={asset} setAsset={setAsset} />
+    <div className="">
+      <div className="w-32 p-1">
+        <AssetSelect asset={asset} setAsset={setAsset} />
+      </div>
+      <div className="mt-2 text-sm align-middle text-right mr-2 text-gray-300">
+        <span>balance: 100</span>
+      </div>
     </div>
   </div>
 );

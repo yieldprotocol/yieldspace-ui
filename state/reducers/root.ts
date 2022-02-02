@@ -1,6 +1,6 @@
 import { combineReducers } from 'redux';
-import chain from './chain';
+import protocol from './protocol';
 
 export default combineReducers({
-  chain,
+  protocol,
 });

@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import tw from 'tailwind-styled-components';
-import PoolItem from '../PoolItem';
+import PoolItem from './PoolListItem';
 
 const Container = tw.div`p-2`;
 

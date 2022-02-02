@@ -8,6 +8,7 @@ import AssetSelect from '../common/AssetSelect';
 import BackButton from '../common/BackButton';
 import Button from '../common/Button';
 import Deposit from './Deposit';
+import { PlusIcon } from '@heroicons/react/solid';
 
 const BorderWrap = tw.div`mx-auto max-w-md p-2 border-2 border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
 const Inner = tw.div`m-4 text-center`;
@@ -23,7 +24,6 @@ const AddLiquidity = () => {
   const router = useRouter();
   const { provider, chainId } = useConnector();
   const contracts = useContracts(provider, chainId);
-  console.log('🦄 ~ file: AddLiquidity.tsx ~ line 26 ~ AddLiquidity ~ contracts', contracts);
 
   const INITIAL_FORM_STATE = {
     baseAmount: null,
@@ -41,7 +41,7 @@ const AddLiquidity = () => {
   const [fyTokenBalance, setFyTokenBalance] = useState<string | undefined>(undefined);
 
   const handleClearAll = () => {
-    setBase;
+    console.log('clearing state');
   };
 
   useEffect(() => {
@@ -52,14 +52,18 @@ const AddLiquidity = () => {
   }, [base, fyToken]);
 
   useEffect(() => {
-    getPools(provider, contracts);
-  }, []);
+    (async () => {
+      if (provider && contracts) {
+        const pools = await getPools(provider, contracts);
+      }
+    })();
+  }, [provider, contracts]);
 
   return (
     <BorderWrap>
       <Inner>
         <TopRow>
-          <BackButton onClick={() => router.push('pool')} />
+          <BackButton onClick={() => router.back()} />
           <Header>
             <HeaderText>Add Liquidity</HeaderText>
           </Header>
@@ -70,7 +74,7 @@ const AddLiquidity = () => {
           <HeaderSmall>Select Pair</HeaderSmall>
           <div className="flex justify-between gap-5 align-middle">
             <AssetSelect asset={base} setAsset={setBase} hasCaret={true} />
-            <AssetSelect asset={fyToken} setAsset={setFyToken} hasCaret={true} />
+            {/* <AssetSelect asset={fyToken} setAsset={setFyToken} hasCaret={true} /> */}
           </div>
         </Grid>
 
@@ -83,6 +87,7 @@ const AddLiquidity = () => {
             asset={base}
             setAmount={setBaseAmount}
           />
+          <PlusIcon className="justify-self-center" height={20} width={20} />
           <Deposit
             amount={fyTokenAmount}
             balance={fyTokenBalance}

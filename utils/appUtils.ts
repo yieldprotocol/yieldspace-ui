@@ -1,3 +1,5 @@
+import { getMonth } from 'date-fns';
+
 export const copyToClipboard = (str: string) => {
   const el = document.createElement('textarea');
   el.value = str;
@@ -75,3 +77,29 @@ export const numberWithCommas = (x: number) => x.toString().replace(/\B(?=(\d{3}
 
 export const formatValue = (x: string | number, decimals: number) =>
   numberWithCommas(Number(cleanValue(x?.toString(), decimals)));
+
+// TODO make it change based on hemisphere ( ie swap winter and summer)
+export enum SeasonType {
+  WINTER = 'WINTER',
+  SPRING = 'SPRING',
+  SUMMER = 'SUMMER',
+  FALL = 'FALL',
+}
+export const getSeason = (dateInSecs: number): SeasonType => {
+  const month: number = getMonth(new Date(dateInSecs * 1000));
+  const seasons = [
+    SeasonType.WINTER,
+    SeasonType.WINTER,
+    SeasonType.SPRING,
+    SeasonType.SPRING,
+    SeasonType.SPRING,
+    SeasonType.SUMMER,
+    SeasonType.SUMMER,
+    SeasonType.SUMMER,
+    SeasonType.FALL,
+    SeasonType.FALL,
+    SeasonType.FALL,
+    SeasonType.WINTER,
+  ];
+  return seasons[month];
+};

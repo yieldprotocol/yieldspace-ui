@@ -17,4 +17,10 @@ export default {
       Ladle: '0x75aD7c0461eE87Ca87D86DD1F33C7419c11f5b05',
     },
   },
+  seasonColors: {
+    WINTER: ['#D9D9D9', '#67F2FC', '#333333'],
+    SPRING: ['#6AD99E', '#FF6BE4', '#333333'],
+    SUMMER: ['#FFDE75', '#409C4D', '#333333'],
+    FALL: ['#7255BD', '#D95948', '#ffffff'],
+  },
 };
