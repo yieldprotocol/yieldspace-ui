@@ -40,3 +40,7 @@ export interface IPool {
   isMature: () => boolean;
   getBaseAddress: () => string; // antipattern, but required here because app simulatneoulsy gets assets and series
 }
+
+export interface IAssetConfig {
+  digitFormat: number;
+}
