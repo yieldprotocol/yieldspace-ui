@@ -7,9 +7,9 @@ import { abbreviateHash } from '../utils/appUtils';
 import useConnector from '../hooks/useConnector';
 import { CHAINS, ExtendedChainInformation } from '../config/chains';
 
-interface ButtonProps {
+type ButtonProps = {
   $active: boolean;
-}
+};
 
 const Button = tw.button<ButtonProps>`${(p) =>
   p.$active ? 'text-gray-50' : 'text-gray-400'} flex rounded-md items-center w-full px-2 py-2`;

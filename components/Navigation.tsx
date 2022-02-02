@@ -1,6 +1,8 @@
 import tw from 'tailwind-styled-components';
 import Link from 'next/link';
 import Account from './Account';
+import { useState } from 'react';
+import { useRouter } from 'next/router';
 
 const Container = tw.div`
   sticky
@@ -15,22 +17,34 @@ const Container = tw.div`
   bg-white 
 `;
 
+type LinkItemProps = {
+  $current: boolean;
+};
+
 const InnerContainer = tw.div`flex py-4 px-10 align-middle relative items-center justify-between`;
-const LinkWrap = tw.div`flex space-x-8`;
-const LinkItem = tw.a`dark:text-gray-100 text-gray-900 hover:text-primary-500 dark:hover:text-primary-400`;
+const LinksWrap = tw.div`flex space-x-8`;
+const LinkItem = tw.a<LinkItemProps>`${(p) =>
+  p.$current ? 'dark:text-primary-500' : 'dark:text-gray-100'} hover:text-primary-500 dark:hover:text-primary-400`;
 
 const Navigation = () => {
-  const links = ['Swap', 'Pool'];
+  const router = useRouter();
+  const navigation = [
+    { name: 'Trade', href: '/trade' },
+    { name: 'Pool', href: '/pool' },
+  ];
+
+  const [activeNav, setActiveNav] = useState(navigation);
+
   return (
     <Container>
       <InnerContainer>
-        <LinkWrap>
-          {links.map((l, i) => (
-            <Link href={`/${l.toLowerCase()}`} key={i} passHref>
-              <LinkItem>{l}</LinkItem>
+        <LinksWrap>
+          {navigation.map((x) => (
+            <Link href={x.href} key={x.name} passHref>
+              <LinkItem $current={router.pathname === x.href}>{x.name}</LinkItem>
             </Link>
           ))}
-        </LinkWrap>
+        </LinksWrap>
         <Account />
       </InnerContainer>
     </Container>
