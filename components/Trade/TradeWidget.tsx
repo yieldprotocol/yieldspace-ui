@@ -89,15 +89,15 @@ const Swap = () => {
           {isFyTokenOutput ? (
             <ArrowCircleDownIcon
               className="justify-self-center text-gray-400 hover:border-2 hover:border-secondary-500 rounded-full hover:cursor-pointer"
-              height={25}
-              width={25}
+              height={27}
+              width={27}
               onClick={() => setIsFyTokenOutput(!isFyTokenOutput)}
             />
           ) : (
             <ArrowCircleUpIcon
               className="justify-self-center text-gray-400 hover:border-2 hover:border-secondary-500 rounded-full hover:cursor-pointer"
-              height={25}
-              width={25}
+              height={27}
+              width={27}
               onClick={() => setIsFyTokenOutput(!isFyTokenOutput)}
             />
           )}
