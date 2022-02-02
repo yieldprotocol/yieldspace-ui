@@ -1,21 +1,16 @@
-import { utils } from 'ethers';
 import Image from 'next/image';
 import type { Web3ReactHooks } from '@web3-react/core';
 import { MetaMask } from '@web3-react/metamask';
 import { WalletConnect } from '@web3-react/walletconnect';
 import { Network } from '@web3-react/network';
 import type { Connector } from '@web3-react/types';
-import { useCallback, useEffect, useState } from 'react';
-import { CHAINS, getAddChainParameters, URLS } from '../config/chains';
+import { useCallback, useState } from 'react';
+import { getAddChainParameters } from '../config/chains';
 import { connectors } from '../connectors';
-import { useAppDispatch, useAppSelector } from 'state/hooks/general';
 import tw from 'tailwind-styled-components';
 import Modal from './common/Modal';
-import { updateConnection } from 'state/actions/chain';
-import useBalances from '../hooks/useBalances';
 import { XCircleIcon, CheckCircleIcon } from '@heroicons/react/solid';
 import metamaskLogo from '../public/logos/metamask.png';
-import walletConnectLogo from '../public/logos/walletconnect.svg';
 
 const Inner = tw.div`p-2 space-y-2`;
 const ConnectorButton = tw.button`w-full gap-4 bg-gray-500/25 align-middle px-4 py-3 text-primary-500 rounded-md hover:bg-gray-600/25 flex`;
