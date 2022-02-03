@@ -1,0 +1,9 @@
+# don't ever lint node_modules
+node_modules
+
+# don't lint build output or public
+.next
+
+# ignore js lint files outside src
+.eslintrc.js
+.prettier.config.js
