@@ -1,11 +1,13 @@
+import dynamic from 'next/dynamic';
 import tw from 'tailwind-styled-components';
-import AddLiquidity from '../../components/pool/AddLiquidity';
+
+const DynamicAddLiquidity = dynamic(() => import('../../components/pool/AddLiquidity'), { ssr: false });
 
 const Container = tw.div`text-center align-middle justify-center`;
 
 const Create = () => (
   <Container>
-    <AddLiquidity />
+    <DynamicAddLiquidity />
   </Container>
 );
 
