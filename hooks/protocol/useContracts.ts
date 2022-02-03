@@ -9,9 +9,11 @@ interface IContracts {
 
 const CONTRACTS_TO_FETCH = [LADLE, CAULDRON];
 
-const useContracts = (provider: ethers.providers.JsonRpcProvider, chainId: number) => {
+const useContracts = (provider: ethers.providers.JsonRpcProvider | undefined, chainId: number | undefined) => {
   const { addresses } = yieldEnv;
   const chainAddrs = addresses[chainId];
+
+  if (!chainId || !provider) return;
 
   return Object.keys(chainAddrs).reduce((contracts: IContracts, name: string) => {
     if (CONTRACTS_TO_FETCH.includes(name)) {

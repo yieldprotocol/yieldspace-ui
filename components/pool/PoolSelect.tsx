@@ -13,6 +13,7 @@ interface IPoolSelect {
 const PoolSelect: FC<IPoolSelect> = ({ pools, pool, setPool }) => {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
 
+  if (!pools) return <>no pools detected</>;
   return (
     <>
       {pool ? (
