@@ -9,9 +9,7 @@ const ConnectButton = tw.button`bg-primary-500/25 align-middle px-4 py-2 text-pr
 
 const Account = () => {
   const { account } = useConnector();
-
   const [connectModalOpen, setConnectModalOpen] = useState<boolean>(false);
-
   return (
     <div>
       {!account ? (

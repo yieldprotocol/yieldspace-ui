@@ -8,7 +8,6 @@ import yieldEnv from '../../config/yieldEnv';
 import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers';
 import { CONTRACTS_TO_FETCH } from '../../hooks/protocol/useContracts';
 import * as contractTypes from '../../contracts/types';
-import { CHAINS } from '../../config/chains';
 
 const { seasonColors } = yieldEnv;
 
@@ -95,8 +94,7 @@ export const getContracts = (
     if (CONTRACTS_TO_FETCH.includes(name)) {
       try {
         const contract = contractTypes[`${name}__factory`].connect(chainAddrs[name], provider);
-        contracts[name] = contract || null;
-        return contracts;
+        return { ...contracts, [name]: contract || null };
       } catch (e) {
         console.log(`could not connect directly to contract ${name}`);
         return contracts;
