@@ -4,6 +4,9 @@ import AssetSelect from '../common/AssetSelect';
 import Button from '../common/Button';
 import Deposit from '../pool/Deposit';
 import { ArrowCircleDownIcon, ArrowCircleUpIcon } from '@heroicons/react/solid';
+import usePools from '../../hooks/protocol/usePools';
+import PoolSelect from '../pool/PoolSelect';
+import { IPool } from '../../lib/protocol/types';
 
 const BorderWrap = tw.div`mx-auto max-w-md p-2 border-2 border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
 const Inner = tw.div`m-4 text-center`;
@@ -15,6 +18,7 @@ const TopRow = tw.div`flex justify-between align-middle text-center items-center
 const ClearButton = tw.button`text-sm`;
 
 const TradeWidget = () => {
+  const { data: pools } = usePools();
   const [isFyTokenOutput, setIsFyTokenOutput] = useState<boolean>(true);
 
   const INITIAL_FORM_STATE = {
@@ -22,6 +26,7 @@ const TradeWidget = () => {
     fyTokenAmount: null,
   };
 
+  const [pool, setPool] = useState<IPool | undefined>(undefined);
   const [base, setBase] = useState<string | null>(INITIAL_FORM_STATE.baseAmount);
   const [fyToken, setFyToken] = useState<string | null>(INITIAL_FORM_STATE.fyTokenAmount);
 
@@ -54,10 +59,7 @@ const TradeWidget = () => {
         </TopRow>
 
         <Grid>
-          <div className="flex justify-between gap-5 align-middle">
-            <AssetSelect asset={base} setAsset={setBase} hasCaret={true} />
-            {/* <AssetSelect asset={fyToken} setAsset={setFyToken} hasCaret={true} /> */}
-          </div>
+          <PoolSelect pools={pools} pool={pool} setPool={setPool} />
         </Grid>
 
         <Grid>
