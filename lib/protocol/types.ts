@@ -1,4 +1,7 @@
-import { BigNumber, Contract } from 'ethers';
+import { Web3Provider } from '@ethersproject/providers';
+import { BigNumber, Contract, ethers } from 'ethers';
+
+export type Provider = Web3Provider | ethers.providers.JsonRpcProvider;
 
 export interface IContractMap {
   [name: string]: Contract | null;

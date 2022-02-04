@@ -2,13 +2,14 @@ import { format } from 'date-fns';
 import { BigNumber, ethers } from 'ethers';
 import { LADLE } from '../../constants';
 import { Pool__factory } from '../../contracts/types';
-import { IAsset, IContractMap, IPoolMap } from './types';
+import { IAsset, IContractMap, IPoolMap, Provider } from './types';
 import { formatFyTokenSymbol, getSeason, SeasonType } from '../../utils/appUtils';
 import yieldEnv from '../../config/yieldEnv';
 import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers';
 import { CONTRACTS_TO_FETCH } from '../../hooks/protocol/useContracts';
 import * as contractTypes from '../../contracts/types';
 import { ERC20Permit__factory } from '../../contracts/types/factories/ERC20Permit__factory';
+import { FYToken__factory } from '../../contracts/types/factories/FYToken__factory';
 
 const { seasonColors } = yieldEnv;
 
@@ -22,7 +23,7 @@ const { seasonColors } = yieldEnv;
  * @returns  {IPoolMap}
  */
 export const getPools = async (
-  provider: Web3Provider | JsonRpcProvider,
+  provider: Provider,
   contractMap: IContractMap,
   account: string | null = null,
   blockNum: number | null = null
@@ -48,7 +49,7 @@ export const getPools = async (
     ]);
 
     const base = await getAsset(provider, baseAddress, account);
-    const fyToken = await getAsset(provider, fyTokenAddress, account);
+    const fyToken = await getAsset(provider, fyTokenAddress, account, true);
 
     const newPool = {
       address,
@@ -87,10 +88,7 @@ const _chargePool = (_pool: { maturity: number }) => {
   };
 };
 
-export const getContracts = (
-  provider: ethers.providers.JsonRpcProvider | Web3Provider,
-  chainId: number
-): IContractMap | undefined => {
+export const getContracts = (provider: Provider, chainId: number): IContractMap | undefined => {
   if (!chainId || !provider) return;
 
   const { addresses } = yieldEnv;
@@ -114,42 +112,49 @@ export const getContracts = (
  * Gets token/asset data and balances if there is an account provided
  * @param tokenAddress
  * @param account can be null if there is no account
+ * @param isFyToken optional
  * @returns
  */
 export const getAsset = async (
-  provider: Web3Provider,
+  provider: Provider,
   tokenAddress: string,
-  account: string | null = null
+  account: string | null = null,
+  isFyToken: boolean = false
 ): Promise<IAsset> => {
   const ERC20 = ERC20Permit__factory.connect(tokenAddress, provider);
 
   const [symbol, decimals] = await Promise.all([ERC20.symbol(), ERC20.decimals()]);
 
-  const [balance, balance_] = account
-    ? await getBalance(provider, account, tokenAddress)
-    : [ethers.constants.Zero, '0'];
+  const balance = account ? await getBalance(provider, tokenAddress, account, isFyToken) : ethers.constants.Zero;
 
   return {
     address: tokenAddress,
     symbol: symbol.includes('FY') ? formatFyTokenSymbol(symbol) : symbol,
     decimals,
     balance,
-    balance_,
+    balance_: ethers.utils.formatUnits(balance, decimals),
   };
 };
 
 /**
- * returns the user's token balance in BigNumber and formatted representations
+ * returns the user's token (either base or fyToken) balance in BigNumber
  * @param tokenAddress
- * @returns {[BigNumber, string]}
+ * @param isFyToken optional
+ * @returns {BigNumber}
  */
-export const getBalance = async (
-  provider: Web3Provider,
+export const getBalance = (
+  provider: Provider,
   tokenAddress: string,
-  account: string
-): Promise<[BigNumber, string]> => {
-  const ERC20 = ERC20Permit__factory.connect(tokenAddress, provider);
-  const balance = await ERC20.balanceOf(account);
-  const balance_ = ethers.utils.formatEther(balance);
-  return [balance, balance_];
+  account: string,
+  isFyToken: boolean = false
+): Promise<BigNumber> => {
+  const contract = isFyToken
+    ? FYToken__factory.connect(tokenAddress, provider)
+    : ERC20Permit__factory.connect(tokenAddress, provider);
+
+  try {
+    return contract.balanceOf(account);
+  } catch (e) {
+    console.log('error getting balance for', tokenAddress);
+  }
 };
