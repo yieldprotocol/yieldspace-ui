@@ -17,15 +17,24 @@ const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
 const TopRow = tw.div`flex justify-between align-middle text-center items-center`;
 const ClearButton = tw.button`text-sm`;
 
+interface ITradeForm {
+  pool: IPool | undefined;
+  baseAmount: string | undefined;
+  fyTokenAmount: string | undefined;
+}
+
+const INITIAL_FORM_STATE: ITradeForm = {
+  pool: undefined,
+  baseAmount: undefined,
+  fyTokenAmount: undefined,
+};
+
 const TradeWidget = () => {
   const { chainId } = useConnector();
   const { data: pools, loading } = usePools();
   const [isFyTokenOutput, setIsFyTokenOutput] = useState<boolean>(true);
 
-  const [pool, setPool] = useState<IPool | undefined>(undefined);
-
-  const [baseAmount, setBaseAmount] = useState<string | undefined>(undefined);
-  const [fyTokenAmount, setFyTokenAmount] = useState<string | undefined>(undefined);
+  const [form, setForm] = useState<ITradeForm>(INITIAL_FORM_STATE);
 
   const handleClearAll = () => {
     console.log('clearing state');
@@ -33,8 +42,10 @@ const TradeWidget = () => {
 
   // reset chosen pool when chainId changes
   useEffect(() => {
-    setPool(undefined);
+    setForm((f) => ({ ...f, pool: undefined }));
   }, [chainId]);
+
+  const { pool, baseAmount, fyTokenAmount } = form;
 
   return (
     <BorderWrap>
@@ -47,11 +58,15 @@ const TradeWidget = () => {
         </TopRow>
 
         <Grid>
-          <PoolSelect pools={pools} pool={pool} setPool={setPool} poolsLoading={loading} />
+          <PoolSelect pools={pools} pool={pool} setPool={(p) => setForm((f) => ({ ...f, pool: p }))} />
         </Grid>
 
         <Grid>
-          <Deposit amount={baseAmount} setAsset={() => pool?.base} asset={pool?.base} setAmount={setBaseAmount} />
+          <Deposit
+            amount={baseAmount}
+            asset={pool?.base}
+            setAmount={(amount: string) => setForm((f) => ({ ...f, baseAmount: amount }))}
+          />
           {isFyTokenOutput ? (
             <ArrowCircleDownIcon
               className="justify-self-center text-gray-400 hover:border-2 hover:border-secondary-500 rounded-full hover:cursor-pointer"
@@ -69,9 +84,8 @@ const TradeWidget = () => {
           )}
           <Deposit
             amount={fyTokenAmount}
-            setAsset={() => pool?.fyToken}
             asset={pool?.fyToken}
-            setAmount={setFyTokenAmount}
+            setAmount={(amount: string) => setForm((f) => ({ ...f, fyTokenAmount: amount }))}
           />
         </Grid>
         <div className="py-1">
