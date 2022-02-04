@@ -103,3 +103,5 @@ export const getSeason = (dateInSecs: number): SeasonType => {
   ];
   return seasons[month];
 };
+
+export const formatFyTokenSymbol = (name: string) => name.slice(0, -4);

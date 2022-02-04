@@ -6,8 +6,8 @@ import useContracts from './useContracts';
 const usePools = () => {
   const { provider, chainId } = useConnector();
   const contractMap = useContracts(provider, chainId);
-  const { data, error, mutate } = useSWR('/pools', () => getPools(provider, contractMap));
-  return { data, loading: !data && !error, error, mutate };
+  const { data, isValidating, error, mutate } = useSWR('/pools', () => getPools(provider, contractMap));
+  return { data, loading: (!data && !error) || isValidating, error, mutate };
 };
 
 export default usePools;

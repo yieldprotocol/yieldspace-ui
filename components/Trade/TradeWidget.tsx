@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import tw from 'tailwind-styled-components';
-import AssetSelect from '../common/AssetSelect';
 import Button from '../common/Button';
 import Deposit from '../pool/Deposit';
 import { ArrowCircleDownIcon, ArrowCircleUpIcon } from '@heroicons/react/solid';
 import usePools from '../../hooks/protocol/usePools';
 import PoolSelect from '../pool/PoolSelect';
 import { IPool } from '../../lib/protocol/types';
+import useConnector from '../../hooks/useConnector';
 
 const BorderWrap = tw.div`mx-auto max-w-md p-2 border-2 border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
 const Inner = tw.div`m-4 text-center`;
@@ -18,35 +18,23 @@ const TopRow = tw.div`flex justify-between align-middle text-center items-center
 const ClearButton = tw.button`text-sm`;
 
 const TradeWidget = () => {
-  const { data: pools } = usePools();
+  const { chainId } = useConnector();
+  const { data: pools, loading } = usePools();
   const [isFyTokenOutput, setIsFyTokenOutput] = useState<boolean>(true);
 
-  const INITIAL_FORM_STATE = {
-    baseAmount: null,
-    fyTokenAmount: null,
-  };
-
   const [pool, setPool] = useState<IPool | undefined>(undefined);
-  const [base, setBase] = useState<string | null>(INITIAL_FORM_STATE.baseAmount);
-  const [fyToken, setFyToken] = useState<string | null>(INITIAL_FORM_STATE.fyTokenAmount);
 
   const [baseAmount, setBaseAmount] = useState<string | undefined>(undefined);
   const [fyTokenAmount, setFyTokenAmount] = useState<string | undefined>(undefined);
-
-  // balances
-  const [baseBalance, setBaseBalance] = useState<string | undefined>(undefined);
-  const [fyTokenBalance, setFyTokenBalance] = useState<string | undefined>(undefined);
 
   const handleClearAll = () => {
     console.log('clearing state');
   };
 
+  // reset chosen pool when chainId changes
   useEffect(() => {
-    const _getBalance = (asset: string) => '0';
-
-    setBaseBalance(_getBalance(base));
-    setFyTokenBalance(_getBalance(fyToken));
-  }, [base, fyToken]);
+    setPool(undefined);
+  }, [chainId]);
 
   return (
     <BorderWrap>
@@ -59,17 +47,11 @@ const TradeWidget = () => {
         </TopRow>
 
         <Grid>
-          <PoolSelect pools={pools} pool={pool} setPool={setPool} />
+          <PoolSelect pools={pools} pool={pool} setPool={setPool} poolsLoading={loading} />
         </Grid>
 
         <Grid>
-          <Deposit
-            amount={baseAmount}
-            balance={baseBalance}
-            setAsset={setBase}
-            asset={base}
-            setAmount={setBaseAmount}
-          />
+          <Deposit amount={baseAmount} setAsset={() => pool?.base} asset={pool?.base} setAmount={setBaseAmount} />
           {isFyTokenOutput ? (
             <ArrowCircleDownIcon
               className="justify-self-center text-gray-400 hover:border-2 hover:border-secondary-500 rounded-full hover:cursor-pointer"
@@ -87,9 +69,8 @@ const TradeWidget = () => {
           )}
           <Deposit
             amount={fyTokenAmount}
-            balance={fyTokenBalance}
-            setAsset={setFyToken}
-            asset={fyToken}
+            setAsset={() => pool?.fyToken}
+            asset={pool?.fyToken}
             setAmount={setFyTokenAmount}
           />
         </Grid>

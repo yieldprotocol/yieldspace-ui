@@ -19,8 +19,8 @@ export interface IPool {
   g1: BigNumber;
   g2: BigNumber;
 
-  baseAddress: string;
-  fyTokenAddress: string;
+  base: IAsset;
+  fyToken: IAsset;
 
   displayName: string;
   season: string;
@@ -32,12 +32,18 @@ export interface IPool {
   oppEndColor: string;
   oppTextColor: string;
 
-  // baked in token fns
   getTimeTillMaturity: () => string;
   isMature: () => boolean;
-  getBaseAddress: () => string; // antipattern, but required here because app simulatneoulsy gets assets and series
 }
 
 export interface IAssetConfig {
   digitFormat: number;
+}
+
+export interface IAsset {
+  address: string;
+  symbol: string;
+  decimals: number;
+  balance: BigNumber;
+  balance_: string;
 }
