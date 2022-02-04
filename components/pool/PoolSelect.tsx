@@ -5,7 +5,7 @@ import PoolSelectItem from './PoolSelectItem';
 import PoolSelectModal from './PoolSelectModal';
 
 interface IPoolSelect {
-  pools: IPoolMap;
+  pools: IPoolMap | undefined;
   pool: IPool | undefined;
   setPool: (pool: IPool) => void;
 }

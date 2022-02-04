@@ -5,7 +5,10 @@ import { Pool__factory } from '../../contracts/types';
 import { IContractMap, IPoolMap } from './types';
 import { getSeason, SeasonType } from '../../utils/appUtils';
 import yieldEnv from '../../config/yieldEnv';
-import { Web3Provider } from '@ethersproject/providers';
+import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers';
+import { CONTRACTS_TO_FETCH } from '../../hooks/protocol/useContracts';
+import * as contractTypes from '../../contracts/types';
+import { CHAINS } from '../../config/chains';
 
 const { seasonColors } = yieldEnv;
 
@@ -18,13 +21,12 @@ const { seasonColors } = yieldEnv;
  * @returns  {IPoolMap}
  */
 export const getPools = async (
-  provider: Web3Provider,
+  provider: Web3Provider | JsonRpcProvider,
   contractMap: IContractMap,
   blockNum: number | null = null
 ): Promise<IPoolMap> => {
   const Ladle = contractMap[LADLE];
   const poolAddedEvents = await Ladle.queryFilter('PoolAdded' as ethers.EventFilter, blockNum);
-
   const poolAddresses: string[] = poolAddedEvents.map((log) => Ladle.interface.parseLog(log).args[1]);
 
   return poolAddresses.reduce(async (pools: any, x) => {
@@ -78,4 +80,28 @@ const _chargePool = (_pool: { maturity: number }) => {
     oppEndColor,
     oppTextColor,
   };
+};
+
+export const getContracts = (
+  provider: ethers.providers.JsonRpcProvider | Web3Provider,
+  chainId: number
+): IContractMap | undefined => {
+  if (!chainId || !provider) return;
+
+  const { addresses } = yieldEnv;
+  const chainAddrs = addresses[chainId];
+
+  return Object.keys(chainAddrs).reduce((contracts: IContractMap, name: string) => {
+    if (CONTRACTS_TO_FETCH.includes(name)) {
+      try {
+        const contract = contractTypes[`${name}__factory`].connect(chainAddrs[name], provider);
+        contracts[name] = contract || null;
+        return contracts;
+      } catch (e) {
+        console.log(`could not connect directly to contract ${name}`);
+        return contracts;
+      }
+    }
+    return undefined;
+  }, {});
 };

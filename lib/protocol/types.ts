@@ -1,7 +1,7 @@
 import { BigNumber, Contract } from 'ethers';
 
 export interface IContractMap {
-  [name: string]: Contract;
+  [name: string]: Contract | null;
 }
 
 export interface IPoolMap {

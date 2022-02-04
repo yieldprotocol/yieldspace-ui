@@ -5,10 +5,10 @@ const DynamicAddLiquidity = dynamic(() => import('../../components/pool/AddLiqui
 
 const Container = tw.div`text-center align-middle justify-center`;
 
-const Create = () => (
+const Add = () => (
   <Container>
     <DynamicAddLiquidity />
   </Container>
 );
 
-export default Create;
+export default Add;

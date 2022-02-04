@@ -31,7 +31,7 @@ function Connection({
   connector,
   hooks: { useChainId, useIsActivating, useError, useIsActive },
 }: {
-  connector: Connector;
+  connector: MetaMask;
   hooks: Web3ReactHooks;
 }) {
   const isActivating = useIsActivating();

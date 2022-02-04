@@ -1,4 +1,4 @@
-export default {
+const yieldEnv = {
   addresses: {
     1: {
       Cauldron: '0xc88191F8cb8e6D4a668B047c1C8503432c3Ca867',
@@ -24,3 +24,5 @@ export default {
     FALL: ['#7255BD', '#D95948', '#ffffff'],
   },
 };
+
+export default yieldEnv;

@@ -1,32 +1,14 @@
-import yieldEnv from '../../config/yieldEnv';
 import { CAULDRON, LADLE } from '../../constants';
-import * as contractTypes from '../../contracts/types';
-import { Contract, ethers } from 'ethers';
+import { ethers } from 'ethers';
+import { Web3Provider } from '@ethersproject/providers';
+import { getContracts } from '../../lib/protocol';
+import { IContractMap } from '../../lib/protocol/types';
 
-interface IContracts {
-  [name: string]: Contract | null;
-}
+export const CONTRACTS_TO_FETCH = [LADLE, CAULDRON];
 
-const CONTRACTS_TO_FETCH = [LADLE, CAULDRON];
-
-const useContracts = (provider: ethers.providers.JsonRpcProvider | undefined, chainId: number | undefined) => {
-  const { addresses } = yieldEnv;
-  const chainAddrs = addresses[chainId];
-
-  if (!chainId || !provider) return;
-
-  return Object.keys(chainAddrs).reduce((contracts: IContracts, name: string) => {
-    if (CONTRACTS_TO_FETCH.includes(name)) {
-      try {
-        const contract = contractTypes[`${name}__factory`].connect(chainAddrs[name], provider);
-        contracts[name] = contract || null;
-        return contracts;
-      } catch (e) {
-        console.log(`could not connect directly to contract ${name}`);
-        return contracts;
-      }
-    }
-  }, {});
-};
+const useContracts = (
+  provider: ethers.providers.JsonRpcProvider | Web3Provider,
+  chainId: number
+): IContractMap | undefined => getContracts(provider, chainId);
 
 export default useContracts;
