@@ -3,7 +3,7 @@ import tw from 'tailwind-styled-components';
 import { IAsset } from '../../lib/protocol/types';
 import AssetLogo from './AssetLogo';
 
-const Container = tw.button`h-full w-full p-2 bg-gray-600 rounded-lg`;
+const Container = tw.div`h-full w-full p-2 bg-gray-600 rounded-lg`;
 
 interface IAssetSelect {
   asset: IAsset | undefined;
