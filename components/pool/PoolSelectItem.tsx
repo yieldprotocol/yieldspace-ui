@@ -21,7 +21,7 @@ const PoolSelectItem: FC<IPoolSelectItem> = ({ pool, action }) => (
     }}
     key={pool.address}
   >
-    <AssetLogo image="usdc" />
+    <AssetLogo image={pool.base.symbol} />
     {pool.name}
   </Button>
 );
