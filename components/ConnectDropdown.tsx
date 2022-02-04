@@ -14,8 +14,8 @@ type ButtonProps = {
 const Button = tw.button<ButtonProps>`${(p) =>
   p.$active ? 'text-gray-50' : 'text-gray-400'} flex rounded-md items-center w-full px-2 py-2`;
 
-const Dropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setModalOpen }) => {
-  const { account, ensName, chainId } = useConnector();
+const ConnectDropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setModalOpen }) => {
+  const { account, ensName, chainId, connector } = useConnector();
   const { copied, copy } = useCopy(account);
   const { blockExplorerUrls } = CHAINS[chainId] as ExtendedChainInformation;
   const blockExplorer = blockExplorerUrls[0];
@@ -76,9 +76,15 @@ const Dropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setModalOpe
                     )}
                   </Menu.Item>
                 </div>
-                {/* <div className="px-1 py-1">
-              <Menu.Item>{({ active }) => <Button $active={active}>Disconnect</Button>}</Menu.Item>
-            </div> */}
+                <div className="px-1 py-1">
+                  <Menu.Item>
+                    {({ active }) => (
+                      <Button $active={active} onClick={() => connector.deactivate()}>
+                        Disconnect
+                      </Button>
+                    )}
+                  </Menu.Item>
+                </div>
               </Menu.Items>
             </Transition>
           </>
@@ -88,4 +94,4 @@ const Dropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setModalOpe
   );
 };
 
-export default Dropdown;
+export default ConnectDropdown;

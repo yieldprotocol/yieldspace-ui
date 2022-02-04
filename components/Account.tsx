@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import tw from 'tailwind-styled-components';
 import Connect from './ConnectModal';
-import Dropdown from './Dropdown';
+import Dropdown from './ConnectDropdown';
 import useConnector from '../hooks/useConnector';
 import Chain from './Chain';
 
