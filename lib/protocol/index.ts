@@ -3,7 +3,7 @@ import { BigNumber, ethers } from 'ethers';
 import { LADLE } from '../../constants';
 import { Pool__factory } from '../../contracts/types';
 import { IAsset, IContractMap, IPoolMap, Provider } from './types';
-import { formatFyTokenSymbol, getSeason, SeasonType } from '../../utils/appUtils';
+import { cleanValue, formatFyTokenSymbol, getSeason, SeasonType } from '../../utils/appUtils';
 import yieldEnv from '../../config/yieldEnv';
 import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers';
 import { CONTRACTS_TO_FETCH } from '../../hooks/protocol/useContracts';
@@ -132,7 +132,7 @@ export const getAsset = async (
     symbol: symbol.includes('FY') ? formatFyTokenSymbol(symbol) : symbol,
     decimals,
     balance,
-    balance_: ethers.utils.formatUnits(balance, decimals),
+    balance_: cleanValue(ethers.utils.formatUnits(balance, decimals), 2),
   };
 };
 
