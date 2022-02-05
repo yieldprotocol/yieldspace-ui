@@ -5,7 +5,7 @@ import Deposit from '../pool/Deposit';
 import { ArrowCircleDownIcon, ArrowCircleUpIcon } from '@heroicons/react/solid';
 import usePools from '../../hooks/protocol/usePools';
 import PoolSelect from '../pool/PoolSelect';
-import { IPool } from '../../lib/protocol/types';
+import { IAsset, IPool } from '../../lib/protocol/types';
 import useConnector from '../../hooks/useConnector';
 
 const BorderWrap = tw.div`mx-auto max-w-md p-2 border-2 border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
@@ -19,20 +19,24 @@ const ClearButton = tw.button`text-sm`;
 
 interface ITradeForm {
   pool: IPool | undefined;
-  baseAmount: string | undefined;
-  fyTokenAmount: string | undefined;
+  fromAsset: IAsset | undefined;
+  fromAmount: string | undefined;
+  toAsset: IAsset | undefined;
+  toAmount: string | undefined;
 }
 
 const INITIAL_FORM_STATE: ITradeForm = {
   pool: undefined,
-  baseAmount: undefined,
-  fyTokenAmount: undefined,
+  fromAsset: undefined,
+  fromAmount: undefined,
+  toAsset: undefined,
+  toAmount: undefined,
 };
 
 const TradeWidget = () => {
   const { chainId } = useConnector();
   const { data: pools, loading } = usePools();
-  const [isFyTokenOutput, setIsFyTokenOutput] = useState<boolean>(true);
+  const [toggleDirection, setToggleDirection] = useState<boolean>(true);
 
   const [form, setForm] = useState<ITradeForm>(INITIAL_FORM_STATE);
 
@@ -40,12 +44,30 @@ const TradeWidget = () => {
     console.log('clearing state');
   };
 
-  // reset chosen pool when chainId changes
+  const handleToggleTradeDirection = () => {
+    setToggleDirection(!toggleDirection);
+    setForm((f) => ({ ...f, fromAsset: f.toAsset, toAsset: f.fromAsset }));
+  };
+
+  // reset form when chainId changes
   useEffect(() => {
-    setForm((f) => ({ ...f, pool: undefined }));
+    setForm(INITIAL_FORM_STATE);
   }, [chainId]);
 
-  const { pool, baseAmount, fyTokenAmount } = form;
+  // change the to and from form values when the pool changes
+  // defaults to going from base to fyToken
+  useEffect(() => {
+    if (form.pool)
+      setForm((f) => ({
+        ...f,
+        fromAsset: f.pool.base,
+        fromAmount: undefined,
+        toAsset: f.pool.fyToken,
+        toAmount: undefined,
+      }));
+  }, [form.pool]);
+
+  const { pool, fromAsset, fromAmount, toAsset, toAmount } = form;
 
   return (
     <BorderWrap>
@@ -63,28 +85,19 @@ const TradeWidget = () => {
 
         <Grid>
           <Deposit
-            amount={baseAmount}
-            asset={pool?.base}
+            amount={fromAmount}
+            asset={fromAsset}
             setAmount={(amount: string) => setForm((f) => ({ ...f, baseAmount: amount }))}
           />
-          {isFyTokenOutput ? (
-            <ArrowCircleDownIcon
-              className="justify-self-center text-gray-400 hover:border-2 hover:border-secondary-500 rounded-full hover:cursor-pointer"
-              height={27}
-              width={27}
-              onClick={() => setIsFyTokenOutput(!isFyTokenOutput)}
-            />
-          ) : (
-            <ArrowCircleUpIcon
-              className="justify-self-center text-gray-400 hover:border-2 hover:border-secondary-500 rounded-full hover:cursor-pointer"
-              height={27}
-              width={27}
-              onClick={() => setIsFyTokenOutput(!isFyTokenOutput)}
-            />
-          )}
+          <ArrowCircleDownIcon
+            className="justify-self-center text-gray-400 hover:border-2 hover:border-secondary-500 rounded-full hover:cursor-pointer"
+            height={27}
+            width={27}
+            onClick={handleToggleTradeDirection}
+          />
           <Deposit
-            amount={fyTokenAmount}
-            asset={pool?.fyToken}
+            amount={toAmount}
+            asset={toAsset}
             setAmount={(amount: string) => setForm((f) => ({ ...f, fyTokenAmount: amount }))}
           />
         </Grid>
