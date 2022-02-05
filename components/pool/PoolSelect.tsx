@@ -8,7 +8,7 @@ interface IPoolSelect {
   pools: IPoolMap | undefined;
   pool: IPool | undefined;
   setPool: (pool: IPool) => void;
-  poolsLoading?: false;
+  poolsLoading?: boolean;
 }
 
 const PoolSelect: FC<IPoolSelect> = ({ pools, pool, setPool, poolsLoading }) => {

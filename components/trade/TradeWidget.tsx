@@ -40,9 +40,7 @@ const TradeWidget = () => {
 
   const [form, setForm] = useState<ITradeForm>(INITIAL_FORM_STATE);
 
-  const handleClearAll = () => {
-    console.log('clearing state');
-  };
+  const handleClearAll = () => setForm(INITIAL_FORM_STATE);
 
   const handleToggleTradeDirection = () => {
     setToggleDirection(!toggleDirection);
@@ -80,7 +78,12 @@ const TradeWidget = () => {
         </TopRow>
 
         <Grid>
-          <PoolSelect pools={pools} pool={pool} setPool={(p) => setForm((f) => ({ ...f, pool: p }))} />
+          <PoolSelect
+            pools={pools}
+            pool={pool}
+            setPool={(p) => setForm((f) => ({ ...f, pool: p }))}
+            poolsLoading={loading}
+          />
         </Grid>
 
         <Grid>
