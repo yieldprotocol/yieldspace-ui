@@ -71,7 +71,7 @@ const AddLiquidity = () => {
         <Grid>
           <HeaderSmall>Deposit Amounts</HeaderSmall>
           <Deposit
-            amount={baseAmount}
+            amount={baseAmount!}
             asset={pool?.base}
             setAmount={(amount: string) => setForm((f) => ({ ...f, baseAmount: amount }))}
           />
@@ -80,7 +80,7 @@ const AddLiquidity = () => {
 
           <Toggle enabled={useFyTokenBalance} setEnabled={toggleUseFyTokenBalance} label="Use fyToken Balance" />
           <Deposit
-            amount={fyTokenAmount}
+            amount={fyTokenAmount!}
             asset={pool?.fyToken}
             setAmount={(amount: string) => setForm((f) => ({ ...f, fyTokenAmount: amount }))}
           />

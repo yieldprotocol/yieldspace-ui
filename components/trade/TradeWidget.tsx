@@ -89,7 +89,7 @@ const TradeWidget = () => {
 
         <Grid>
           <Deposit
-            amount={fromAmount}
+            amount={fromAmount!}
             asset={fromAsset}
             setAmount={(amount: string) => setForm((f) => ({ ...f, baseAmount: amount }))}
           />
@@ -100,7 +100,7 @@ const TradeWidget = () => {
             onClick={handleToggleTradeDirection}
           />
           <Deposit
-            amount={toAmount}
+            amount={toAmount!}
             asset={toAsset}
             setAmount={(amount: string) => setForm((f) => ({ ...f, fyTokenAmount: amount }))}
           />
