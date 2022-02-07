@@ -5,7 +5,6 @@ import { Pool__factory } from '../../contracts/types';
 import { IAsset, IContractMap, IPoolMap, Provider } from './types';
 import { cleanValue, formatFyTokenSymbol, getSeason, SeasonType } from '../../utils/appUtils';
 import yieldEnv from '../../config/yieldEnv';
-import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers';
 import { CONTRACTS_TO_FETCH } from '../../hooks/protocol/useContracts';
 import * as contractTypes from '../../contracts/types';
 import { ERC20Permit__factory } from '../../contracts/types/factories/ERC20Permit__factory';
@@ -28,6 +27,7 @@ export const getPools = async (
   account: string | null = null,
   blockNum: number | null = null
 ): Promise<IPoolMap> => {
+  console.log('fetching pools');
   const Ladle = contractMap[LADLE];
   const poolAddedEvents = await Ladle.queryFilter('PoolAdded' as ethers.EventFilter, blockNum);
   const poolAddresses: string[] = poolAddedEvents.map((log) => Ladle.interface.parseLog(log).args[1]);
@@ -89,7 +89,7 @@ const _chargePool = (_pool: { maturity: number }) => {
 };
 
 export const getContracts = (provider: Provider, chainId: number): IContractMap | undefined => {
-  if (!chainId || !provider) return;
+  if (!chainId || !provider) return undefined;
 
   const { addresses } = yieldEnv;
   const chainAddrs = addresses[chainId];
