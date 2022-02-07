@@ -26,10 +26,11 @@ export const getPools = async (
   contractMap: IContractMap,
   account: string | null = null,
   blockNum: number | null = null
-): Promise<IPoolMap> => {
+): Promise<IPoolMap | undefined> => {
   console.log('fetching pools');
   const Ladle = contractMap[LADLE];
-  const poolAddedEvents = await Ladle.queryFilter('PoolAdded' as ethers.EventFilter, blockNum);
+  if (!Ladle) return undefined;
+  const poolAddedEvents = await Ladle.queryFilter('PoolAdded' as ethers.EventFilter, blockNum!);
   const poolAddresses: string[] = poolAddedEvents.map((log) => Ladle.interface.parseLog(log).args[1]);
 
   return poolAddresses.reduce(async (pools: any, x) => {
@@ -147,7 +148,7 @@ export const getBalance = (
   tokenAddress: string,
   account: string,
   isFyToken: boolean = false
-): Promise<BigNumber> => {
+): Promise<BigNumber> | BigNumber => {
   const contract = isFyToken
     ? FYToken__factory.connect(tokenAddress, provider)
     : ERC20Permit__factory.connect(tokenAddress, provider);
@@ -156,5 +157,6 @@ export const getBalance = (
     return contract.balanceOf(account);
   } catch (e) {
     console.log('error getting balance for', tokenAddress);
+    return ethers.constants.Zero;
   }
 };
