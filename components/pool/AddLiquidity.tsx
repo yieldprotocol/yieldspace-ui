@@ -72,7 +72,7 @@ const AddLiquidity = () => {
           <HeaderSmall>Deposit Amounts</HeaderSmall>
           <Deposit
             amount={baseAmount}
-            balance={pool?.base.balance_}
+            balance={pool?.base.balance_!}
             asset={pool?.base}
             setAmount={(amount: string) => setForm((f) => ({ ...f, baseAmount: amount }))}
           />
@@ -82,7 +82,7 @@ const AddLiquidity = () => {
           <Toggle enabled={useFyTokenBalance} setEnabled={toggleUseFyTokenBalance} label="Use fyToken Balance" />
           <Deposit
             amount={fyTokenAmount}
-            balance={pool?.fyToken.balance_}
+            balance={pool?.fyToken.balance_!}
             asset={pool?.fyToken}
             setAmount={(amount: string) => setForm((f) => ({ ...f, fyTokenAmount: amount }))}
           />

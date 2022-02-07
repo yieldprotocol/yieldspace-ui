@@ -66,7 +66,7 @@ const RemoveLiquidity = () => {
           <HeaderSmall>Remove LP Tokens</HeaderSmall>
           <Deposit
             amount={lpTokens}
-            balance={pool?.lpTokenBalance_}
+            balance={pool?.lpTokenBalance_!}
             asset={pool?.base}
             setAmount={(amount: string) => setForm((f) => ({ ...f, lpTokens: amount }))}
           />
