@@ -4,7 +4,7 @@ module.exports = {
   content: ['./pages/**/*.{js,ts,jsx,tsx}', './components/**/*.{js,ts,jsx,tsx}'],
   theme: {
     darkMode: 'class',
-    extend: {},
+    fontFamily: { sans: ['Inter', 'sans-serif'], serif: ['Inter', 'sans-serif'] },
     colors: {
       gray: colors.zinc,
       green: colors.emerald,
