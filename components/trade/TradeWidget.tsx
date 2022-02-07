@@ -21,19 +21,19 @@ const ClearButton = tw.button`text-sm`;
 interface ITradeForm {
   pool: IPool | undefined;
   fromAsset: IAsset | undefined;
-  fromAmount: string | undefined;
+  fromAmount: string;
   toAsset: IAsset | undefined;
-  toAmount: string | undefined;
-  interestRate: string | undefined;
+  toAmount: string;
+  interestRate: string;
 }
 
 const INITIAL_FORM_STATE: ITradeForm = {
   pool: undefined,
   fromAsset: undefined,
-  fromAmount: undefined,
+  fromAmount: '',
   toAsset: undefined,
-  toAmount: undefined,
-  interestRate: undefined,
+  toAmount: '',
+  interestRate: '',
 };
 
 const TradeWidget = () => {
@@ -57,9 +57,9 @@ const TradeWidget = () => {
       setForm((f) => ({
         ...f,
         fromAsset: f.pool?.base,
-        fromAmount: undefined,
+        fromAmount: '',
         toAsset: f.pool?.fyToken,
-        toAmount: undefined,
+        toAmount: '',
       }));
   }, [form.pool]);
 
@@ -83,14 +83,14 @@ const TradeWidget = () => {
             poolsLoading={loading}
           />
           <InterestRateInput
-            rate={interestRate!}
+            rate={interestRate}
             setRate={(rate: string) => setForm((f) => ({ ...f, interestRate: rate }))}
           />
         </Grid>
 
         <Grid>
           <Deposit
-            amount={fromAmount!}
+            amount={fromAmount}
             asset={fromAsset}
             setAmount={(amount: string) => setForm((f) => ({ ...f, baseAmount: amount }))}
           />
@@ -101,7 +101,7 @@ const TradeWidget = () => {
             onClick={handleToggleDirection}
           />
           <Deposit
-            amount={toAmount!}
+            amount={toAmount}
             asset={toAsset}
             setAmount={(amount: string) => setForm((f) => ({ ...f, fyTokenAmount: amount }))}
           />

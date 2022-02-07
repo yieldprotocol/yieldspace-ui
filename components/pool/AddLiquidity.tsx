@@ -23,14 +23,14 @@ const ClearButton = tw.button`text-sm`;
 
 interface IAddLiquidityForm {
   pool: IPool | undefined;
-  baseAmount: string | undefined;
-  fyTokenAmount: string | undefined;
+  baseAmount: string;
+  fyTokenAmount: string;
 }
 
 const INITIAL_FORM_STATE: IAddLiquidityForm = {
   pool: undefined,
-  baseAmount: undefined,
-  fyTokenAmount: undefined,
+  baseAmount: '',
+  fyTokenAmount: '',
 };
 
 const AddLiquidity = () => {
@@ -71,7 +71,7 @@ const AddLiquidity = () => {
         <Grid>
           <HeaderSmall>Deposit Amounts</HeaderSmall>
           <Deposit
-            amount={baseAmount!}
+            amount={baseAmount}
             asset={pool?.base}
             setAmount={(amount: string) => setForm((f) => ({ ...f, baseAmount: amount }))}
           />
@@ -80,7 +80,7 @@ const AddLiquidity = () => {
 
           <Toggle enabled={useFyTokenBalance} setEnabled={toggleUseFyTokenBalance} label="Use fyToken Balance" />
           <Deposit
-            amount={fyTokenAmount!}
+            amount={fyTokenAmount}
             asset={pool?.fyToken}
             setAmount={(amount: string) => setForm((f) => ({ ...f, fyTokenAmount: amount }))}
           />
