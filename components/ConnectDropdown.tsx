@@ -16,13 +16,15 @@ const Button = tw.button<ButtonProps>`${(p) =>
 
 const ConnectDropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setModalOpen }) => {
   const { account, ensName, chainId, connector } = useConnector();
-  const { copied, copy } = useCopy(account);
-  const { blockExplorerUrls } = CHAINS[chainId] as ExtendedChainInformation;
-  const blockExplorer = blockExplorerUrls[0];
+  const { copied, copy } = useCopy(account!);
+  const chainData = chainId ? (CHAINS[chainId] as ExtendedChainInformation) : undefined;
+  const blockExplorer = chainData?.blockExplorerUrls![0];
 
   const handleModalOpen = () => {
     setModalOpen(true);
   };
+
+  if (!account) return null;
 
   return (
     <div>
@@ -30,7 +32,7 @@ const ConnectDropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setM
         {({ open }) => (
           <>
             <Menu.Button className="inline-flex justify-between gap-2 align-middle w-full bg-gray-500/25 px-4 py-2 text-gray-50 rounded-md hover:bg-gray-600/25">
-              {ensName || abbreviateHash(account)}
+              {ensName || abbreviateHash(account!)}
               <ChevronDownIcon className="my-auto w-5 h-5 text-gray-50" aria-hidden="true" />
             </Menu.Button>
             <Transition
@@ -67,15 +69,17 @@ const ConnectDropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setM
                     )}
                   </Menu.Item>
                 </div>
-                <div className="px-1 py-1">
-                  <Menu.Item>
-                    {({ active }) => (
-                      <a href={`${blockExplorer}/address/${account}`} target="_blank" rel="noreferrer">
-                        <Button $active={active}>Open In Etherscan</Button>
-                      </a>
-                    )}
-                  </Menu.Item>
-                </div>
+                {blockExplorer && account && (
+                  <div className="px-1 py-1">
+                    <Menu.Item>
+                      {({ active }) => (
+                        <a href={`${blockExplorer}/address/${account}`} target="_blank" rel="noreferrer">
+                          <Button $active={active}>Open In Etherscan</Button>
+                        </a>
+                      )}
+                    </Menu.Item>
+                  </div>
+                )}
                 <div className="px-1 py-1">
                   <Menu.Item>
                     {({ active }) => (
