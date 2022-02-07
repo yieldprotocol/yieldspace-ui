@@ -24,8 +24,8 @@ const { seasonColors } = yieldEnv;
 export const getPools = async (
   provider: Provider,
   contractMap: IContractMap,
-  account: string | null = null,
-  blockNum: number | null = null
+  account: string | undefined = undefined,
+  blockNum: number | undefined = undefined
 ): Promise<IPoolMap | undefined> => {
   console.log('fetching pools');
   const Ladle = contractMap[LADLE];
@@ -36,18 +36,20 @@ export const getPools = async (
   return poolAddresses.reduce(async (pools: any, x) => {
     const address = x;
     const poolContract = Pool__factory.connect(address, provider);
-    const [name, symbol, version, decimals, maturity, ts, g1, g2, fyTokenAddress, baseAddress] = await Promise.all([
-      poolContract.name(),
-      poolContract.symbol(),
-      poolContract.version(),
-      poolContract.decimals(),
-      poolContract.maturity(),
-      poolContract.ts(),
-      poolContract.g1(),
-      poolContract.g2(),
-      poolContract.fyToken(),
-      poolContract.base(),
-    ]);
+    const [name, symbol, version, decimals, maturity, ts, g1, g2, fyTokenAddress, baseAddress, lpTokenBalance] =
+      await Promise.all([
+        poolContract.name(),
+        poolContract.symbol(),
+        poolContract.version(),
+        poolContract.decimals(),
+        poolContract.maturity(),
+        poolContract.ts(),
+        poolContract.g1(),
+        poolContract.g2(),
+        poolContract.fyToken(),
+        poolContract.base(),
+        poolContract.balanceOf(account!),
+      ]);
 
     const base = await getAsset(provider, baseAddress, account);
     const fyToken = await getAsset(provider, fyTokenAddress, account, true);
@@ -65,6 +67,8 @@ export const getPools = async (
       base,
       fyToken,
       isMature: maturity > (await provider.getBlock('latest')).timestamp,
+      lpTokenBalance,
+      lpTokenBalance_: cleanValue(ethers.utils.formatUnits(lpTokenBalance, decimals), 2),
     };
     return { ...(await pools), [address]: _chargePool(newPool) };
   }, {});

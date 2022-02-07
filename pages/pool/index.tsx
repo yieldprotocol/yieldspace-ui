@@ -1,6 +1,8 @@
-import Pools from '../../components/pool/Pools';
 import tw from 'tailwind-styled-components';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+
+const DynamicPools = dynamic(() => import('../../components/pool/Pools'), { ssr: false });
 
 const Container = tw.div`p-20 text-center align-middle justify-center`;
 const BorderWrap = tw.div`mx-auto max-w-md p-2 border border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
@@ -23,7 +25,7 @@ const Pool = () => (
             </Link>
           </div>
         </Inner>
-        <Pools />
+        <DynamicPools />
       </BorderWrap>
     </InnerWrap>
   </Container>

@@ -35,7 +35,7 @@ export function getAddChainParameters(chainId: number): AddEthereumChainParamete
       chainId,
       chainName: chainInformation.name,
       nativeCurrency: chainInformation.nativeCurrency,
-      rpcUrls: chainInformation.urls,
+      rpcUrls: chainInformation.urls as string[],
       blockExplorerUrls: chainInformation.blockExplorerUrls,
     };
   } else {
@@ -130,7 +130,7 @@ export const CHAINS: { [chainId: number]: BasicChainInformation | ExtendedChainI
 };
 
 export const URLS: { [chainId: number]: string[] } = Object.keys(CHAINS).reduce((accumulator, chainId) => {
-  const validURLs: string[] = CHAINS[Number(chainId)].urls.filter((url) => url);
+  const validURLs = CHAINS[Number(chainId)].urls;
 
   if (validURLs.length) {
     accumulator[chainId] = validURLs;

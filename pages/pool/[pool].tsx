@@ -1,11 +1,13 @@
+import dynamic from 'next/dynamic';
 import tw from 'tailwind-styled-components';
-import PoolItem from '../../components/pool/PoolItem';
+
+const DynamicPoolItem = dynamic(() => import('../../components/pool/PoolItem'), { ssr: false });
 
 const Container = tw.div`p-10 text-center align-middle justify-center`;
 
 const PoolItemPage = () => (
   <Container>
-    <PoolItem />
+    <DynamicPoolItem />
   </Container>
 );
 

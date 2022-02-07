@@ -37,6 +37,9 @@ export interface IPool {
   isMature: boolean;
 
   getTimeTillMaturity: () => string;
+
+  lpTokenBalance: BigNumber;
+  lpTokenBalance_: string;
 }
 
 export interface IAssetConfig {
