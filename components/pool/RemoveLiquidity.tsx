@@ -1,11 +1,14 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import tw from 'tailwind-styled-components';
-import AssetSelect from '../common/AssetSelect';
 import BackButton from '../common/BackButton';
 import Button from '../common/Button';
 import Deposit from './Deposit';
 import { PlusIcon } from '@heroicons/react/solid';
+import usePools from '../../hooks/protocol/usePools';
+import PoolSelect from './PoolSelect';
+import { IPool } from '../../lib/protocol/types';
+import useConnector from '../../hooks/useConnector';
 
 const BorderWrap = tw.div`mx-auto max-w-md p-2 border border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
 const Inner = tw.div`m-4 text-center`;
@@ -17,34 +20,35 @@ const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
 const TopRow = tw.div`flex justify-between align-middle text-center items-center`;
 const ClearButton = tw.button`text-sm`;
 
+interface IRemoveLiquidityForm {
+  pool: IPool | undefined;
+  baseAmount: string;
+  fyTokenAmount: string;
+}
+
+const INITIAL_FORM_STATE: IRemoveLiquidityForm = {
+  pool: undefined,
+  baseAmount: '',
+  fyTokenAmount: '',
+};
+
 const RemoveLiquidity = () => {
   const router = useRouter();
+  const { chainId, account } = useConnector();
+  const { data: pools } = usePools();
 
-  const INITIAL_FORM_STATE = {
-    baseAmount: null,
-    fyTokenAmount: null,
-  };
-
-  const [base, setBase] = useState<string | null>(INITIAL_FORM_STATE.baseAmount);
-  const [fyToken, setFyToken] = useState<string | null>(INITIAL_FORM_STATE.fyTokenAmount);
-
-  const [baseAmount, setBaseAmount] = useState<string | undefined>(undefined);
-  const [fyTokenAmount, setFyTokenAmount] = useState<string | undefined>(undefined);
-
-  // balances
-  const [baseBalance, setBaseBalance] = useState<string | undefined>(undefined);
-  const [fyTokenBalance, setFyTokenBalance] = useState<string | undefined>(undefined);
+  const [form, setForm] = useState<IRemoveLiquidityForm>(INITIAL_FORM_STATE);
 
   const handleClearAll = () => {
-    console.log('clearing state');
+    setForm(INITIAL_FORM_STATE);
   };
 
+  // reset chosen pool when chainId changes
   useEffect(() => {
-    const _getBalance = (asset: string) => '0';
+    setForm((f) => ({ ...f, pool: undefined }));
+  }, [chainId]);
 
-    setBaseBalance(_getBalance(base));
-    setFyTokenBalance(_getBalance(fyToken));
-  }, [base, fyToken]);
+  const { pool, baseAmount, fyTokenAmount } = form;
 
   return (
     <BorderWrap>
@@ -58,33 +62,33 @@ const RemoveLiquidity = () => {
         </TopRow>
 
         <Grid>
-          <div className="flex justify-between gap-5 align-middle">
-            <AssetSelect asset={base} setAsset={setBase} hasCaret={true} />
-            {/* <AssetSelect asset={fyToken} setAsset={setFyToken} hasCaret={true} /> */}
-          </div>
+          <PoolSelect pools={pools} pool={pool} setPool={(p) => setForm((f) => ({ ...f, pool: p }))} />
         </Grid>
 
         <Grid>
           <HeaderSmall>Remove Amounts</HeaderSmall>
           <Deposit
             amount={baseAmount}
-            balance={baseBalance}
-            setAsset={setBase}
-            asset={base}
-            setAmount={setBaseAmount}
+            asset={pool?.base}
+            setAmount={(amount: string) => setForm((f) => ({ ...f, baseAmount: amount }))}
           />
+
           <PlusIcon className="justify-self-center" height={20} width={20} />
 
           <Deposit
             amount={fyTokenAmount}
-            balance={fyTokenBalance}
-            setAsset={setFyToken}
-            asset={fyToken}
-            setAmount={setFyTokenAmount}
+            asset={pool?.fyToken}
+            setAmount={(amount: string) => setForm((f) => ({ ...f, fyTokenAmount: amount }))}
           />
         </Grid>
-
-        <Button action={() => console.log('adding liq')}>Add Liquidity</Button>
+        <div className="py-1">
+          <div className="my-2 h-20 flex items-center text-lg border border-gray-700 rounded-md">
+            <span className="mx-auto">lp tokens out and other data</span>
+          </div>
+        </div>
+        <Button action={() => console.log('updating liq')} disabled={!account}>
+          {!account ? 'Connect Wallet' : 'Remove Liquidity'}
+        </Button>
       </Inner>
     </BorderWrap>
   );
