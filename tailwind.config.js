@@ -8,8 +8,8 @@ module.exports = {
     colors: {
       gray: colors.zinc,
       green: colors.emerald,
-      primary: colors.indigo,
-      secondary: colors.violet,
+      primary: colors.teal,
+      secondary: colors.teal,
     },
   },
   plugins: [],

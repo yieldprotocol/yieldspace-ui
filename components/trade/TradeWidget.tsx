@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react';
 import tw from 'tailwind-styled-components';
-import AssetSelect from '../common/AssetSelect';
 import Button from '../common/Button';
 import Deposit from '../pool/Deposit';
-import { ArrowCircleDownIcon, ArrowCircleUpIcon } from '@heroicons/react/solid';
+import { ArrowCircleDownIcon } from '@heroicons/react/solid';
+import usePools from '../../hooks/protocol/usePools';
+import PoolSelect from '../pool/PoolSelect';
+import { IAsset, IPool } from '../../lib/protocol/types';
+import useConnector from '../../hooks/useConnector';
+import InterestRateInput from './InterestRateInput';
 
-const BorderWrap = tw.div`mx-auto max-w-md p-2 border-2 border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
+const BorderWrap = tw.div`mx-auto max-w-md p-2 border border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
 const Inner = tw.div`m-4 text-center`;
 const Header = tw.div`text-lg font-bold justify-items-start align-middle`;
 const HeaderText = tw.span`align-middle`;
@@ -14,34 +18,52 @@ const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
 const TopRow = tw.div`flex justify-between align-middle text-center items-center`;
 const ClearButton = tw.button`text-sm`;
 
+interface ITradeForm {
+  pool: IPool | undefined;
+  fromAsset: IAsset | undefined;
+  fromAmount: string;
+  toAsset: IAsset | undefined;
+  toAmount: string;
+  interestRate: string;
+}
+
+const INITIAL_FORM_STATE: ITradeForm = {
+  pool: undefined,
+  fromAsset: undefined,
+  fromAmount: '',
+  toAsset: undefined,
+  toAmount: '',
+  interestRate: '',
+};
+
 const TradeWidget = () => {
-  const [isFyTokenOutput, setIsFyTokenOutput] = useState<boolean>(true);
+  const { chainId, account } = useConnector();
+  const { data: pools, loading } = usePools();
 
-  const INITIAL_FORM_STATE = {
-    baseAmount: null,
-    fyTokenAmount: null,
-  };
+  const [form, setForm] = useState<ITradeForm>(INITIAL_FORM_STATE);
 
-  const [base, setBase] = useState<string | null>(INITIAL_FORM_STATE.baseAmount);
-  const [fyToken, setFyToken] = useState<string | null>(INITIAL_FORM_STATE.fyTokenAmount);
+  const handleClearAll = () => setForm(INITIAL_FORM_STATE);
+  const handleToggleDirection = () => setForm((f) => ({ ...f, fromAsset: f.toAsset, toAsset: f.fromAsset }));
 
-  const [baseAmount, setBaseAmount] = useState<string | undefined>(undefined);
-  const [fyTokenAmount, setFyTokenAmount] = useState<string | undefined>(undefined);
-
-  // balances
-  const [baseBalance, setBaseBalance] = useState<string | undefined>(undefined);
-  const [fyTokenBalance, setFyTokenBalance] = useState<string | undefined>(undefined);
-
-  const handleClearAll = () => {
-    console.log('clearing state');
-  };
-
+  // reset form when chainId changes
   useEffect(() => {
-    const _getBalance = (asset: string) => '0';
+    setForm(INITIAL_FORM_STATE);
+  }, [chainId]);
 
-    setBaseBalance(_getBalance(base));
-    setFyTokenBalance(_getBalance(fyToken));
-  }, [base, fyToken]);
+  // change the to and from form values when the pool changes
+  // defaults to going from base to fyToken
+  useEffect(() => {
+    if (form.pool)
+      setForm((f) => ({
+        ...f,
+        fromAsset: f.pool?.base,
+        fromAmount: '',
+        toAsset: f.pool?.fyToken,
+        toAmount: '',
+      }));
+  }, [form.pool]);
+
+  const { pool, fromAsset, fromAmount, toAsset, toAmount, interestRate } = form;
 
   return (
     <BorderWrap>
@@ -54,49 +76,44 @@ const TradeWidget = () => {
         </TopRow>
 
         <Grid>
-          <div className="flex justify-between gap-5 align-middle">
-            <AssetSelect asset={base} setAsset={setBase} hasCaret={true} />
-            {/* <AssetSelect asset={fyToken} setAsset={setFyToken} hasCaret={true} /> */}
-          </div>
+          <PoolSelect
+            pools={pools}
+            pool={pool}
+            setPool={(p) => setForm((f) => ({ ...f, pool: p }))}
+            poolsLoading={loading}
+          />
+          <InterestRateInput
+            rate={interestRate}
+            setRate={(rate: string) => setForm((f) => ({ ...f, interestRate: rate }))}
+          />
         </Grid>
 
         <Grid>
           <Deposit
-            amount={baseAmount}
-            balance={baseBalance}
-            setAsset={setBase}
-            asset={base}
-            setAmount={setBaseAmount}
+            amount={fromAmount}
+            asset={fromAsset}
+            setAmount={(amount: string) => setForm((f) => ({ ...f, baseAmount: amount }))}
           />
-          {isFyTokenOutput ? (
-            <ArrowCircleDownIcon
-              className="justify-self-center text-gray-400 hover:border-2 hover:border-secondary-500 rounded-full hover:cursor-pointer"
-              height={27}
-              width={27}
-              onClick={() => setIsFyTokenOutput(!isFyTokenOutput)}
-            />
-          ) : (
-            <ArrowCircleUpIcon
-              className="justify-self-center text-gray-400 hover:border-2 hover:border-secondary-500 rounded-full hover:cursor-pointer"
-              height={27}
-              width={27}
-              onClick={() => setIsFyTokenOutput(!isFyTokenOutput)}
-            />
-          )}
+          <ArrowCircleDownIcon
+            className="justify-self-center text-gray-400 hover:border hover:border-secondary-500 rounded-full hover:cursor-pointer"
+            height={27}
+            width={27}
+            onClick={handleToggleDirection}
+          />
           <Deposit
-            amount={fyTokenAmount}
-            balance={fyTokenBalance}
-            setAsset={setFyToken}
-            asset={fyToken}
-            setAmount={setFyTokenAmount}
+            amount={toAmount}
+            asset={toAsset}
+            setAmount={(amount: string) => setForm((f) => ({ ...f, fyTokenAmount: amount }))}
           />
         </Grid>
         <div className="py-1">
-          <div className="my-2 h-20 flex items-center text-lg border-2 border-gray-700 rounded-md">
+          <div className="my-2 h-20 flex items-center text-lg border border-gray-700 rounded-md">
             <span className="mx-auto">some data once the inputs are selected</span>
           </div>
         </div>
-        <Button action={() => console.log('trading')}>Trade</Button>
+        <Button action={() => console.log('trading')} disabled={!account}>
+          {!account ? 'Connect Wallet' : 'Trade'}
+        </Button>
       </Inner>
     </BorderWrap>
   );

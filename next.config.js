@@ -2,7 +2,10 @@
  * @type {import('next').NextConfig}
  */
 const nextConfig = {
-  /* config options here */
+  env: {
+    infuraKey: process.env.INFURA_KEY,
+    defaultChainId: process.env.DEFAULT_CHAIN_ID,
+  },
 };
 
 module.exports = nextConfig;

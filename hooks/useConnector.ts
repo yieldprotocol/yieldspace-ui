@@ -1,4 +1,4 @@
-import { getPriorityConnector, Web3ReactHooks } from '@web3-react/core';
+import { getPriorityConnector } from '@web3-react/core';
 import { MetaMask } from '@web3-react/metamask';
 import type { Connector } from '@web3-react/types';
 // import { WalletConnect } from '@web3-react/walletconnect'
@@ -24,7 +24,7 @@ const useConnector = () => {
   const provider = usePriorityProvider();
   const ensName = usePriorityENSName(provider);
 
-  return { chainId, account, ensName, connector, provider };
+  return { chainId, account, connector, provider, ensName };
 };
 
 export default useConnector;

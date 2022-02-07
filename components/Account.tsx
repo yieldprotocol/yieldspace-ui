@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import tw from 'tailwind-styled-components';
 import Connect from './ConnectModal';
-import Dropdown from './Dropdown';
+import Dropdown from './ConnectDropdown';
 import useConnector from '../hooks/useConnector';
 import Chain from './Chain';
 
@@ -9,9 +9,7 @@ const ConnectButton = tw.button`bg-primary-500/25 align-middle px-4 py-2 text-pr
 
 const Account = () => {
   const { account } = useConnector();
-
   const [connectModalOpen, setConnectModalOpen] = useState<boolean>(false);
-
   return (
     <div>
       {!account ? (
