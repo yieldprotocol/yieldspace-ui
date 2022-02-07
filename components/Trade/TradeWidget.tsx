@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import tw from 'tailwind-styled-components';
 import Button from '../common/Button';
 import Deposit from '../pool/Deposit';
-import { ArrowCircleDownIcon, ArrowCircleUpIcon } from '@heroicons/react/solid';
+import { ArrowCircleDownIcon } from '@heroicons/react/solid';
 import usePools from '../../hooks/protocol/usePools';
 import PoolSelect from '../pool/PoolSelect';
 import { IAsset, IPool } from '../../lib/protocol/types';
@@ -34,8 +34,9 @@ const INITIAL_FORM_STATE: ITradeForm = {
 };
 
 const TradeWidget = () => {
-  const { chainId } = useConnector();
+  const { chainId, account } = useConnector();
   const { data: pools, loading } = usePools();
+  console.log('🦄 ~ file: TradeWidget.tsx ~ line 39 ~ TradeWidget ~ pools', pools);
   const [toggleDirection, setToggleDirection] = useState<boolean>(true);
 
   const [form, setForm] = useState<ITradeForm>(INITIAL_FORM_STATE);
@@ -109,7 +110,9 @@ const TradeWidget = () => {
             <span className="mx-auto">some data once the inputs are selected</span>
           </div>
         </div>
-        <Button action={() => console.log('trading')}>Trade</Button>
+        <Button action={() => console.log('trading')} disabled={!account}>
+          {!account ? 'Connect Wallet' : 'Trade'}
+        </Button>
       </Inner>
     </BorderWrap>
   );

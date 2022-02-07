@@ -35,7 +35,7 @@ const INITIAL_FORM_STATE: IAddLiquidityForm = {
 
 const AddLiquidity = () => {
   const router = useRouter();
-  const { chainId } = useConnector();
+  const { chainId, account } = useConnector();
   const { data: pools } = usePools();
 
   const [form, setForm] = useState<IAddLiquidityForm>(INITIAL_FORM_STATE);
@@ -90,7 +90,9 @@ const AddLiquidity = () => {
             <span className="mx-auto">lp tokens out and other data</span>
           </div>
         </div>
-        <Button action={() => console.log('adding liq')}>Add Liquidity</Button>
+        <Button action={() => console.log('adding liq')} disabled={!account}>
+          {!account ? 'Connect Wallet' : 'Add Liquidity'}
+        </Button>
       </Inner>
     </BorderWrap>
   );
