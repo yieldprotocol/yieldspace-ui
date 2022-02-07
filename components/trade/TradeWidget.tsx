@@ -44,6 +44,9 @@ const TradeWidget = () => {
 
   const handleClearAll = () => setForm(INITIAL_FORM_STATE);
   const handleToggleDirection = () => setForm((f) => ({ ...f, fromAsset: f.toAsset, toAsset: f.fromAsset }));
+  const handleSubmit = () => {
+    console.log('submitting trade with details', form);
+  };
 
   // reset form when chainId changes
   useEffect(() => {
@@ -108,12 +111,7 @@ const TradeWidget = () => {
             setAmount={(amount: string) => setForm((f) => ({ ...f, toAmount: amount }))}
           />
         </Grid>
-        <div className="py-1">
-          <div className="my-2 h-20 flex items-center text-lg border border-gray-700 rounded-md">
-            <span className="mx-auto">some data once the inputs are selected</span>
-          </div>
-        </div>
-        <Button action={() => console.log('trading')} disabled={!account}>
+        <Button action={handleSubmit} disabled={!account}>
           {!account ? 'Connect Wallet' : 'Trade'}
         </Button>
       </Inner>
