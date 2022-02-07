@@ -130,7 +130,7 @@ export const CHAINS: { [chainId: number]: BasicChainInformation | ExtendedChainI
 };
 
 export const URLS: { [chainId: number]: string[] } = Object.keys(CHAINS).reduce((accumulator, chainId) => {
-  const validURLs: string[] = CHAINS[Number(chainId)].urls.filter((url) => url);
+  const validURLs = CHAINS[Number(chainId)].urls.filter((url) => url);
 
   if (validURLs.length) {
     accumulator[chainId] = validURLs;
