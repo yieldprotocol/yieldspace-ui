@@ -134,7 +134,6 @@ const _computeA = (
   g: BigNumber | string
 ): [Decimal, Decimal] => {
   const timeTillMaturity_ = new Decimal(timeToMaturity.toString());
-  // console.log( new Decimal(BigNumber.from(g).toString()).div(2 ** 64).toString() )
 
   const _g = new Decimal(BigNumber.from(g).toString()).div(2 ** 64);
   const _ts = new Decimal(BigNumber.from(ts).toString()).div(2 ** 64);
@@ -735,7 +734,6 @@ export function fyTokenForMint(
     }
 
     const fyTokenToBuy = minFYToken.add(maxFYToken).div(2);
-    // console.log('fyToken tobuy',  fyTokenToBuy.toFixed() )
 
     const baseIn = mintWithBase(
       baseReserves,
@@ -749,23 +747,19 @@ export function fyTokenForMint(
     )[1];
 
     const surplus = base_.sub(new Decimal(baseIn.toString()));
-    // console.log( 'min:',  minSurplus.toFixed() ,  'max:',   maxSurplus.toFixed() , 'surplus: ', surplus.toFixed() )
 
     // Just right
     if (minSurplus.lt(surplus) && surplus.lt(maxSurplus)) {
-      // console.log('fyToken to buy: ', fyTokenToBuy.toFixed(), 'surplus: ', surplus.toFixed());
       return [toBn(fyTokenToBuy), toBn(surplus)];
     }
 
     // Bought too much, lower the max and the buy
     if (baseIn.gt(base) || surplus.lt(minSurplus)) {
-      // console.log('Bought too much');
       maxFYToken = fyTokenToBuy;
     }
 
     // Bought too little, raise the min and the buy
     if (surplus.gt(maxSurplus)) {
-      // console.log('Bought too little');
       minFYToken = fyTokenToBuy;
     }
   }
@@ -842,9 +836,6 @@ export function fyTokenForMintOld(
       yOut = yOut.add(min).div(TWO); // bought too much fyToken, buy a bit less
     }
   }
-
-  //  console.log( 'yOut : ', yOut.toFixed());
-  //  console.log( 'buyFyTOKEN: ', zIn.toString() );
 
   return decimal18ToDecimalN(
     // (converted back to original decimals)
