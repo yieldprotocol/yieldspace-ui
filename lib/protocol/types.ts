@@ -34,9 +34,9 @@ export interface IPool {
   oppStartColor: string;
   oppEndColor: string;
   oppTextColor: string;
+  isMature: boolean;
 
   getTimeTillMaturity: () => string;
-  isMature: () => boolean;
 }
 
 export interface IAssetConfig {

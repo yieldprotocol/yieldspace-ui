@@ -64,6 +64,7 @@ export const getPools = async (
       g2,
       base,
       fyToken,
+      isMature: maturity > (await provider.getBlock('latest')).timestamp,
     };
     return { ...(await pools), [address]: _chargePool(newPool) };
   }, {});
