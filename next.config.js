@@ -6,6 +6,15 @@ const nextConfig = {
     infuraKey: process.env.INFURA_KEY,
     defaultChainId: process.env.DEFAULT_CHAIN_ID,
   },
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/trade',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
