@@ -21,8 +21,8 @@ const RemoveLiquidity = () => {
   const router = useRouter();
 
   const INITIAL_FORM_STATE = {
-    baseAmount: null,
-    fyTokenAmount: null,
+    baseAmount: '',
+    fyTokenAmount: '',
   };
 
   const [base, setBase] = useState<string | null>(INITIAL_FORM_STATE.baseAmount);
@@ -31,20 +31,9 @@ const RemoveLiquidity = () => {
   const [baseAmount, setBaseAmount] = useState<string | undefined>(undefined);
   const [fyTokenAmount, setFyTokenAmount] = useState<string | undefined>(undefined);
 
-  // balances
-  const [baseBalance, setBaseBalance] = useState<string | undefined>(undefined);
-  const [fyTokenBalance, setFyTokenBalance] = useState<string | undefined>(undefined);
-
   const handleClearAll = () => {
     console.log('clearing state');
   };
-
-  useEffect(() => {
-    const _getBalance = (asset: string) => '0';
-
-    setBaseBalance(_getBalance(base));
-    setFyTokenBalance(_getBalance(fyToken));
-  }, [base, fyToken]);
 
   return (
     <BorderWrap>
