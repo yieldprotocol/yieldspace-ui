@@ -93,7 +93,7 @@ const TradeWidget = () => {
             amount={fromAmount}
             balance={fromAsset?.balance_!}
             asset={fromAsset}
-            setAmount={(amount: string) => setForm((f) => ({ ...f, baseAmount: amount }))}
+            setAmount={(amount: string) => setForm((f) => ({ ...f, fromAmount: amount }))}
           />
           <ArrowCircleDownIcon
             className="justify-self-center text-gray-400 hover:border hover:border-secondary-500 rounded-full hover:cursor-pointer"
@@ -105,7 +105,7 @@ const TradeWidget = () => {
             amount={toAmount}
             balance={toAsset?.balance_!}
             asset={toAsset}
-            setAmount={(amount: string) => setForm((f) => ({ ...f, fyTokenAmount: amount }))}
+            setAmount={(amount: string) => setForm((f) => ({ ...f, toAmount: amount }))}
           />
         </Grid>
         <div className="py-1">
