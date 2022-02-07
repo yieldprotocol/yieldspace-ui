@@ -6,11 +6,12 @@ const Input = tw.input`text-2xl font-bold appearance-none w-full bg-gray-700 foc
 
 interface IDeposit {
   asset: IAsset | undefined;
+  balance: string;
   amount: string;
   setAmount: (amount: string) => void;
 }
 
-const Deposit = ({ asset, amount, setAmount }: IDeposit) => (
+const Deposit = ({ asset, balance, amount, setAmount }: IDeposit) => (
   <div className="flex bg-gray-700 rounded-md justify-between p-1 w-full gap-5 align-middle hover:border hover:border-secondary-500 border border-gray-700">
     <div className="ml-3 text-center text-lg align-middle my-auto">
       <Input
@@ -28,7 +29,7 @@ const Deposit = ({ asset, amount, setAmount }: IDeposit) => (
       </div>
       {asset && (
         <div className="mt-2 text-xs align-middle text-right mr-2 text-gray-300">
-          <span>Balance: {asset.balance_}</span>
+          <span>Balance: {balance}</span>
         </div>
       )}
     </div>

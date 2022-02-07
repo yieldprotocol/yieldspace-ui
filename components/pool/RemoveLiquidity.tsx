@@ -4,7 +4,6 @@ import tw from 'tailwind-styled-components';
 import BackButton from '../common/BackButton';
 import Button from '../common/Button';
 import Deposit from './Deposit';
-import { PlusIcon } from '@heroicons/react/solid';
 import usePools from '../../hooks/protocol/usePools';
 import PoolSelect from './PoolSelect';
 import { IPool } from '../../lib/protocol/types';
@@ -67,8 +66,9 @@ const RemoveLiquidity = () => {
           <HeaderSmall>Remove LP Tokens</HeaderSmall>
           <Deposit
             amount={lpTokens}
+            balance={pool?.lpTokenBalance_}
             asset={pool?.base}
-            setAmount={(amount: string) => setForm((f) => ({ ...f, baseAmount: amount }))}
+            setAmount={(amount: string) => setForm((f) => ({ ...f, lpTokens: amount }))}
           />
         </Grid>
         <div className="py-1">
