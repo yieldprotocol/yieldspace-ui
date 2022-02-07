@@ -6,6 +6,7 @@ import useCopy from '../hooks/useCopy';
 import { abbreviateHash } from '../utils/appUtils';
 import useConnector from '../hooks/useConnector';
 import { CHAINS, ExtendedChainInformation } from '../config/chains';
+import { useColorTheme } from '../hooks/useColorTheme';
 
 type ButtonProps = {
   $active: boolean;
@@ -15,6 +16,7 @@ const Button = tw.button<ButtonProps>`${(p) =>
   p.$active ? 'text-gray-50' : 'text-gray-400'} flex rounded-md items-center w-full px-2 py-2`;
 
 const ConnectDropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setModalOpen }) => {
+  const { theme, toggleTheme } = useColorTheme();
   const { account, ensName, chainId, connector } = useConnector();
   const { copied, copy } = useCopy(account!);
   const chainData = chainId ? (CHAINS[chainId] as ExtendedChainInformation) : undefined;
@@ -80,6 +82,15 @@ const ConnectDropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setM
                     </Menu.Item>
                   </div>
                 )}
+                <div className="px-1 py-1">
+                  <Menu.Item>
+                    {({ active }) => (
+                      <Button onClick={toggleTheme} $active={active}>
+                        {`${(theme[0] as string).toLocaleUpperCase()}${theme.slice(1)}`} Mode
+                      </Button>
+                    )}
+                  </Menu.Item>
+                </div>
                 <div className="px-1 py-1">
                   <Menu.Item>
                     {({ active }) => (
