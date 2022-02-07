@@ -38,7 +38,7 @@ const Navigation = () => {
         <LinksWrap>
           {navigation.map((x) => (
             <Link href={x.href} key={x.name} passHref>
-              <LinkItem $current={router.pathname === x.href}>{x.name}</LinkItem>
+              <LinkItem $current={router.pathname.includes(x.href)}>{x.name}</LinkItem>
             </Link>
           ))}
         </LinksWrap>
