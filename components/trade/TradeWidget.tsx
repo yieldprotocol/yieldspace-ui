@@ -7,6 +7,7 @@ import usePools from '../../hooks/protocol/usePools';
 import PoolSelect from '../pool/PoolSelect';
 import { IAsset, IPool } from '../../lib/protocol/types';
 import useConnector from '../../hooks/useConnector';
+import InterestRateInput from './InterestRateInput';
 
 const BorderWrap = tw.div`mx-auto max-w-md p-2 border border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
 const Inner = tw.div`m-4 text-center`;
@@ -23,6 +24,7 @@ interface ITradeForm {
   fromAmount: string | undefined;
   toAsset: IAsset | undefined;
   toAmount: string | undefined;
+  interestRate: string | undefined;
 }
 
 const INITIAL_FORM_STATE: ITradeForm = {
@@ -31,22 +33,17 @@ const INITIAL_FORM_STATE: ITradeForm = {
   fromAmount: undefined,
   toAsset: undefined,
   toAmount: undefined,
+  interestRate: undefined,
 };
 
 const TradeWidget = () => {
   const { chainId, account } = useConnector();
   const { data: pools, loading } = usePools();
-  console.log('🦄 ~ file: TradeWidget.tsx ~ line 39 ~ TradeWidget ~ pools', pools);
-  const [toggleDirection, setToggleDirection] = useState<boolean>(true);
 
   const [form, setForm] = useState<ITradeForm>(INITIAL_FORM_STATE);
 
   const handleClearAll = () => setForm(INITIAL_FORM_STATE);
-
-  const handleToggleTradeDirection = () => {
-    setToggleDirection(!toggleDirection);
-    setForm((f) => ({ ...f, fromAsset: f.toAsset, toAsset: f.fromAsset }));
-  };
+  const handleToggleDirection = () => setForm((f) => ({ ...f, fromAsset: f.toAsset, toAsset: f.fromAsset }));
 
   // reset form when chainId changes
   useEffect(() => {
@@ -59,14 +56,14 @@ const TradeWidget = () => {
     if (form.pool)
       setForm((f) => ({
         ...f,
-        fromAsset: f.pool.base,
+        fromAsset: f.pool?.base,
         fromAmount: undefined,
-        toAsset: f.pool.fyToken,
+        toAsset: f.pool?.fyToken,
         toAmount: undefined,
       }));
   }, [form.pool]);
 
-  const { pool, fromAsset, fromAmount, toAsset, toAmount } = form;
+  const { pool, fromAsset, fromAmount, toAsset, toAmount, interestRate } = form;
 
   return (
     <BorderWrap>
@@ -85,6 +82,10 @@ const TradeWidget = () => {
             setPool={(p) => setForm((f) => ({ ...f, pool: p }))}
             poolsLoading={loading}
           />
+          <InterestRateInput
+            rate={interestRate!}
+            setRate={(rate: string) => setForm((f) => ({ ...f, interestRate: rate }))}
+          />
         </Grid>
 
         <Grid>
@@ -97,7 +98,7 @@ const TradeWidget = () => {
             className="justify-self-center text-gray-400 hover:border hover:border-secondary-500 rounded-full hover:cursor-pointer"
             height={27}
             width={27}
-            onClick={handleToggleTradeDirection}
+            onClick={handleToggleDirection}
           />
           <Deposit
             amount={toAmount!}
