@@ -1,13 +1,18 @@
 import useSWR from 'swr';
 import { getPools } from '../../lib/protocol';
 import useConnector from '../useConnector';
+import useDefaultProvider, { DEFAULT_CHAIN_ID } from '../useDefaultProvider';
 import useContracts from './useContracts';
 
 const usePools = () => {
-  const { provider, chainId, account } = useConnector();
-  const contractMap = useContracts(provider, chainId);
-  const { data, isValidating, error, mutate } = useSWR('/pools', () => getPools(provider, contractMap, account));
-  return { data, loading: (!data && !error) || isValidating, error, mutate };
+  const { chainId, account, provider } = useConnector();
+  const chainIdToUse = chainId ?? DEFAULT_CHAIN_ID;
+  // const provider = useDefaultProvider(chainIdToUse);
+  const contractMap = useContracts(provider!, chainIdToUse);
+  const { data, error } = useSWR(provider && contractMap && account ? '/pools' : null, () =>
+    getPools(provider!, contractMap!, account)
+  );
+  return { data, loading: !data && !error, error };
 };
 
 export default usePools;
