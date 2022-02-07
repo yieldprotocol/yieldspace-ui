@@ -22,14 +22,12 @@ const ClearButton = tw.button`text-sm`;
 
 interface IRemoveLiquidityForm {
   pool: IPool | undefined;
-  baseAmount: string;
-  fyTokenAmount: string;
+  lpTokens: string;
 }
 
 const INITIAL_FORM_STATE: IRemoveLiquidityForm = {
   pool: undefined,
-  baseAmount: '',
-  fyTokenAmount: '',
+  lpTokens: '',
 };
 
 const RemoveLiquidity = () => {
@@ -48,7 +46,7 @@ const RemoveLiquidity = () => {
     setForm((f) => ({ ...f, pool: undefined }));
   }, [chainId]);
 
-  const { pool, baseAmount, fyTokenAmount } = form;
+  const { pool, lpTokens } = form;
 
   return (
     <BorderWrap>
@@ -66,19 +64,11 @@ const RemoveLiquidity = () => {
         </Grid>
 
         <Grid>
-          <HeaderSmall>Remove Amounts</HeaderSmall>
+          <HeaderSmall>Remove LP Tokens</HeaderSmall>
           <Deposit
-            amount={baseAmount}
+            amount={lpTokens}
             asset={pool?.base}
             setAmount={(amount: string) => setForm((f) => ({ ...f, baseAmount: amount }))}
-          />
-
-          <PlusIcon className="justify-self-center" height={20} width={20} />
-
-          <Deposit
-            amount={fyTokenAmount}
-            asset={pool?.fyToken}
-            setAmount={(amount: string) => setForm((f) => ({ ...f, fyTokenAmount: amount }))}
           />
         </Grid>
         <div className="py-1">
