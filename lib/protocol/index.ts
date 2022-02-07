@@ -36,23 +36,39 @@ export const getPools = async (
   return poolAddresses.reduce(async (pools: any, x) => {
     const address = x;
     const poolContract = Pool__factory.connect(address, provider);
-    const [name, symbol, version, decimals, maturity, ts, g1, g2, fyTokenAddress, baseAddress, lpTokenBalance] =
-      await Promise.all([
-        poolContract.name(),
-        poolContract.symbol(),
-        poolContract.version(),
-        poolContract.decimals(),
-        poolContract.maturity(),
-        poolContract.ts(),
-        poolContract.g1(),
-        poolContract.g2(),
-        poolContract.fyToken(),
-        poolContract.base(),
-        poolContract.balanceOf(account!),
-      ]);
+    const [
+      name,
+      symbol,
+      version,
+      decimals,
+      maturity,
+      ts,
+      g1,
+      g2,
+      fyTokenAddress,
+      baseAddress,
+      lpTokenBalance,
+      baseReserves,
+      fyTokenReserves,
+    ] = await Promise.all([
+      poolContract.name(),
+      poolContract.symbol(),
+      poolContract.version(),
+      poolContract.decimals(),
+      poolContract.maturity(),
+      poolContract.ts(),
+      poolContract.g1(),
+      poolContract.g2(),
+      poolContract.fyToken(),
+      poolContract.base(),
+      poolContract.balanceOf(account!),
+      poolContract.getBaseBalance(),
+      poolContract.getFYTokenBalance(),
+    ]);
 
     const base = await getAsset(provider, baseAddress, account);
     const fyToken = await getAsset(provider, fyTokenAddress, account, true);
+    const getTimeTillMaturity = () => maturity - Math.round(new Date().getTime() / 1000);
 
     const newPool = {
       address,
@@ -69,6 +85,11 @@ export const getPools = async (
       isMature: maturity > (await provider.getBlock('latest')).timestamp,
       lpTokenBalance,
       lpTokenBalance_: cleanValue(ethers.utils.formatUnits(lpTokenBalance, decimals), 2),
+      baseReserves,
+      baseReserves_: cleanValue(ethers.utils.formatUnits(baseReserves, decimals), 2),
+      fyTokenReserves,
+      fyTokenReserves_: cleanValue(ethers.utils.formatUnits(fyTokenReserves, decimals), 2),
+      getTimeTillMaturity,
     };
     return { ...(await pools), [address]: _chargePool(newPool) };
   }, {});

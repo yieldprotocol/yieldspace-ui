@@ -40,6 +40,11 @@ export interface IPool {
 
   lpTokenBalance: BigNumber;
   lpTokenBalance_: string;
+
+  baseReserves: BigNumber;
+  baseReserves_: string;
+  fyTokenReserves: BigNumber;
+  fyTokenReserves_: string;
 }
 
 export interface IAssetConfig {

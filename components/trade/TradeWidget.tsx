@@ -7,7 +7,9 @@ import usePools from '../../hooks/protocol/usePools';
 import PoolSelect from '../pool/PoolSelect';
 import { IAsset, IPool } from '../../lib/protocol/types';
 import useConnector from '../../hooks/useConnector';
+import useTradePreview from '../../hooks/protocol/useTradePreview';
 import InterestRateInput from './InterestRateInput';
+import { TradeActions } from '../../lib/protocol/trade';
 
 const BorderWrap = tw.div`mx-auto max-w-md p-2 border border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
 const Inner = tw.div`m-4 text-center`;
@@ -25,6 +27,8 @@ interface ITradeForm {
   toAsset: IAsset | undefined;
   toAmount: string;
   interestRate: string;
+  isFyTokenOutput: boolean;
+  tradeAction: TradeActions;
 }
 
 const INITIAL_FORM_STATE: ITradeForm = {
@@ -34,6 +38,8 @@ const INITIAL_FORM_STATE: ITradeForm = {
   toAsset: undefined,
   toAmount: '',
   interestRate: '',
+  isFyTokenOutput: true,
+  tradeAction: TradeActions.SELL_BASE,
 };
 
 const TradeWidget = () => {
@@ -41,9 +47,25 @@ const TradeWidget = () => {
   const { data: pools, loading } = usePools();
 
   const [form, setForm] = useState<ITradeForm>(INITIAL_FORM_STATE);
+  const { fyTokenOutPreview, baseOutPreview } = useTradePreview(
+    form.pool,
+    form.isFyTokenOutput ? TradeActions.SELL_BASE : TradeActions.SELL_FYTOKEN,
+    form.fromAmount,
+    form.toAmount,
+    form.isFyTokenOutput
+  );
 
   const handleClearAll = () => setForm(INITIAL_FORM_STATE);
-  const handleToggleDirection = () => setForm((f) => ({ ...f, fromAsset: f.toAsset, toAsset: f.fromAsset }));
+
+  const handleToggleDirection = () =>
+    setForm((f) => ({
+      ...f,
+      fromAsset: f.toAsset,
+      toAsset: f.fromAsset,
+      isFyTokenOutput: !f.isFyTokenOutput,
+      tradeAction: f.isFyTokenOutput ? TradeActions.SELL_BASE : TradeActions.SELL_FYTOKEN,
+    }));
+
   const handleSubmit = () => {
     console.log('submitting trade with details', form);
   };
@@ -60,9 +82,7 @@ const TradeWidget = () => {
       setForm((f) => ({
         ...f,
         fromAsset: f.pool?.base,
-        fromAmount: '',
         toAsset: f.pool?.fyToken,
-        toAmount: '',
       }));
   }, [form.pool]);
 
@@ -105,7 +125,7 @@ const TradeWidget = () => {
             onClick={handleToggleDirection}
           />
           <Deposit
-            amount={toAmount}
+            amount={form.tradeAction === TradeActions.SELL_BASE ? fyTokenOutPreview : toAmount}
             balance={toAsset?.balance_!}
             asset={toAsset}
             setAmount={(amount: string) => setForm((f) => ({ ...f, toAmount: amount }))}
