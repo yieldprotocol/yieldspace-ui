@@ -8,6 +8,7 @@ const NameWrap = tw.div`ml-2 align-middle`;
 
 const Chain = () => {
   const { chainId } = useConnector();
+  if (!chainId) return null;
   return (
     <Container>
       <AssetLogo image="ETH" />
