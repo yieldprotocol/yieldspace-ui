@@ -3,7 +3,7 @@ import tw from 'tailwind-styled-components';
 import AssetLogo from './AssetLogo';
 import Modal from './Modal';
 
-const Button = tw.button`bg-gray-700 hover:bg-gray-500/25 border-2 border-gray-700 hover:border-secondary-500 text-gray-50`;
+const Button = tw.button`bg-gray-700 hover:bg-gray-500/25 border border-gray-700 hover:border-secondary-500 text-gray-50`;
 
 type IAssetSelectModal = {
   open: boolean;

@@ -1,7 +1,7 @@
 import { FC } from 'react';
 import tw from 'tailwind-styled-components';
 
-const BorderWrap = tw.div`mx-auto p-2 border-2 border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
+const BorderWrap = tw.div`mx-auto p-2 border border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
 const Inner = tw.div`m-4 text-center`;
 const Header = tw.div`text-lg justify-items-start align-middle`;
 const HeaderText = tw.span`align-middle`;

@@ -8,7 +8,7 @@ import PoolSelect from '../pool/PoolSelect';
 import { IAsset, IPool } from '../../lib/protocol/types';
 import useConnector from '../../hooks/useConnector';
 
-const BorderWrap = tw.div`mx-auto max-w-md p-2 border-2 border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
+const BorderWrap = tw.div`mx-auto max-w-md p-2 border border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
 const Inner = tw.div`m-4 text-center`;
 const Header = tw.div`text-lg font-bold justify-items-start align-middle`;
 const HeaderText = tw.span`align-middle`;
@@ -94,7 +94,7 @@ const TradeWidget = () => {
             setAmount={(amount: string) => setForm((f) => ({ ...f, baseAmount: amount }))}
           />
           <ArrowCircleDownIcon
-            className="justify-self-center text-gray-400 hover:border-2 hover:border-secondary-500 rounded-full hover:cursor-pointer"
+            className="justify-self-center text-gray-400 hover:border hover:border-secondary-500 rounded-full hover:cursor-pointer"
             height={27}
             width={27}
             onClick={handleToggleTradeDirection}
@@ -106,7 +106,7 @@ const TradeWidget = () => {
           />
         </Grid>
         <div className="py-1">
-          <div className="my-2 h-20 flex items-center text-lg border-2 border-gray-700 rounded-md">
+          <div className="my-2 h-20 flex items-center text-lg border border-gray-700 rounded-md">
             <span className="mx-auto">some data once the inputs are selected</span>
           </div>
         </div>

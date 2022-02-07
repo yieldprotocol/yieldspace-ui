@@ -11,7 +11,7 @@ interface IDeposit {
 }
 
 const Deposit = ({ asset, amount, setAmount }: IDeposit) => (
-  <div className="flex bg-gray-700 rounded-md justify-between p-1 w-full gap-5 align-middle hover:border-2 hover:border-secondary-500 border-2 border-gray-700">
+  <div className="flex bg-gray-700 rounded-md justify-between p-1 w-full gap-5 align-middle hover:border hover:border-secondary-500 border border-gray-700">
     <div className="ml-3 text-center text-lg align-middle my-auto">
       <Input
         type="number"
