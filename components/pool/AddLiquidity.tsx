@@ -46,6 +46,10 @@ const AddLiquidity = () => {
     setForm(INITIAL_FORM_STATE);
   };
 
+  const handleSubmit = () => {
+    console.log('submitting with data:', form);
+  };
+
   // reset chosen pool when chainId changes
   useEffect(() => {
     setForm((f) => ({ ...f, pool: undefined }));
@@ -77,17 +81,20 @@ const AddLiquidity = () => {
             setAmount={(amount: string) => setForm((f) => ({ ...f, baseAmount: amount }))}
           />
 
-          <PlusIcon className="justify-self-center" height={20} width={20} />
+          {useFyTokenBalance && <PlusIcon className="justify-self-center" height={20} width={20} />}
 
           <Toggle enabled={useFyTokenBalance} setEnabled={toggleUseFyTokenBalance} label="Use fyToken Balance" />
-          <Deposit
-            amount={fyTokenAmount}
-            balance={pool?.fyToken.balance_!}
-            asset={pool?.fyToken}
-            setAmount={(amount: string) => setForm((f) => ({ ...f, fyTokenAmount: amount }))}
-          />
+
+          {useFyTokenBalance && (
+            <Deposit
+              amount={fyTokenAmount}
+              balance={pool?.fyToken.balance_!}
+              asset={pool?.fyToken}
+              setAmount={(amount: string) => setForm((f) => ({ ...f, fyTokenAmount: amount }))}
+            />
+          )}
         </Grid>
-        <Button action={() => console.log('adding liq')} disabled={!account}>
+        <Button action={handleSubmit} disabled={!account}>
           {!account ? 'Connect Wallet' : 'Add Liquidity'}
         </Button>
       </Inner>

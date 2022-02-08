@@ -47,6 +47,7 @@ const TradeWidget = () => {
   const { data: pools, loading } = usePools();
 
   const [form, setForm] = useState<ITradeForm>(INITIAL_FORM_STATE);
+<<<<<<< HEAD
   const { fyTokenOutPreview, baseOutPreview } = useTradePreview(
     form.pool,
     form.isFyTokenOutput ? TradeActions.SELL_BASE : TradeActions.SELL_FYTOKEN,
@@ -54,6 +55,10 @@ const TradeWidget = () => {
     form.toAmount,
     form.isFyTokenOutput
   );
+=======
+  const [updatingFromAmount, setUpdatingFromAmount] = useState<boolean>(false);
+  const [updatingToAmount, setUpdatingToAmount] = useState<boolean>(false);
+>>>>>>> dev
 
   const handleClearAll = () => setForm(INITIAL_FORM_STATE);
 
@@ -117,6 +122,7 @@ const TradeWidget = () => {
             balance={fromAsset?.balance_!}
             asset={fromAsset}
             setAmount={(amount: string) => setForm((f) => ({ ...f, fromAmount: amount }))}
+            disabled={updatingToAmount && pool}
           />
           <ArrowCircleDownIcon
             className="justify-self-center text-gray-400 hover:border hover:border-secondary-500 rounded-full hover:cursor-pointer"
@@ -129,6 +135,7 @@ const TradeWidget = () => {
             balance={toAsset?.balance_!}
             asset={toAsset}
             setAmount={(amount: string) => setForm((f) => ({ ...f, toAmount: amount }))}
+            disabled={updatingFromAmount && pool}
           />
         </Grid>
         <Button action={handleSubmit} disabled={!account}>
