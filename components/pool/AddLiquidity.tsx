@@ -46,7 +46,9 @@ const AddLiquidity = () => {
     setForm(INITIAL_FORM_STATE);
   };
 
-  const handleSubmit = () 
+  const handleSubmit = () => {
+    console.log('submitting with data:', form);
+  };
 
   // reset chosen pool when chainId changes
   useEffect(() => {
@@ -92,7 +94,7 @@ const AddLiquidity = () => {
             />
           )}
         </Grid>
-        <Button action={() => console.log('adding liq')} disabled={!account}>
+        <Button action={handleSubmit} disabled={!account}>
           {!account ? 'Connect Wallet' : 'Add Liquidity'}
         </Button>
       </Inner>
