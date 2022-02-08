@@ -41,6 +41,8 @@ const TradeWidget = () => {
   const { data: pools, loading } = usePools();
 
   const [form, setForm] = useState<ITradeForm>(INITIAL_FORM_STATE);
+  const [updatingFromAmount, setUpdatingFromAmount] = useState<boolean>(false);
+  const [updatingToAmount, setUpdatingToAmount] = useState<boolean>(false);
 
   const handleClearAll = () => setForm(INITIAL_FORM_STATE);
   const handleToggleDirection = () => setForm((f) => ({ ...f, fromAsset: f.toAsset, toAsset: f.fromAsset }));
@@ -97,6 +99,7 @@ const TradeWidget = () => {
             balance={fromAsset?.balance_!}
             asset={fromAsset}
             setAmount={(amount: string) => setForm((f) => ({ ...f, fromAmount: amount }))}
+            disabled={updatingToAmount && pool}
           />
           <ArrowCircleDownIcon
             className="justify-self-center text-gray-400 hover:border hover:border-secondary-500 rounded-full hover:cursor-pointer"
@@ -109,6 +112,7 @@ const TradeWidget = () => {
             balance={toAsset?.balance_!}
             asset={toAsset}
             setAmount={(amount: string) => setForm((f) => ({ ...f, toAmount: amount }))}
+            disabled={updatingFromAmount && pool}
           />
         </Grid>
         <Button action={handleSubmit} disabled={!account}>
