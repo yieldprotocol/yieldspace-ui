@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import tw from 'tailwind-styled-components';
 import Button from '../common/Button';
-import Deposit from '../pool/Deposit';
+import InputWrap from '../pool/InputWrap';
 import { ArrowCircleDownIcon } from '@heroicons/react/solid';
 import usePools from '../../hooks/protocol/usePools';
 import PoolSelect from '../pool/PoolSelect';
@@ -9,7 +9,7 @@ import { IAsset, IPool } from '../../lib/protocol/types';
 import useConnector from '../../hooks/useConnector';
 import useTradePreview from '../../hooks/protocol/useTradePreview';
 import InterestRateInput from './InterestRateInput';
-import { TradeActions } from '../../lib/protocol/trade';
+import { TradeActions } from '../../lib/protocol/trade/types';
 
 const BorderWrap = tw.div`mx-auto max-w-md p-2 border border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
 const Inner = tw.div`m-4 text-center`;
@@ -47,33 +47,86 @@ const TradeWidget = () => {
   const { data: pools, loading } = usePools();
 
   const [form, setForm] = useState<ITradeForm>(INITIAL_FORM_STATE);
-<<<<<<< HEAD
-  const { fyTokenOutPreview, baseOutPreview } = useTradePreview(
+  const { fyTokenOutPreview, baseOutPreview, fyTokenInPreview, baseInPreview } = useTradePreview(
     form.pool,
-    form.isFyTokenOutput ? TradeActions.SELL_BASE : TradeActions.SELL_FYTOKEN,
+    form.tradeAction,
     form.fromAmount,
     form.toAmount,
     form.isFyTokenOutput
   );
-=======
   const [updatingFromAmount, setUpdatingFromAmount] = useState<boolean>(false);
   const [updatingToAmount, setUpdatingToAmount] = useState<boolean>(false);
->>>>>>> dev
 
   const handleClearAll = () => setForm(INITIAL_FORM_STATE);
 
-  const handleToggleDirection = () =>
+  const handleToggleDirection = () => {
     setForm((f) => ({
       ...f,
       fromAsset: f.toAsset,
       toAsset: f.fromAsset,
       isFyTokenOutput: !f.isFyTokenOutput,
-      tradeAction: f.isFyTokenOutput ? TradeActions.SELL_BASE : TradeActions.SELL_FYTOKEN,
     }));
+  };
 
   const handleSubmit = () => {
     console.log('submitting trade with details', form);
   };
+
+  const handleInputChange = (name: string, value: string) => {
+    setForm((f) => ({ ...f, [name]: value }));
+    if (name === 'fromAmount') {
+      setUpdatingFromAmount(true);
+      setUpdatingToAmount(false);
+    } else {
+      setUpdatingFromAmount(false);
+      setUpdatingToAmount(true);
+    }
+  };
+
+  // assess what the output value should be based on the trade direction and where the user is inputting
+  const fromValue = () => {
+    switch (form.tradeAction) {
+      case TradeActions.SELL_FYTOKEN:
+        return updatingFromAmount ? fromAmount : baseOutPreview;
+      case TradeActions.SELL_BASE:
+        return updatingFromAmount ? fromAmount : fyTokenOutPreview;
+      case TradeActions.BUY_BASE:
+        return updatingFromAmount ? fromAmount : fyTokenInPreview;
+      case TradeActions.BUY_FYTOKEN:
+        return updatingFromAmount ? fromAmount : baseInPreview;
+      default:
+        return toAmount;
+    }
+  };
+
+  // assess what the output value should be based on the trade direction and where the user is inputting
+  const toValue = () => {
+    switch (form.tradeAction) {
+      case TradeActions.SELL_FYTOKEN:
+        return updatingToAmount ? toAmount : baseOutPreview;
+      case TradeActions.SELL_BASE:
+        return updatingToAmount ? toAmount : fyTokenOutPreview;
+      case TradeActions.BUY_BASE:
+        return updatingToAmount ? toAmount : baseOutPreview;
+      case TradeActions.BUY_FYTOKEN:
+        return updatingToAmount ? toAmount : fyTokenOutPreview;
+      default:
+        return toAmount;
+    }
+  };
+
+  // assess the trade action
+  useEffect(() => {
+    if (form.isFyTokenOutput && updatingToAmount) {
+      setForm((f) => ({ ...f, tradeAction: TradeActions.BUY_FYTOKEN }));
+    } else if (form.isFyTokenOutput && !updatingToAmount) {
+      setForm((f) => ({ ...f, tradeAction: TradeActions.SELL_BASE }));
+    } else if (!form.isFyTokenOutput && updatingToAmount) {
+      setForm((f) => ({ ...f, tradeAction: TradeActions.BUY_BASE }));
+    } else if (!form.isFyTokenOutput && !updatingToAmount) {
+      setForm((f) => ({ ...f, tradeAction: TradeActions.SELL_FYTOKEN }));
+    }
+  }, [form.isFyTokenOutput, updatingToAmount, form.tradeAction]);
 
   // reset form when chainId changes
   useEffect(() => {
@@ -117,12 +170,13 @@ const TradeWidget = () => {
         </Grid>
 
         <Grid>
-          <Deposit
-            amount={fromAmount}
+          <InputWrap
+            name="fromAmount"
+            value={fromValue()}
             balance={fromAsset?.balance_!}
             asset={fromAsset}
-            setAmount={(amount: string) => setForm((f) => ({ ...f, fromAmount: amount }))}
-            disabled={updatingToAmount && pool}
+            handleChange={handleInputChange}
+            disabled={updatingToAmount && !!pool}
           />
           <ArrowCircleDownIcon
             className="justify-self-center text-gray-400 hover:border hover:border-secondary-500 rounded-full hover:cursor-pointer"
@@ -130,12 +184,13 @@ const TradeWidget = () => {
             width={27}
             onClick={handleToggleDirection}
           />
-          <Deposit
-            amount={form.tradeAction === TradeActions.SELL_BASE ? fyTokenOutPreview : toAmount}
+          <InputWrap
+            name="toAmount"
+            value={toValue()}
             balance={toAsset?.balance_!}
             asset={toAsset}
-            setAmount={(amount: string) => setForm((f) => ({ ...f, toAmount: amount }))}
-            disabled={updatingFromAmount && pool}
+            handleChange={handleInputChange}
+            disabled={updatingFromAmount && !!pool}
           />
         </Grid>
         <Button action={handleSubmit} disabled={!account}>
