@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import { useEffect, useState } from 'react';
 import { TradeActions } from '../../lib/protocol/trade/types';
 import { IPool } from '../../lib/protocol/types';
@@ -18,6 +18,8 @@ const useTradePreview = (
   const [baseOutPreview, setBaseOutPreview] = useState<string>('');
   const [baseInPreview, setBaseInPreview] = useState<string>('');
 
+  const validatePreview = (preview: BigNumber) => (preview.lt(ethers.constants.Zero) ? ethers.constants.Zero : preview);
+
   useEffect(() => {
     if (pool) {
       // sellBase
@@ -35,7 +37,7 @@ const useTradePreview = (
           pool.g1,
           pool.decimals
         );
-        setFyTokenOutPreview(ethers.utils.formatUnits(_fyTokenOutPreview, pool.decimals));
+        setFyTokenOutPreview(ethers.utils.formatUnits(validatePreview(_fyTokenOutPreview), pool.decimals));
       } else if (tradeAction === TradeActions.SELL_FYTOKEN) {
         // sellFyToken
         // baseOutForFYTokenIn
@@ -52,7 +54,7 @@ const useTradePreview = (
           pool.decimals
         );
 
-        setBaseOutPreview(ethers.utils.formatUnits(_baseOutPreview, pool.decimals));
+        setBaseOutPreview(ethers.utils.formatUnits(validatePreview(_baseOutPreview), pool.decimals));
       } else if (tradeAction === TradeActions.BUY_BASE) {
         // buyBase
         // fyTokenInForBaseOut
@@ -68,7 +70,7 @@ const useTradePreview = (
           pool.g2,
           pool.decimals
         );
-        setFyTokenInPreview(ethers.utils.formatUnits(_fyTokenInPreview, pool.decimals));
+        setFyTokenInPreview(ethers.utils.formatUnits(validatePreview(_fyTokenInPreview), pool.decimals));
       } else if (tradeAction === TradeActions.BUY_FYTOKEN) {
         // buyFYToken
         // baseInForFYTokenOut
@@ -84,7 +86,7 @@ const useTradePreview = (
           pool.g1,
           pool.decimals
         );
-        setBaseInPreview(ethers.utils.formatUnits(_baseInPreview, pool.decimals));
+        setBaseInPreview(ethers.utils.formatUnits(validatePreview(_baseInPreview), pool.decimals));
       }
     }
   }, [fromInput, isFyTokenOutput, pool, tradeAction, toInput]);
