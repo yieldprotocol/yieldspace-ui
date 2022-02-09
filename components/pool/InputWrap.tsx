@@ -9,8 +9,8 @@ type DivProps = {
 const Container = tw.div<DivProps>`${(p) =>
   p.$disabled
     ? 'opacity-60'
-    : ''}  flex rounded-md justify-between p-1 w-full gap-5 align-middle hover:border border hover:border-secondary-500 border-gray-700 bg-gray-700`;
-const Input = tw.input`text-2xl font-bold appearance-none w-full bg-gray-700 focus:text-gray-50 text-gray-300  py-3 px-4 leading-tight focus:outline-none `;
+    : ''}  flex rounded-md justify-between p-1 w-full gap-5 align-middle hover:border border hover:border-secondary-500 dark:border-gray-700 dark:bg-gray-700 bg-gray-300 border-gray-300`;
+const Input = tw.input`text-2xl font-bold appearance-none w-full dark:bg-gray-700 bg-gray-300 focus:text-gray-50 text-gray-300  py-3 px-4 leading-tight focus:outline-none `;
 const Inner = tw.div`ml-3 text-center text-lg align-middle my-auto`;
 
 interface IDeposit {
