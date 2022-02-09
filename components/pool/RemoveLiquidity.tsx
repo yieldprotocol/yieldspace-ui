@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import tw from 'tailwind-styled-components';
 import BackButton from '../common/BackButton';
 import Button from '../common/Button';
-import Deposit from './Deposit';
+import InputWrap from './InputWrap';
 import usePools from '../../hooks/protocol/usePools';
 import PoolSelect from './PoolSelect';
 import { IPool } from '../../lib/protocol/types';
@@ -64,7 +64,7 @@ const RemoveLiquidity = () => {
 
         <Grid>
           <HeaderSmall>Remove LP Tokens</HeaderSmall>
-          <Deposit
+          <InputWrap
             amount={lpTokens}
             balance={pool?.lpTokenBalance_!}
             asset={pool?.base}

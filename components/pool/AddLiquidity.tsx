@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import tw from 'tailwind-styled-components';
 import BackButton from '../common/BackButton';
 import Button from '../common/Button';
-import Deposit from './Deposit';
+import InputWrap from './InputWrap';
 import { PlusIcon } from '@heroicons/react/solid';
 import Toggle from '../common/Toggle';
 import usePools from '../../hooks/protocol/usePools';
@@ -74,7 +74,7 @@ const AddLiquidity = () => {
 
         <Grid>
           <HeaderSmall>Deposit Amounts</HeaderSmall>
-          <Deposit
+          <InputWrap
             amount={baseAmount}
             balance={pool?.base.balance_!}
             asset={pool?.base}
@@ -86,7 +86,7 @@ const AddLiquidity = () => {
           <Toggle enabled={useFyTokenBalance} setEnabled={toggleUseFyTokenBalance} label="Use fyToken Balance" />
 
           {useFyTokenBalance && (
-            <Deposit
+            <InputWrap
               amount={fyTokenAmount}
               balance={pool?.fyToken.balance_!}
               asset={pool?.fyToken}
