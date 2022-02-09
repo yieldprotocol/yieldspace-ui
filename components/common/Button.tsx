@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import tw from 'tailwind-styled-components';
-const Style = tw.button`h-full w-full justify-center bg-secondary-500/25 align-middle px-4 py-2 text-secondary-500 rounded-md hover:bg-secondary-600/25`;
+const Style = tw.button`h-full w-full justify-center dark:bg-secondary-500/25 bg-secondary-600/50 align-middle px-4 py-2 dark:text-secondary-500 text-gray-50 rounded-md dark:hover:bg-secondary-600/25 hover:bg-secondary-500/50`;
 
 interface IButton {
   action: () => void;
