@@ -8,7 +8,6 @@ const Container = tw.div`
   top-0 
   w-full 
   flex-none 
-  z-50 
   border-b 
   text-gray-800
   dark:text-gray-50
