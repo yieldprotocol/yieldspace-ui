@@ -77,14 +77,18 @@ const TradeWidget = () => {
     if (name === 'fromAmount') {
       setUpdatingFromAmount(true);
       setUpdatingToAmount(false);
-    } else {
+    } else if (name === 'toAmount') {
       setUpdatingFromAmount(false);
       setUpdatingToAmount(true);
+    } else {
+      setUpdatingFromAmount(false);
+      setUpdatingToAmount(false);
     }
   };
 
   // assess what the output value should be based on the trade direction and where the user is inputting
   const fromValue = () => {
+    if (!updatingFromAmount && !updatingToAmount) return '';
     switch (form.tradeAction) {
       case TradeActions.SELL_FYTOKEN:
         return updatingFromAmount ? fromAmount : baseOutPreview;
@@ -95,12 +99,13 @@ const TradeWidget = () => {
       case TradeActions.BUY_FYTOKEN:
         return updatingFromAmount ? fromAmount : baseInPreview;
       default:
-        return toAmount;
+        return '';
     }
   };
 
   // assess what the output value should be based on the trade direction and where the user is inputting
   const toValue = () => {
+    if (!updatingFromAmount && !updatingToAmount) return '';
     switch (form.tradeAction) {
       case TradeActions.SELL_FYTOKEN:
         return updatingToAmount ? toAmount : baseOutPreview;
@@ -111,7 +116,7 @@ const TradeWidget = () => {
       case TradeActions.BUY_FYTOKEN:
         return updatingToAmount ? toAmount : fyTokenOutPreview;
       default:
-        return toAmount;
+        return '';
     }
   };
 
