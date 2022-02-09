@@ -40,7 +40,7 @@ const InputWrap = ({ name, value, asset, balance, handleChange, disabled }: IDep
         <AssetSelect asset={asset} />
       </div>
       {asset && (
-        <div className="mt-2 text-xs align-middle text-right mr-2 text-gray-300">
+        <div className="mt-2 text-xs align-middle text-right mr-2 dark:text-gray-300 text-gray-700">
           <span>Balance: {balance}</span>
         </div>
       )}
