@@ -10,8 +10,10 @@ const Container = tw.div`
   flex-none 
   z-50 
   border-b 
+  text-gray-800
+  dark:text-gray-50
   dark:bg-gray-900
-  border-gray-50
+  border-gray-200
   dark:border-gray-800
   bg-white 
 `;
@@ -23,7 +25,9 @@ type LinkItemProps = {
 const InnerContainer = tw.div`flex py-4 px-10 align-middle relative items-center justify-between`;
 const LinksWrap = tw.div`flex space-x-8`;
 const LinkItem = tw.a<LinkItemProps>`${(p) =>
-  p.$current ? 'dark:text-primary-500' : 'dark:text-gray-100'} hover:text-primary-500 dark:hover:text-primary-400`;
+  p.$current
+    ? 'text-primary-500'
+    : 'dark:text-gray-100 text-gray-800'} hover:text-primary-500 dark:hover:text-primary-400`;
 
 const Navigation = () => {
   const router = useRouter();
