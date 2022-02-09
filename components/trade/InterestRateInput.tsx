@@ -5,7 +5,7 @@ interface IInterestRateInput {
   rate: string;
   setRate: (rate: string) => void;
 }
-const Input = tw.input`caret-gray-800 text-2xl rounded-md font-bold appearance-none w-full dark:bg-gray-800 bg-gray-200 dark:focus:text-gray-50 focus:text-gray-800 text-gray-300 py-3 px-4 leading-tight focus:outline-none`;
+const Input = tw.input`caret-gray-800 dark:caret-gray-50 text-2xl rounded-md font-bold appearance-none w-full dark:bg-gray-800 bg-gray-200 dark:focus:text-gray-50 focus:text-gray-800 text-gray-300 py-3 px-4 leading-tight focus:outline-none`;
 
 const InterestRateInput: FC<IInterestRateInput> = ({ rate, setRate }) => (
   <div className="flex justify-between items-center">

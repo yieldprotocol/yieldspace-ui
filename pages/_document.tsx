@@ -1,4 +1,7 @@
 import Document, { Html, Head, Main, NextScript } from 'next/document';
+import tw from 'tailwind-styled-components';
+
+const Body = tw.body`bg-gray-50 dark:bg-gray-900`;
 
 class MyDocument extends Document {
   render() {
@@ -7,8 +10,10 @@ class MyDocument extends Document {
         <Head>
           <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
         </Head>
-        <Main />
-        <NextScript />
+        <Body>
+          <Main />
+          <NextScript />
+        </Body>
       </Html>
     );
   }

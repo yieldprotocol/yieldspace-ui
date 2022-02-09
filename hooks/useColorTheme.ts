@@ -21,7 +21,13 @@ export const useColorTheme = () => {
   };
 
   useEffect(() => {
-    setTheme(document.documentElement.classList.contains('dark') ? DARK : LIGHT);
+    if (localStorage.theme === DARK || !localStorage.theme) {
+      document.documentElement.classList.add(DARK);
+      setTheme(DARK);
+    } else {
+      document.documentElement.classList.remove(DARK);
+      setTheme(LIGHT);
+    }
   }, []);
 
   return { theme, toggleTheme };
