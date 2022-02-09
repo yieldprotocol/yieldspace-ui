@@ -13,7 +13,7 @@ import metamaskLogo from '../public/logos/metamask.png';
 
 const Inner = tw.div`p-2 space-y-2`;
 const ConnectorButton = tw.button`w-full gap-4 bg-gray-500/25 align-middle px-4 py-3 text-primary-500 rounded-md hover:bg-gray-600/25 flex`;
-const ConnectorButtonText = tw.span`align-middle text-gray-50`;
+const ConnectorButtonText = tw.span`align-middle dark:text-gray-50 text-gray-900`;
 
 const getName = (connector: Connector) => {
   if (connector instanceof MetaMask) {

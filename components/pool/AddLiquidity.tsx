@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import tw from 'tailwind-styled-components';
 import BackButton from '../common/BackButton';
 import Button from '../common/Button';
-import Deposit from './Deposit';
+import InputWrap from './InputWrap';
 import { PlusIcon } from '@heroicons/react/solid';
 import Toggle from '../common/Toggle';
 import usePools from '../../hooks/protocol/usePools';
@@ -11,7 +11,7 @@ import PoolSelect from './PoolSelect';
 import { IPool } from '../../lib/protocol/types';
 import useConnector from '../../hooks/useConnector';
 
-const BorderWrap = tw.div`mx-auto max-w-md p-2 border border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
+const BorderWrap = tw.div`mx-auto max-w-md p-2 border border-secondary-400 shadow-sm rounded-lg dark:bg-gray-800 bg-gray-200 dark:text-gray-50`;
 const Inner = tw.div`m-4 text-center`;
 const Header = tw.div`text-lg font-bold justify-items-start align-middle`;
 const HeaderText = tw.span`align-middle`;
@@ -46,6 +46,12 @@ const AddLiquidity = () => {
     setForm(INITIAL_FORM_STATE);
   };
 
+  const handleSubmit = () => {
+    console.log('submitting with data:', form);
+  };
+
+  const handleInputChange = (name: string, value: string) => setForm((f) => ({ ...f, [name]: value }));
+
   // reset chosen pool when chainId changes
   useEffect(() => {
     setForm((f) => ({ ...f, pool: undefined }));
@@ -70,24 +76,29 @@ const AddLiquidity = () => {
 
         <Grid>
           <HeaderSmall>Deposit Amounts</HeaderSmall>
-          <Deposit
-            amount={baseAmount}
-            balance={pool?.base.balance_!}
+          <InputWrap
+            name="baseAmount"
+            value={baseAmount}
             asset={pool?.base}
-            setAmount={(amount: string) => setForm((f) => ({ ...f, baseAmount: amount }))}
+            balance={pool?.base.balance_!}
+            handleChange={handleInputChange}
           />
 
-          <PlusIcon className="justify-self-center" height={20} width={20} />
+          {useFyTokenBalance && <PlusIcon className="justify-self-center" height={20} width={20} />}
 
           <Toggle enabled={useFyTokenBalance} setEnabled={toggleUseFyTokenBalance} label="Use fyToken Balance" />
-          <Deposit
-            amount={fyTokenAmount}
-            balance={pool?.fyToken.balance_!}
-            asset={pool?.fyToken}
-            setAmount={(amount: string) => setForm((f) => ({ ...f, fyTokenAmount: amount }))}
-          />
+
+          {useFyTokenBalance && (
+            <InputWrap
+              name="fyTokenAmount"
+              value={fyTokenAmount}
+              asset={pool?.fyToken}
+              balance={pool?.fyToken.balance_!}
+              handleChange={handleInputChange}
+            />
+          )}
         </Grid>
-        <Button action={() => console.log('adding liq')} disabled={!account}>
+        <Button action={handleSubmit} disabled={!account}>
           {!account ? 'Connect Wallet' : 'Add Liquidity'}
         </Button>
       </Inner>

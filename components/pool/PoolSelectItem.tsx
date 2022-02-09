@@ -3,7 +3,7 @@ import tw from 'tailwind-styled-components';
 import { IPool } from '../../lib/protocol/types';
 import AssetLogo from '../common/AssetLogo';
 
-const Button = tw.button` border-2 border-gray-700 hover:border-secondary-500 text-gray-900`;
+const Button = tw.button`border-2 dark:border-gray-700 border-gray-300 hover:border-secondary-500 text-gray-900`;
 
 interface IPoolSelectItem {
   pool: IPool;

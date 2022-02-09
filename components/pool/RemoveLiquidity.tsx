@@ -3,13 +3,13 @@ import { useEffect, useState } from 'react';
 import tw from 'tailwind-styled-components';
 import BackButton from '../common/BackButton';
 import Button from '../common/Button';
-import Deposit from './Deposit';
+import InputWrap from './InputWrap';
 import usePools from '../../hooks/protocol/usePools';
 import PoolSelect from './PoolSelect';
 import { IPool } from '../../lib/protocol/types';
 import useConnector from '../../hooks/useConnector';
 
-const BorderWrap = tw.div`mx-auto max-w-md p-2 border border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
+const BorderWrap = tw.div`mx-auto max-w-md p-2 border border-secondary-400 shadow-sm rounded-lg dark:bg-gray-800 bg-gray-200 dark:text-gray-50`;
 const Inner = tw.div`m-4 text-center`;
 const Header = tw.div`text-lg font-bold justify-items-start align-middle`;
 const HeaderText = tw.span`align-middle`;
@@ -40,6 +40,8 @@ const RemoveLiquidity = () => {
     setForm(INITIAL_FORM_STATE);
   };
 
+  const handleInputChange = (name: string, value: string) => setForm((f) => ({ ...f, [name]: value }));
+
   // reset chosen pool when chainId changes
   useEffect(() => {
     setForm((f) => ({ ...f, pool: undefined }));
@@ -64,11 +66,12 @@ const RemoveLiquidity = () => {
 
         <Grid>
           <HeaderSmall>Remove LP Tokens</HeaderSmall>
-          <Deposit
-            amount={lpTokens}
-            balance={pool?.lpTokenBalance_!}
+          <InputWrap
+            name="lpTokens"
+            value={lpTokens}
             asset={pool?.base}
-            setAmount={(amount: string) => setForm((f) => ({ ...f, lpTokens: amount }))}
+            balance={pool?.lpTokenBalance_!}
+            handleChange={handleInputChange}
           />
         </Grid>
         <Button action={() => console.log('updating liq')} disabled={!account}>

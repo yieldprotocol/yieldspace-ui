@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
 import tw from 'tailwind-styled-components';
 import Button from '../common/Button';
-import Deposit from '../pool/Deposit';
+import InputWrap from '../pool/InputWrap';
 import { ArrowCircleDownIcon } from '@heroicons/react/solid';
 import usePools from '../../hooks/protocol/usePools';
 import PoolSelect from '../pool/PoolSelect';
 import { IAsset, IPool } from '../../lib/protocol/types';
 import useConnector from '../../hooks/useConnector';
+import useTradePreview from '../../hooks/protocol/useTradePreview';
 import InterestRateInput from './InterestRateInput';
+import { TradeActions } from '../../lib/protocol/trade/types';
 
-const BorderWrap = tw.div`mx-auto max-w-md p-2 border border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
+const BorderWrap = tw.div`mx-auto max-w-md p-2 border border-secondary-400 shadow-sm rounded-lg dark:bg-gray-800 bg-gray-200 text-gray-800 dark:text-gray-50`;
 const Inner = tw.div`m-4 text-center`;
 const Header = tw.div`text-lg font-bold justify-items-start align-middle`;
 const HeaderText = tw.span`align-middle`;
@@ -25,6 +27,8 @@ interface ITradeForm {
   toAsset: IAsset | undefined;
   toAmount: string;
   interestRate: string;
+  isFyTokenOutput: boolean;
+  tradeAction: TradeActions;
 }
 
 const INITIAL_FORM_STATE: ITradeForm = {
@@ -34,6 +38,8 @@ const INITIAL_FORM_STATE: ITradeForm = {
   toAsset: undefined,
   toAmount: '',
   interestRate: '',
+  isFyTokenOutput: true,
+  tradeAction: TradeActions.SELL_BASE,
 };
 
 const TradeWidget = () => {
@@ -41,12 +47,91 @@ const TradeWidget = () => {
   const { data: pools, loading } = usePools();
 
   const [form, setForm] = useState<ITradeForm>(INITIAL_FORM_STATE);
+  const { fyTokenOutPreview, baseOutPreview, fyTokenInPreview, baseInPreview } = useTradePreview(
+    form.pool,
+    form.tradeAction,
+    form.fromAmount,
+    form.toAmount,
+    form.isFyTokenOutput
+  );
+  const [updatingFromAmount, setUpdatingFromAmount] = useState<boolean>(false);
+  const [updatingToAmount, setUpdatingToAmount] = useState<boolean>(false);
 
   const handleClearAll = () => setForm(INITIAL_FORM_STATE);
-  const handleToggleDirection = () => setForm((f) => ({ ...f, fromAsset: f.toAsset, toAsset: f.fromAsset }));
+
+  const handleToggleDirection = () => {
+    setForm((f) => ({
+      ...f,
+      fromAsset: f.toAsset,
+      toAsset: f.fromAsset,
+      isFyTokenOutput: !f.isFyTokenOutput,
+    }));
+  };
+
   const handleSubmit = () => {
     console.log('submitting trade with details', form);
   };
+
+  const handleInputChange = (name: string, value: string) => {
+    setForm((f) => ({ ...f, [name]: value }));
+    if (name === 'fromAmount') {
+      setUpdatingFromAmount(true);
+      setUpdatingToAmount(false);
+    } else if (name === 'toAmount') {
+      setUpdatingFromAmount(false);
+      setUpdatingToAmount(true);
+    } else {
+      setUpdatingFromAmount(false);
+      setUpdatingToAmount(false);
+    }
+  };
+
+  // assess what the output value should be based on the trade direction and where the user is inputting
+  const fromValue = () => {
+    if (!updatingFromAmount && !updatingToAmount) return '';
+    switch (form.tradeAction) {
+      case TradeActions.SELL_FYTOKEN:
+        return updatingFromAmount ? fromAmount : baseOutPreview;
+      case TradeActions.SELL_BASE:
+        return updatingFromAmount ? fromAmount : fyTokenOutPreview;
+      case TradeActions.BUY_BASE:
+        return updatingFromAmount ? fromAmount : fyTokenInPreview;
+      case TradeActions.BUY_FYTOKEN:
+        return updatingFromAmount ? fromAmount : baseInPreview;
+      default:
+        return '';
+    }
+  };
+
+  // assess what the output value should be based on the trade direction and where the user is inputting
+  const toValue = () => {
+    if (!updatingFromAmount && !updatingToAmount) return '';
+    switch (form.tradeAction) {
+      case TradeActions.SELL_FYTOKEN:
+        return updatingToAmount ? toAmount : baseOutPreview;
+      case TradeActions.SELL_BASE:
+        return updatingToAmount ? toAmount : fyTokenOutPreview;
+      case TradeActions.BUY_BASE:
+        return updatingToAmount ? toAmount : baseOutPreview;
+      case TradeActions.BUY_FYTOKEN:
+        return updatingToAmount ? toAmount : fyTokenOutPreview;
+      default:
+        return '';
+    }
+  };
+
+  // assess the trade action
+  useEffect(() => {
+    if (form.isFyTokenOutput && updatingToAmount) {
+      setForm((f) => ({ ...f, tradeAction: TradeActions.BUY_FYTOKEN }));
+    } else if (form.isFyTokenOutput && !updatingToAmount) {
+      setForm((f) => ({ ...f, tradeAction: TradeActions.SELL_BASE }));
+    } else if (!form.isFyTokenOutput && updatingToAmount) {
+      setForm((f) => ({ ...f, tradeAction: TradeActions.BUY_BASE }));
+    } else if (!form.isFyTokenOutput && !updatingToAmount) {
+      setForm((f) => ({ ...f, tradeAction: TradeActions.SELL_FYTOKEN }));
+    }
+  }, [form.isFyTokenOutput, updatingToAmount, form.tradeAction]);
 
   // reset form when chainId changes
   useEffect(() => {
@@ -60,9 +145,7 @@ const TradeWidget = () => {
       setForm((f) => ({
         ...f,
         fromAsset: f.pool?.base,
-        fromAmount: '',
         toAsset: f.pool?.fyToken,
-        toAmount: '',
       }));
   }, [form.pool]);
 
@@ -92,11 +175,13 @@ const TradeWidget = () => {
         </Grid>
 
         <Grid>
-          <Deposit
-            amount={fromAmount}
+          <InputWrap
+            name="fromAmount"
+            value={fromValue()}
             balance={fromAsset?.balance_!}
             asset={fromAsset}
-            setAmount={(amount: string) => setForm((f) => ({ ...f, fromAmount: amount }))}
+            handleChange={handleInputChange}
+            disabled={updatingToAmount && !!pool}
           />
           <ArrowCircleDownIcon
             className="justify-self-center text-gray-400 hover:border hover:border-secondary-500 rounded-full hover:cursor-pointer"
@@ -104,11 +189,13 @@ const TradeWidget = () => {
             width={27}
             onClick={handleToggleDirection}
           />
-          <Deposit
-            amount={toAmount}
+          <InputWrap
+            name="toAmount"
+            value={toValue()}
             balance={toAsset?.balance_!}
             asset={toAsset}
-            setAmount={(amount: string) => setForm((f) => ({ ...f, toAmount: amount }))}
+            handleChange={handleInputChange}
+            disabled={updatingFromAmount && !!pool}
           />
         </Grid>
         <Button action={handleSubmit} disabled={!account}>

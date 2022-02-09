@@ -1,36 +1,32 @@
 import { useEffect, useState } from 'react';
 
+const LIGHT = 'light';
+const DARK = 'dark';
+
 export const useColorTheme = () => {
-  const [theme, setTheme] = useState<string>(localStorage.theme || 'dark');
+  const [theme, setTheme] = useState<string>(localStorage.theme || DARK);
 
   const toggleTheme = () => {
     // Whenever the user explicitly chooses light mode
-    if (theme === 'dark') {
+    if (theme === DARK) {
       // Whenever the user explicitly chooses light mode
-      localStorage.theme = 'light';
-      document.documentElement.classList.remove('dark');
-      setTheme('light');
+      localStorage.theme = LIGHT;
+      document.documentElement.classList.remove(DARK);
+      setTheme(LIGHT);
     } else {
-      localStorage.theme = 'dark';
-      document.documentElement.classList.add('dark');
-      setTheme('dark');
+      localStorage.theme = DARK;
+      document.documentElement.classList.add(DARK);
+      setTheme(DARK);
     }
-
-    // // Whenever the user explicitly chooses to respect the OS preference
-    // localStorage.removeItem('theme');
   };
 
   useEffect(() => {
-    // On page load or when changing themes, best to add inline in `head` to avoid FOUC
-    if (
-      localStorage.theme === 'dark' ||
-      (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
-    ) {
-      document.documentElement.classList.add('dark');
-      setTheme('dark');
+    if (localStorage.theme === DARK || !localStorage.theme) {
+      document.documentElement.classList.add(DARK);
+      setTheme(DARK);
     } else {
-      document.documentElement.classList.remove('dark');
-      setTheme('light');
+      document.documentElement.classList.remove(DARK);
+      setTheme(LIGHT);
     }
   }, []);
 

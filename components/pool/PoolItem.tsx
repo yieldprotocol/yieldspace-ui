@@ -2,7 +2,7 @@ import { useRouter } from 'next/router';
 import tw from 'tailwind-styled-components';
 import Button from '../common/Button';
 
-const BorderWrap = tw.div`mx-auto max-w-md p-2 border border-secondary-400 shadow-sm rounded-lg bg-gray-800`;
+const BorderWrap = tw.div`mx-auto max-w-md p-2 border border-secondary-400 shadow-sm rounded-lg dark:bg-gray-800 bg-gray-200 dark:text-gray-50`;
 const Inner = tw.div`align-middle text-left p-5`;
 const ButtonWrap = tw.div`flex justify-between gap-10`;
 const PoolData = tw.div`h-20 align-middle text-center mt-5`;
