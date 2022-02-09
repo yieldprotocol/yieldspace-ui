@@ -6,7 +6,7 @@ html,
 body {
   margin: 0;
   height: 100vh;
-  background: radial-gradient(50% 50% at 50% 50%, #42806810 0, rgba(255, 255, 255, 0) 100%);
+  background: radial-gradient(50% 50% at 50% 50%, #07fcbf10 0, rgba(255, 255, 255, 0) 100%);
 }
 
 button:disabled {
