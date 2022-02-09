@@ -10,12 +10,9 @@ import useConnector from '../../hooks/useConnector';
 import useTradePreview from '../../hooks/protocol/useTradePreview';
 import InterestRateInput from './InterestRateInput';
 import { TradeActions } from '../../lib/protocol/trade/types';
+import { BorderWrap, Header } from '../styles/';
 
-const BorderWrap = tw.div`mx-auto max-w-md p-2 border border-secondary-400 shadow-sm rounded-lg dark:bg-gray-800 bg-gray-200 text-gray-800 dark:text-gray-50`;
 const Inner = tw.div`m-4 text-center`;
-const Header = tw.div`text-lg font-bold justify-items-start align-middle`;
-const HeaderText = tw.span`align-middle`;
-
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
 const TopRow = tw.div`flex justify-between align-middle text-center items-center`;
 const ClearButton = tw.button`text-sm`;
@@ -155,9 +152,7 @@ const TradeWidget = () => {
     <BorderWrap>
       <Inner>
         <TopRow>
-          <Header>
-            <HeaderText>Trade</HeaderText>
-          </Header>
+          <Header>Trade</Header>
           <ClearButton onClick={handleClearAll}>Clear All</ClearButton>
         </TopRow>
 
@@ -181,7 +176,7 @@ const TradeWidget = () => {
             balance={fromAsset?.balance_!}
             asset={fromAsset}
             handleChange={handleInputChange}
-            disabled={updatingToAmount && !!pool}
+            unFocused={updatingToAmount && !!pool}
           />
           <ArrowCircleDownIcon
             className="justify-self-center text-gray-400 hover:border hover:border-secondary-500 rounded-full hover:cursor-pointer"
@@ -195,7 +190,7 @@ const TradeWidget = () => {
             balance={toAsset?.balance_!}
             asset={toAsset}
             handleChange={handleInputChange}
-            disabled={updatingFromAmount && !!pool}
+            unFocused={updatingFromAmount && !!pool}
           />
         </Grid>
         <Button action={handleSubmit} disabled={!account}>

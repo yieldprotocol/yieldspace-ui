@@ -10,13 +10,10 @@ import usePools from '../../hooks/protocol/usePools';
 import PoolSelect from './PoolSelect';
 import { IPool } from '../../lib/protocol/types';
 import useConnector from '../../hooks/useConnector';
+import { BorderWrap, Header } from '../styles/';
 
-const BorderWrap = tw.div`mx-auto max-w-md p-2 border border-secondary-400 shadow-sm rounded-lg dark:bg-gray-800 bg-gray-200 dark:text-gray-50`;
 const Inner = tw.div`m-4 text-center`;
-const Header = tw.div`text-lg font-bold justify-items-start align-middle`;
-const HeaderText = tw.span`align-middle`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
-
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
 const TopRow = tw.div`flex justify-between align-middle text-center items-center`;
 const ClearButton = tw.button`text-sm`;
@@ -50,7 +47,8 @@ const AddLiquidity = () => {
     console.log('submitting with data:', form);
   };
 
-  const handleInputChange = (name: string, value: string) => setForm((f) => ({ ...f, [name]: value }));
+  const handleInputChange = (name: string, value: string) =>
+    setForm((f) => ({ ...f, [name]: value, fyTokenAmount: value }));
 
   // reset chosen pool when chainId changes
   useEffect(() => {
@@ -64,9 +62,7 @@ const AddLiquidity = () => {
       <Inner>
         <TopRow>
           <BackButton onClick={() => router.back()} />
-          <Header>
-            <HeaderText>Add Liquidity</HeaderText>
-          </Header>
+          <Header>Add Liquidity</Header>
           <ClearButton onClick={handleClearAll}>Clear All</ClearButton>
         </TopRow>
 
@@ -95,6 +91,8 @@ const AddLiquidity = () => {
               asset={pool?.fyToken}
               balance={pool?.fyToken.balance_!}
               handleChange={handleInputChange}
+              unFocused={true}
+              disabled
             />
           )}
         </Grid>
