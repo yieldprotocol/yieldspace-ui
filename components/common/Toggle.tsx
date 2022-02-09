@@ -14,7 +14,7 @@ const Toggle: FC<IToggle> = ({ enabled, setEnabled, label }) => (
         checked={enabled}
         onChange={setEnabled}
         className={`${
-          enabled ? 'bg-primary-600' : 'bg-gray-700'
+          enabled ? 'bg-primary-600' : 'dark:bg-gray-700 bg-gray-400'
         } relative inline-flex items-center h-6 rounded-full w-11`}
       >
         <span

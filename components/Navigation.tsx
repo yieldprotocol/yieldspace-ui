@@ -15,7 +15,7 @@ const Container = tw.div`
   dark:bg-gray-900
   border-gray-200
   dark:border-gray-800
-  bg-white 
+  bg-gray-100 
 `;
 
 type LinkItemProps = {
