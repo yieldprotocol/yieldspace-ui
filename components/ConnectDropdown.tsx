@@ -86,7 +86,7 @@ const ConnectDropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setM
                   <Menu.Item>
                     {({ active }) => (
                       <Button onClick={toggleTheme} $active={active}>
-                        {`${(theme[0] as string).toLocaleUpperCase()}${theme.slice(1)}`} Mode
+                        {theme === 'light' ? 'Dark' : 'Light'} Mode
                       </Button>
                     )}
                   </Menu.Item>
