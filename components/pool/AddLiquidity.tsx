@@ -47,7 +47,8 @@ const AddLiquidity = () => {
     console.log('submitting with data:', form);
   };
 
-  const handleInputChange = (name: string, value: string) => setForm((f) => ({ ...f, [name]: value }));
+  const handleInputChange = (name: string, value: string) =>
+    setForm((f) => ({ ...f, [name]: value, fyTokenAmount: value }));
 
   // reset chosen pool when chainId changes
   useEffect(() => {
@@ -90,6 +91,8 @@ const AddLiquidity = () => {
               asset={pool?.fyToken}
               balance={pool?.fyToken.balance_!}
               handleChange={handleInputChange}
+              unFocused={true}
+              disabled
             />
           )}
         </Grid>

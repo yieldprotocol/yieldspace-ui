@@ -3,11 +3,11 @@ import { IAsset } from '../../lib/protocol/types';
 import AssetSelect from '../common/AssetSelect';
 
 type DivProps = {
-  $disabled?: boolean;
+  $unFocused?: boolean;
 };
 
 const Container = tw.div<DivProps>`${(p) =>
-  p.$disabled
+  p.$unFocused
     ? 'opacity-60'
     : ''}  flex rounded-md justify-between p-1 w-full gap-5 align-middle hover:border border hover:border-secondary-500 dark:border-gray-700 dark:bg-gray-700 bg-gray-300 border-gray-300`;
 const Input = tw.input`caret-gray-800 dark:caret-gray-50 text-2xl font-bold appearance-none w-full dark:bg-gray-700 bg-gray-300 dark:focus:text-gray-50 focus:text-gray-800 dark:text-gray-300 text-gray-800  py-3 px-4 leading-tight focus:outline-none `;
@@ -20,10 +20,11 @@ interface IDeposit {
   balance: string;
   handleChange: (name: string, value: string) => void;
   disabled?: boolean;
+  unFocused?: boolean;
 }
 
-const InputWrap = ({ name, value, asset, balance, handleChange, disabled }: IDeposit) => (
-  <Container $disabled={disabled}>
+const InputWrap = ({ name, value, asset, balance, handleChange, disabled, unFocused }: IDeposit) => (
+  <Container $unFocused={unFocused}>
     <Inner>
       <Input
         name={name}
@@ -33,9 +34,10 @@ const InputWrap = ({ name, value, asset, balance, handleChange, disabled }: IDep
         placeholder="0.0"
         onChange={(e) => handleChange(name, e.target.value)}
         min="0"
+        disabled={disabled}
       />
     </Inner>
-    <div className="">
+    <div>
       <div className="w-32 p-1 float-right">
         <AssetSelect asset={asset} />
       </div>

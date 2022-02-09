@@ -176,7 +176,7 @@ const TradeWidget = () => {
             balance={fromAsset?.balance_!}
             asset={fromAsset}
             handleChange={handleInputChange}
-            disabled={updatingToAmount && !!pool}
+            unFocused={updatingToAmount && !!pool}
           />
           <ArrowCircleDownIcon
             className="justify-self-center text-gray-400 hover:border hover:border-secondary-500 rounded-full hover:cursor-pointer"
@@ -190,7 +190,7 @@ const TradeWidget = () => {
             balance={toAsset?.balance_!}
             asset={toAsset}
             handleChange={handleInputChange}
-            disabled={updatingFromAmount && !!pool}
+            unFocused={updatingFromAmount && !!pool}
           />
         </Grid>
         <Button action={handleSubmit} disabled={!account}>
