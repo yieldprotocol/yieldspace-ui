@@ -19,7 +19,7 @@ interface IDeposit {
   asset: IAsset | undefined;
   balance: string;
   handleChange: (name: string, value: string) => void;
-  disabled: boolean;
+  disabled?: boolean;
 }
 
 const InputWrap = ({ name, value, asset, balance, handleChange, disabled }: IDeposit) => (

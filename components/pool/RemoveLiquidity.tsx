@@ -40,6 +40,8 @@ const RemoveLiquidity = () => {
     setForm(INITIAL_FORM_STATE);
   };
 
+  const handleInputChange = (name: string, value: string) => setForm((f) => ({ ...f, [name]: value }));
+
   // reset chosen pool when chainId changes
   useEffect(() => {
     setForm((f) => ({ ...f, pool: undefined }));
@@ -65,10 +67,11 @@ const RemoveLiquidity = () => {
         <Grid>
           <HeaderSmall>Remove LP Tokens</HeaderSmall>
           <InputWrap
-            amount={lpTokens}
-            balance={pool?.lpTokenBalance_!}
+            name="lpTokens"
+            value={lpTokens}
             asset={pool?.base}
-            setAmount={(amount: string) => setForm((f) => ({ ...f, lpTokens: amount }))}
+            balance={pool?.lpTokenBalance_!}
+            handleChange={handleInputChange}
           />
         </Grid>
         <Button action={() => console.log('updating liq')} disabled={!account}>

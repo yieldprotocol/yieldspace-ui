@@ -50,6 +50,8 @@ const AddLiquidity = () => {
     console.log('submitting with data:', form);
   };
 
+  const handleInputChange = (name: string, value: string) => setForm((f) => ({ ...f, [name]: value }));
+
   // reset chosen pool when chainId changes
   useEffect(() => {
     setForm((f) => ({ ...f, pool: undefined }));
@@ -75,10 +77,11 @@ const AddLiquidity = () => {
         <Grid>
           <HeaderSmall>Deposit Amounts</HeaderSmall>
           <InputWrap
-            amount={baseAmount}
-            balance={pool?.base.balance_!}
+            name="baseAmount"
+            value={baseAmount}
             asset={pool?.base}
-            setAmount={(amount: string) => setForm((f) => ({ ...f, baseAmount: amount }))}
+            balance={pool?.base.balance_!}
+            handleChange={handleInputChange}
           />
 
           {useFyTokenBalance && <PlusIcon className="justify-self-center" height={20} width={20} />}
@@ -87,10 +90,11 @@ const AddLiquidity = () => {
 
           {useFyTokenBalance && (
             <InputWrap
-              amount={fyTokenAmount}
-              balance={pool?.fyToken.balance_!}
+              name="fyTokenAmount"
+              value={fyTokenAmount}
               asset={pool?.fyToken}
-              setAmount={(amount: string) => setForm((f) => ({ ...f, fyTokenAmount: amount }))}
+              balance={pool?.fyToken.balance_!}
+              handleChange={handleInputChange}
             />
           )}
         </Grid>
