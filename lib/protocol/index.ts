@@ -50,6 +50,7 @@ export const getPools = async (
       lpTokenBalance,
       baseReserves,
       fyTokenReserves,
+      totalSupply,
     ] = await Promise.all([
       poolContract.name(),
       poolContract.symbol(),
@@ -64,6 +65,7 @@ export const getPools = async (
       poolContract.balanceOf(account!),
       poolContract.getBaseBalance(),
       poolContract.getFYTokenBalance(),
+      poolContract.totalSupply(),
     ]);
 
     const base = await getAsset(provider, baseAddress, account);
@@ -90,6 +92,8 @@ export const getPools = async (
       fyTokenReserves,
       fyTokenReserves_: cleanValue(ethers.utils.formatUnits(fyTokenReserves, decimals), 2),
       getTimeTillMaturity,
+      contract: poolContract,
+      totalSupply,
     };
     return { ...(await pools), [address]: _chargePool(newPool) };
   }, {});
@@ -160,6 +164,7 @@ export const getAsset = async (
     decimals,
     balance,
     balance_: cleanValue(ethers.utils.formatUnits(balance, decimals), 2),
+    getAllowance: async (acc: string, spender: string) => ERC20.allowance(acc, spender),
   };
 };
 

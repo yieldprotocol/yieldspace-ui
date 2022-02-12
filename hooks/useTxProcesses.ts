@@ -1,46 +1,22 @@
 import { useState } from 'react';
 import { ContractReceipt, ContractTransaction, ethers } from 'ethers';
-import { TransactionReceipt } from '@ethersproject/providers';
-import { ApprovalType } from '../lib/tx/types';
+import { ApprovalType, ITxProcess, Status } from '../lib/tx/types';
+import { v4 as uuid } from 'uuid';
 
 const INIT_STATE: Map<string, ITxProcess> = new Map([]);
-
-interface ITxProcess {
-  id: string;
-  sig: ISig;
-  tx: ITx;
-}
-
-interface ISig {
-  id: string;
-  txCode: string;
-  sigData: string;
-  status: Status;
-  error: string;
-}
-
-interface ITx {
-  txCode: string;
-  txHash: string;
-  receipt: TransactionReceipt | undefined;
-  status: Status;
-  error: string;
-}
-
-enum Status {
-  FAILED = 'failed',
-  REJECTED = 'rejected',
-  SUCCESS = 'success',
-  PENDING = 'pending',
-  WILL_FAIL = 'will fail',
-  COMPLETE = 'complete',
-}
 
 const useTxProcess = () => {
   const [txProcesses, setTxProceses] = useState<Map<string, ITxProcess>>(INIT_STATE);
 
-  const updateTxProcess = (txProcess: ITxProcess, data: any) => {
-    const tx = txProcesses.get(txProcess.id);
+  const addTxProcess = () => {
+    const id = uuid();
+    setTxProceses((_txProcesses) => ({ ..._txProcesses, [id]: { id } }));
+    return id;
+  };
+
+  // updates a sepcific tx process based on id, or creates the tx process
+  const updateTxProcess = (txProcess: ITxProcess, data?: any) => {
+    const tx = txProcesses.get(txProcess.Id);
     setTxProceses((_txProcesses) => ({ ..._txProcesses, [tx?.id!]: { ...tx, ...data } }));
   };
 
@@ -138,6 +114,8 @@ const useTxProcess = () => {
     handleSign,
     handleTxWillFail,
     updateTxProcess,
+    addTxProcess,
+    txProcesses,
   };
 };
 

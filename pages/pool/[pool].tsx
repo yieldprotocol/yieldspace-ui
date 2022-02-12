@@ -3,7 +3,7 @@ import tw from 'tailwind-styled-components';
 
 const DynamicPoolItem = dynamic(() => import('../../components/pool/PoolItem'), { ssr: false });
 
-const Container = tw.div`p-10 text-center align-middle justify-center`;
+const Container = tw.div`text-center align-middle justify-center`;
 
 const PoolItemPage = () => (
   <Container>

@@ -1,5 +1,6 @@
 import { Web3Provider } from '@ethersproject/providers';
 import { BigNumber, Contract, ethers } from 'ethers';
+import { Pool, Pool__factory } from '../../contracts/types';
 
 export type Provider = Web3Provider | ethers.providers.InfuraProvider;
 
@@ -45,6 +46,9 @@ export interface IPool {
   baseReserves_: string;
   fyTokenReserves: BigNumber;
   fyTokenReserves_: string;
+  totalSupply: BigNumber;
+
+  contract: Pool;
 }
 
 export interface IAssetConfig {
@@ -57,4 +61,5 @@ export interface IAsset {
   decimals: number;
   balance: BigNumber;
   balance_: string;
+  getAllowance: (account: string, spender: string) => Promise<BigNumber>;
 }

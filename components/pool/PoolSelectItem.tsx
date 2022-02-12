@@ -5,7 +5,7 @@ import AssetLogo from '../common/AssetLogo';
 
 const Button = tw.button`
   h-full w-full dark:border-gray-700 border-gray-300 text-gray-900
-  flex p-4 rounded-md gap-3 align-middle items-center hover:opacity-80
+  flex p-4 rounded-lg gap-3 align-middle items-center hover:opacity-80
 `;
 
 interface IPoolSelectItem {
