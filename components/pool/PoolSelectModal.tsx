@@ -1,7 +1,10 @@
 import { FC, useEffect, useState } from 'react';
+import tw from 'tailwind-styled-components';
 import { IPool, IPoolMap } from '../../lib/protocol/types';
 import Modal from '../common/Modal';
 import PoolSelectItem from './PoolSelectItem';
+
+const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
 
 interface IPoolSelectModal {
   pools: IPoolMap;
@@ -21,16 +24,18 @@ const PoolSelectModal: FC<IPoolSelectModal> = ({ pools, open, setOpen, action })
 
   return (
     <Modal isOpen={open} setIsOpen={setOpen}>
-      {poolList.map((pool) => (
-        <PoolSelectItem
-          key={pool.address}
-          pool={pool}
-          action={() => {
-            action(pool);
-            setOpen(false);
-          }}
-        />
-      ))}
+      <Grid>
+        {poolList.map((pool) => (
+          <PoolSelectItem
+            key={pool.address}
+            pool={pool}
+            action={() => {
+              action(pool);
+              setOpen(false);
+            }}
+          />
+        ))}
+      </Grid>
     </Modal>
   );
 };

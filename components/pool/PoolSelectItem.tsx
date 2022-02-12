@@ -3,7 +3,10 @@ import tw from 'tailwind-styled-components';
 import { IPool } from '../../lib/protocol/types';
 import AssetLogo from '../common/AssetLogo';
 
-const Button = tw.button`border-2 dark:border-gray-700 border-gray-300 hover:border-secondary-500 text-gray-900`;
+const Button = tw.button`
+  h-full w-full dark:border-gray-700 border-gray-300 text-gray-900
+  flex p-4 rounded-md gap-3 align-middle items-center hover:opacity-80
+`;
 
 interface IPoolSelectItem {
   pool: IPool;
@@ -12,7 +15,6 @@ interface IPoolSelectItem {
 
 const PoolSelectItem: FC<IPoolSelectItem> = ({ pool, action }) => (
   <Button
-    className="flex my-2 p-4 rounded-md gap-3 align-middle w-full items-center hover:opacity-80"
     style={{
       background: pool.color,
     }}
