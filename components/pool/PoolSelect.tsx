@@ -16,7 +16,7 @@ const PoolSelect: FC<IPoolSelect> = ({ pools, pool, setPool, poolsLoading }) => 
 
   if (!pools) return <>no pools detected</>;
   return (
-    <>
+    <div className="h-12">
       {pool ? (
         <PoolSelectItem pool={pool} action={() => setModalOpen(true)} />
       ) : (
@@ -25,7 +25,7 @@ const PoolSelect: FC<IPoolSelect> = ({ pools, pool, setPool, poolsLoading }) => 
         </Button>
       )}
       {modalOpen && <PoolSelectModal pools={pools} open={modalOpen} setOpen={setModalOpen} action={setPool} />}
-    </>
+    </div>
   );
 };
 

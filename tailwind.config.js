@@ -9,7 +9,7 @@ module.exports = {
       gray: colors.zinc,
       green: colors.emerald,
       primary: colors.teal,
-      secondary: colors.teal,
+      secondary: colors.amber,
     },
   },
   plugins: [],
