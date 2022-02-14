@@ -154,12 +154,14 @@ export const getAsset = async (
 ): Promise<IAsset> => {
   const ERC20 = ERC20Permit__factory.connect(tokenAddress, provider);
 
-  const [symbol, decimals] = await Promise.all([ERC20.symbol(), ERC20.decimals()]);
+  const [symbol, decimals, name] = await Promise.all([ERC20.symbol(), ERC20.decimals(), ERC20.name()]);
 
   const balance = account ? await getBalance(provider, tokenAddress, account, isFyToken) : ethers.constants.Zero;
 
   return {
     address: tokenAddress,
+    version: symbol === 'USDC' ? '2' : '1',
+    name,
     symbol: symbol.includes('FY') ? formatFyTokenSymbol(symbol) : symbol,
     decimals,
     balance,

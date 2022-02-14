@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { BigNumber, ContractReceipt, ethers, PayableOverrides } from 'ethers';
 import { signDaiPermit, signERC2612Permit } from 'eth-permit';
 
@@ -8,27 +9,26 @@ import { ApprovalType, ICallData, ISignData, ITxProcess } from '../lib/tx/types'
 import { MAX_256 } from '../constants';
 import { ERC20Permit__factory } from '../contracts/types';
 import { DAI_PERMIT_ASSETS, NON_PERMIT_ASSETS } from '../config/assets';
-import { LadleActions } from '../lib/tx/operations';
+import { LadleActions, RoutedActions } from '../lib/tx/operations';
 import { IPool } from '../lib/protocol/types';
+import { FunctionFragment } from 'ethers/lib/utils';
 
 /* Get ETH value from JOIN_ETHER OPCode, else zero -> N.B. other values sent in with other OPS are ignored for now */
-const _getCallValue = (_call: ICallData): BigNumber => {
-  const joinEtherCall = _call.operation === LadleActions.Fn.JOIN_ETHER ? _call : null;
+const _getCallValue = (calls: ICallData[]): BigNumber => {
+  const joinEtherCall = calls.find((call: any) => call.operation === LadleActions.Fn.JOIN_ETHER);
   return joinEtherCall ? BigNumber.from(joinEtherCall?.overrides?.value) : ethers.constants.Zero;
 };
 
 /* Generic hook for chain transactions */
-const useTransaction = (pool: IPool, description: string | null) => {
+const useTransaction = (pool: IPool, description: string | undefined) => {
   const approveMax = false;
   const { account, provider, chainId } = useConnector();
 
-  const { handleTx, handleSign, handleTxWillFail, addTxProcess, txProcesses } = useTxProcesses();
+  const { handleTx, handleSign, handleTxWillFail, addTxProcess } = useTxProcesses();
   const signer = account ? provider?.getSigner(account) : provider?.getSigner(0);
   const approvalMethod = useApprovalMethod();
 
-  // tx process id
-  let id: string;
-  let txProcess: ITxProcess | undefined;
+  const [txProcess, setTxProcess] = useState<ITxProcess | undefined>();
 
   /**
    * TRANSACTING
@@ -36,11 +36,13 @@ const useTransaction = (pool: IPool, description: string | null) => {
    *
    * * @returns { Promise<void> }
    */
-  const transact = async (_call: ICallData): Promise<ContractReceipt | null | void> => {
+  const transact = async (_calls: ICallData[]): Promise<ContractReceipt | null | void> => {
+    console.log('transactingggggggg');
+    console.log('🦄 ~ file: useTransaction.ts ~ line 39 ~ transact ~ _call', _calls);
     const _contract = pool.contract.connect(signer!);
 
     /* calculate the value sent */
-    const _batchValue = _getCallValue(_call);
+    const _batchValue = _getCallValue(_calls);
     // console.log('Batch value sent:', batchValue.toString());
 
     /* calculate the gas required */
@@ -59,8 +61,10 @@ const useTransaction = (pool: IPool, description: string | null) => {
     if (gasEstFail) {
       return handleTxWillFail(txProcess!);
     }
-
-    const func = () => _contract[_call.operation as string]();
+    const funcName = _calls[_calls.length - 1].operation!;
+    const args = _calls[_calls.length - 1].args!;
+    const func = () => _contract[funcName as string](...args);
+    console.log('🦄 ~ file: useTransaction.ts ~ line 67 ~ transact ~ txProcess', txProcess);
     /* Finally, send out the transaction */
     return handleTx(func, txProcess!);
   };
@@ -74,8 +78,9 @@ const useTransaction = (pool: IPool, description: string | null) => {
    * @returns { Promise<ICallData[]> }
    */
   const sign = async (requestedSignatures: ISignData[]): Promise<ICallData[]> => {
-    id = addTxProcess(description);
-    txProcess = txProcesses.get(id);
+    console.log('signinggggggggggggggggg');
+    const _txProcess = addTxProcess(description);
+    setTxProcess(_txProcess);
 
     /* Get the spender if not provided, defaults to ladle */
     const getSpender = (spender: string) => {
@@ -114,8 +119,8 @@ const useTransaction = (pool: IPool, description: string | null) => {
                 _spender
               ),
             /* This is the function to call if using fallback approvals */
-            () => handleTx(() => tokenContract.approve(_spender, _amount!), txProcess!, true),
-            txProcess!,
+            () => handleTx(() => tokenContract.approve(_spender, _amount!), _txProcess, true),
+            _txProcess,
             approvalMethod
           );
 
@@ -141,6 +146,7 @@ const useTransaction = (pool: IPool, description: string | null) => {
           Or else - if not DAI-BASED, request the signature using ERC2612 Permit style
           (handleSignature() wraps the sign function for in app tracking and tracing )
         */
+
         const { v, r, s, value, deadline } = await handleSign(
           () =>
             signERC2612Permit(
@@ -158,13 +164,13 @@ const useTransaction = (pool: IPool, description: string | null) => {
               _amount
             ),
           /* this is the function for if using fallback approvals */
-          () => handleTx(() => tokenContract.approve(_spender, _amount!), txProcess!, true),
-          txProcess!,
+          () => handleTx(() => tokenContract.approve(_spender, _amount!), _txProcess, true),
+          _txProcess,
           NON_PERMIT_ASSETS.includes(reqSig.target.symbol) ? ApprovalType.TX : approvalMethod
         );
 
         const args = [
-          reqSig.target.address, // the asset id OR the seriesId (if signing fyToken)
+          reqSig.target.address, // the asset id OR the pool address (if signing fyToken)
           _spender,
           value,
           deadline,
@@ -185,7 +191,7 @@ const useTransaction = (pool: IPool, description: string | null) => {
     return signedList.filter((x) => !x.ignoreIf);
   };
 
-  return { sign, transact };
+  return { sign, transact, txProcess };
 };
 
 export default useTransaction;
