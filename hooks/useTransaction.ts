@@ -1,4 +1,4 @@
-import { BigNumber, ethers, PayableOverrides } from 'ethers';
+import { BigNumber, ContractReceipt, ethers, PayableOverrides } from 'ethers';
 import { signDaiPermit, signERC2612Permit } from 'eth-permit';
 
 import { useApprovalMethod } from './useApprovalMethod';
@@ -18,15 +18,17 @@ const _getCallValue = (_call: ICallData): BigNumber => {
 };
 
 /* Generic hook for chain transactions */
-const useTransaction = (pool: IPool) => {
+const useTransaction = (pool: IPool, description: string | null) => {
   const approveMax = false;
   const { account, provider, chainId } = useConnector();
 
   const { handleTx, handleSign, handleTxWillFail, addTxProcess, txProcesses } = useTxProcesses();
-  const id = addTxProcess();
-  const txProcess = txProcesses.get(id);
-  const approvalMethod = useApprovalMethod();
   const signer = account ? provider?.getSigner(account) : provider?.getSigner(0);
+  const approvalMethod = useApprovalMethod();
+
+  // tx process id
+  let id: string;
+  let txProcess: ITxProcess | undefined;
 
   /**
    * TRANSACTING
@@ -34,7 +36,7 @@ const useTransaction = (pool: IPool) => {
    *
    * * @returns { Promise<void> }
    */
-  const transact = async (_call: ICallData): Promise<void> => {
+  const transact = async (_call: ICallData): Promise<ContractReceipt | null | void> => {
     const _contract = pool.contract.connect(signer!);
 
     /* calculate the value sent */
@@ -60,7 +62,7 @@ const useTransaction = (pool: IPool) => {
 
     const func = () => _contract[_call.operation as string]();
     /* Finally, send out the transaction */
-    return handleTx(func, txProcess);
+    return handleTx(func, txProcess!);
   };
 
   /**
@@ -72,6 +74,9 @@ const useTransaction = (pool: IPool) => {
    * @returns { Promise<ICallData[]> }
    */
   const sign = async (requestedSignatures: ISignData[]): Promise<ICallData[]> => {
+    id = addTxProcess(description);
+    txProcess = txProcesses.get(id);
+
     /* Get the spender if not provided, defaults to ladle */
     const getSpender = (spender: string) => {
       if (ethers.utils.isAddress(spender)) {

@@ -11,6 +11,7 @@ import PoolSelect from './PoolSelect';
 import { IPool } from '../../lib/protocol/types';
 import useConnector from '../../hooks/useConnector';
 import { BorderWrap, Header } from '../styles/';
+import { toast } from 'react-toastify';
 
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
@@ -57,6 +58,10 @@ const AddLiquidity = () => {
 
   const { pool, baseAmount, fyTokenAmount } = form;
 
+  useEffect(() => {
+    const notify = () => toast('Wow so easy!');
+    notify();
+  }, []);
   return (
     <BorderWrap>
       <Inner>

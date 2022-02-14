@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ContractReceipt, ContractTransaction, ethers } from 'ethers';
+import { ContractReceipt, ContractTransaction } from 'ethers';
 import { ApprovalType, ITxProcess, Status } from '../lib/tx/types';
 import { v4 as uuid } from 'uuid';
 
@@ -8,15 +8,15 @@ const INIT_STATE: Map<string, ITxProcess> = new Map([]);
 const useTxProcess = () => {
   const [txProcesses, setTxProceses] = useState<Map<string, ITxProcess>>(INIT_STATE);
 
-  const addTxProcess = () => {
+  const addTxProcess = (description?: string | null) => {
     const id = uuid();
-    setTxProceses((_txProcesses) => ({ ..._txProcesses, [id]: { id } }));
+    setTxProceses((_txProcesses) => ({ ..._txProcesses, [id]: { id, description } }));
     return id;
   };
 
   // updates a sepcific tx process based on id, or creates the tx process
   const updateTxProcess = (txProcess: ITxProcess, data?: any) => {
-    const tx = txProcesses.get(txProcess.Id);
+    const tx = txProcesses.get(txProcess.id);
     setTxProceses((_txProcesses) => ({ ..._txProcesses, [tx?.id!]: { ...tx, ...data } }));
   };
 
@@ -37,7 +37,7 @@ const useTxProcess = () => {
     txFn: () => Promise<any>,
     txProcess: ITxProcess,
     _isfallback: boolean = false
-  ): Promise<ethers.ContractReceipt | null> => {
+  ): Promise<ContractReceipt | null> => {
     updateTxProcess(txProcess, { tx: { status: Status.PENDING } });
 
     let tx: ContractTransaction;
