@@ -1,5 +1,7 @@
 import { Web3Provider } from '@ethersproject/providers';
 import { BigNumber, Contract, ethers } from 'ethers';
+import { Pool } from '../../contracts/types';
+import { ISignable } from '../tx/types';
 
 export type Provider = Web3Provider | ethers.providers.InfuraProvider;
 
@@ -45,16 +47,21 @@ export interface IPool {
   baseReserves_: string;
   fyTokenReserves: BigNumber;
   fyTokenReserves_: string;
+  totalSupply: BigNumber;
+
+  contract: Pool;
 }
 
 export interface IAssetConfig {
   digitFormat: number;
 }
 
-export interface IAsset {
+export interface IAsset extends ISignable {
+  name: string;
   address: string;
   symbol: string;
   decimals: number;
   balance: BigNumber;
   balance_: string;
+  getAllowance: (account: string, spender: string) => Promise<BigNumber>;
 }

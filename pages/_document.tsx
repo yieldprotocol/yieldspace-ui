@@ -1,7 +1,7 @@
 import Document, { Html, Head, Main, NextScript } from 'next/document';
 import tw from 'tailwind-styled-components';
 
-const Body = tw.body`bg-gray-50 dark:bg-gray-900`;
+const Body = tw.body`bg-gray-50 dark:bg-gray-800`;
 
 class MyDocument extends Document {
   render() {

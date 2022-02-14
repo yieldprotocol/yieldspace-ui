@@ -4,7 +4,7 @@ const LIGHT = 'light';
 const DARK = 'dark';
 
 export const useColorTheme = () => {
-  const [theme, setTheme] = useState<string>(localStorage.theme || DARK);
+  const [theme, setTheme] = useState<string>(DARK);
 
   const toggleTheme = () => {
     // Whenever the user explicitly chooses light mode

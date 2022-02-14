@@ -11,6 +11,8 @@ import PoolSelect from './PoolSelect';
 import { IPool } from '../../lib/protocol/types';
 import useConnector from '../../hooks/useConnector';
 import { BorderWrap, Header } from '../styles/';
+import { useAddLiquidity } from '../../hooks/protocol/useAddLiquidity';
+import { AddLiquidityType } from '../../lib/protocol/liquidity/types';
 
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
@@ -38,13 +40,20 @@ const AddLiquidity = () => {
   const [form, setForm] = useState<IAddLiquidityForm>(INITIAL_FORM_STATE);
 
   const [useFyTokenBalance, toggleUseFyTokenBalance] = useState<boolean>(false);
+  const [description, setDescription] = useState<string | null>();
+
+  const addLiquidity = useAddLiquidity(form.pool!, description);
 
   const handleClearAll = () => {
     setForm(INITIAL_FORM_STATE);
   };
 
   const handleSubmit = () => {
-    console.log('submitting with data:', form);
+    const _description = `Adding ${form.baseAmount} ${pool?.base.symbol}${
+      +form.fyTokenAmount > 0 && useFyTokenBalance ? ` and ${form.fyTokenAmount} ${pool?.fyToken.symbol}` : ''
+    }`;
+    setDescription(_description);
+    form.pool && addLiquidity(form.baseAmount, AddLiquidityType.BUY);
   };
 
   const handleInputChange = (name: string, value: string) =>
@@ -96,7 +105,7 @@ const AddLiquidity = () => {
             />
           )}
         </Grid>
-        <Button action={handleSubmit} disabled={!account}>
+        <Button action={handleSubmit} disabled={!account || !pool || !baseAmount}>
           {!account ? 'Connect Wallet' : 'Add Liquidity'}
         </Button>
       </Inner>
