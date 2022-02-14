@@ -3,9 +3,13 @@ import tw from 'tailwind-styled-components';
 import { IPool } from '../../lib/protocol/types';
 import AssetLogo from '../common/AssetLogo';
 
-const Button = tw.button`
-  h-full w-full dark:border-gray-700 border-gray-300 text-gray-900
-  flex p-4 rounded-lg gap-3 align-middle items-center hover:opacity-80
+const Inner = tw.div`
+  h-full w-full dark:bg-gray-900/90 bg-gray-100/90 dark:text-gray-50 text-gray-900 rounded-lg
+  flex p-3 gap-3
+`;
+
+const Outer = tw.button`w-full flex p-[1px]
+rounded-lg gap-3 align-middle items-center hover:opacity-80
 `;
 
 interface IPoolSelectItem {
@@ -14,18 +18,20 @@ interface IPoolSelectItem {
 }
 
 const PoolSelectItem: FC<IPoolSelectItem> = ({ pool, action }) => (
-  <Button
+  <Outer
     style={{
       background: pool.color,
     }}
+    key={pool.address}
     onClick={() => {
       action(pool);
     }}
-    key={pool.address}
   >
-    <AssetLogo image={pool.base.symbol} />
-    {pool.name}
-  </Button>
+    <Inner>
+      <AssetLogo image={pool.base.symbol} />
+      {pool.name}
+    </Inner>
+  </Outer>
 );
 
 export default PoolSelectItem;
