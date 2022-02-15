@@ -125,6 +125,8 @@ export const getContracts = (provider: Provider, chainId: number): IContractMap 
   const { addresses } = yieldEnv;
   const chainAddrs = addresses[chainId];
 
+  if (!chainAddrs) return undefined;
+
   return Object.keys(chainAddrs).reduce((contracts: IContractMap, name: string) => {
     if (CONTRACTS_TO_FETCH.includes(name)) {
       try {

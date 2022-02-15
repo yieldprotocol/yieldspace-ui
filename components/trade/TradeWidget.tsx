@@ -169,7 +169,7 @@ const TradeWidget = () => {
           />
         </Grid>
 
-        <Grid>
+        <div className="flex flex-col gap-1 my-5">
           <InputWrap
             name="fromAmount"
             value={fromValue()}
@@ -178,12 +178,18 @@ const TradeWidget = () => {
             handleChange={handleInputChange}
             unFocused={updatingToAmount && !!pool}
           />
-          <ArrowCircleDownIcon
-            className="justify-self-center text-gray-400 hover:border hover:border-secondary-500 rounded-full hover:cursor-pointer"
-            height={27}
-            width={27}
-            onClick={handleToggleDirection}
-          />
+          <div className="relative flex justify-center items-center w-full">
+            <div className="flex items-center justify-end relative w-full">
+              <div className="absolute left-0 right-0 flex items-center justify-center">
+                <ArrowCircleDownIcon
+                  className="justify-self-center text-gray-400 hover:border hover:border-secondary-500 rounded-full hover:cursor-pointer z-10"
+                  height={27}
+                  width={27}
+                  onClick={handleToggleDirection}
+                />
+              </div>
+            </div>
+          </div>
           <InputWrap
             name="toAmount"
             value={toValue()}
@@ -192,7 +198,7 @@ const TradeWidget = () => {
             handleChange={handleInputChange}
             unFocused={updatingFromAmount && !!pool}
           />
-        </Grid>
+        </div>
         <Button action={handleSubmit} disabled={!account}>
           {!account ? 'Connect Wallet' : 'Trade'}
         </Button>
