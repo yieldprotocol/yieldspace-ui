@@ -34,6 +34,7 @@ const INITIAL_FORM_STATE: IAddLiquidityForm = {
 
 const AddLiquidity = () => {
   const router = useRouter();
+  const { address } = router.query;
   const { chainId, account } = useConnector();
   const { data: pools } = usePools();
 
@@ -63,6 +64,11 @@ const AddLiquidity = () => {
   useEffect(() => {
     setForm((f) => ({ ...f, pool: undefined }));
   }, [chainId]);
+
+  // use pool address from router query if available
+  useEffect(() => {
+    setForm((f) => ({ ...f, pool: pools![address as string] }));
+  }, [pools, address]);
 
   const { pool, baseAmount, fyTokenAmount } = form;
 

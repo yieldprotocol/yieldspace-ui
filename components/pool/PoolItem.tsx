@@ -34,8 +34,8 @@ const PoolItem: FC<IPoolItem> = () => {
     <BorderWrap>
       <Inner>
         <ButtonWrap>
-          <Button action={() => router.push('/pool/add')}>Add Liquidity</Button>
-          <Button action={() => router.push('/pool/remove')}>Remove</Button>
+          <Button action={() => router.push(`/pool/add/${address}`)}>Add Liquidity</Button>
+          <Button action={() => router.push(`/pool/remove/${address}`)}>Remove</Button>
         </ButtonWrap>
         <PoolData>lp tokens: {pool.lpTokenBalance_}</PoolData>
       </Inner>

@@ -28,6 +28,7 @@ const INITIAL_FORM_STATE: IRemoveLiquidityForm = {
 
 const RemoveLiquidity = () => {
   const router = useRouter();
+  const { address } = router.query;
   const { chainId, account } = useConnector();
   const { data: pools } = usePools();
 
@@ -43,6 +44,11 @@ const RemoveLiquidity = () => {
   useEffect(() => {
     setForm((f) => ({ ...f, pool: undefined }));
   }, [chainId]);
+
+  // use pool address from router query if avaialable
+  useEffect(() => {
+    setForm((f) => ({ ...f, pool: pools![address as string] }));
+  }, [pools, address]);
 
   const { pool, lpTokens } = form;
 
