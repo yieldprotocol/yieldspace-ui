@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BigNumber, ContractReceipt, ethers, PayableOverrides } from 'ethers';
+import { ethers } from 'ethers';
 import { signDaiPermit, signERC2612Permit } from 'eth-permit';
 
 import { useApprovalMethod } from './useApprovalMethod';
@@ -9,65 +9,24 @@ import { ApprovalType, ICallData, ISignData, ITxProcess } from '../lib/tx/types'
 import { MAX_256 } from '../constants';
 import { ERC20Permit__factory } from '../contracts/types';
 import { DAI_PERMIT_ASSETS, NON_PERMIT_ASSETS } from '../config/assets';
-import { LadleActions, RoutedActions } from '../lib/tx/operations';
-import { IPool } from '../lib/protocol/types';
-import { FunctionFragment } from 'ethers/lib/utils';
+import { LadleActions } from '../lib/tx/operations';
 
 /* Get ETH value from JOIN_ETHER OPCode, else zero -> N.B. other values sent in with other OPS are ignored for now */
-const _getCallValue = (calls: ICallData[]): BigNumber => {
-  const joinEtherCall = calls.find((call: any) => call.operation === LadleActions.Fn.JOIN_ETHER);
-  return joinEtherCall ? BigNumber.from(joinEtherCall?.overrides?.value) : ethers.constants.Zero;
-};
+// const _getCallValue = (calls: ICallData[]): BigNumber => {
+//   const joinEtherCall = calls.find((call) => call.operation === LadleActions.Fn.JOIN_ETHER);
+//   return joinEtherCall ? BigNumber.from(joinEtherCall?.overrides?.value) : ethers.constants.Zero;
+// };
 
 /* Generic hook for chain transactions */
-const useTransaction = (pool: IPool, description: string | undefined) => {
+const useSignature = (description: string | undefined) => {
   const approveMax = false;
   const { account, provider, chainId } = useConnector();
 
-  const { handleTx, handleSign, handleTxWillFail, addTxProcess } = useTxProcesses();
-  const signer = account ? provider?.getSigner(account) : provider?.getSigner(0);
+  const { handleTx, handleSign, addTxProcess } = useTxProcesses();
+  const signer = provider?.getSigner(account);
   const approvalMethod = useApprovalMethod();
 
   const [txProcess, setTxProcess] = useState<ITxProcess | undefined>();
-
-  /**
-   * TRANSACTING
-   * @param { ICallData[] } calls list of callData as ICallData
-   *
-   * * @returns { Promise<void> }
-   */
-  const transact = async (_calls: ICallData[]): Promise<ContractReceipt | null | void> => {
-    console.log('transactingggggggg');
-    console.log('🦄 ~ file: useTransaction.ts ~ line 39 ~ transact ~ _call', _calls);
-    const _contract = pool.contract.connect(signer!);
-
-    /* calculate the value sent */
-    const _batchValue = _getCallValue(_calls);
-    // console.log('Batch value sent:', batchValue.toString());
-
-    /* calculate the gas required */
-    let gasEst: BigNumber;
-    let gasEstFail: boolean = false;
-    try {
-      // gasEst = await _contract.estimateGas.batch(encodedCalls, { value: batchValue } as PayableOverrides);
-      // console.log('Auto gas estimate:', gasEst.mul(120).div(100).toString());
-    } catch (e) {
-      console.log('Failed to get gas estimate', e);
-      // toast.warning('It appears the transaction will likely fail. Proceed with caution...');
-      gasEstFail = true;
-    }
-
-    /* handle if the tx if going to fail and transactions aren't forced */
-    if (gasEstFail) {
-      return handleTxWillFail(txProcess!);
-    }
-    const funcName = _calls[_calls.length - 1].operation!;
-    const args = _calls[_calls.length - 1].args!;
-    const func = () => _contract[funcName as string](...args);
-    console.log('🦄 ~ file: useTransaction.ts ~ line 67 ~ transact ~ txProcess', txProcess);
-    /* Finally, send out the transaction */
-    return handleTx(func, txProcess!);
-  };
 
   /**
    * SIGNING
@@ -191,7 +150,7 @@ const useTransaction = (pool: IPool, description: string | undefined) => {
     return signedList.filter((x) => !x.ignoreIf);
   };
 
-  return { sign, transact, txProcess };
+  return { sign, signer, txProcess };
 };
 
-export default useTransaction;
+export default useSignature;

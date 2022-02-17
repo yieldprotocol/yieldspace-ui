@@ -155,6 +155,7 @@ export const getAsset = async (
   isFyToken: boolean = false
 ): Promise<IAsset> => {
   const ERC20 = ERC20Permit__factory.connect(tokenAddress, provider);
+  const FYTOKEN = FYToken__factory.connect(tokenAddress, provider);
 
   const [symbol, decimals, name] = await Promise.all([ERC20.symbol(), ERC20.decimals(), ERC20.name()]);
 
@@ -168,6 +169,7 @@ export const getAsset = async (
     decimals,
     balance,
     balance_: cleanValue(ethers.utils.formatUnits(balance, decimals), 2),
+    contract: isFyToken ? FYTOKEN : ERC20,
     getAllowance: async (acc: string, spender: string) => ERC20.allowance(acc, spender),
   };
 };

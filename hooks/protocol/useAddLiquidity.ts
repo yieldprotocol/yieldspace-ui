@@ -1,30 +1,28 @@
 import { BigNumber, ethers } from 'ethers';
 import { cleanValue } from '../../utils/appUtils';
-// import { BLANK_VAULT } from '../../utils/constants';
-import useTransaction from '../useTransaction';
 
 import { calcPoolRatios, calculateSlippage, fyTokenForMint, splitLiquidity } from '../../utils/yieldMath';
 import { IPool } from '../../lib/protocol/types';
-import useContracts from './useContracts';
 import useConnector from '../useConnector';
-import { LADLE } from '../../constants';
 import { AddLiquidityType } from '../../lib/protocol/liquidity/types';
-import { ICallData } from '../../lib/tx/types';
-import { LadleActions, RoutedActions } from '../../lib/tx/operations';
+import useSignature from '../useSignature';
 
 export const useAddLiquidity = (pool: IPool, description?: string | null) => {
-  const { provider, chainId, account } = useConnector();
-  const contracts = useContracts(provider!, chainId!);
+  const { account } = useConnector();
   const slippageTolerance = 0.001;
 
-  const { sign, transact } = useTransaction(pool, description!);
+  const { sign, signer } = useSignature(description!);
 
   const addLiquidity = async (input: string, method: AddLiquidityType = AddLiquidityType.BUY) => {
-    console.log('adding liq', input, method);
+    const erc20Contract = pool.base.contract.connect(signer!);
+    const fyTokenContract = pool.fyToken.contract.connect(signer!);
+    const poolContract = pool.contract.connect(signer!);
+    console.log('🦄 ~ file: useAddLiquidity.ts ~ line 18 ~ addLiquidity ~ poolContract ', poolContract);
     const base = pool.base;
     const cleanInput = cleanValue(input, base.decimals);
     const _input = ethers.utils.parseUnits(cleanInput, base.decimals);
     const _inputLessSlippage = _input;
+
     // const _inputLessSlippage = calculateSlippage(_input, slippageTolerance.toString(), true);
 
     const [cachedBaseReserves, cachedFyTokenReserves] = await pool.contract.getCache();
@@ -59,7 +57,7 @@ export const useAddLiquidity = (pool: IPool, description?: string | null) => {
     /**
      * GET SIGNATURE/APPROVAL DATA
      * */
-    const permit = await sign([
+    const sigRes = await sign([
       {
         target: base,
         spender: pool.address,
@@ -67,67 +65,33 @@ export const useAddLiquidity = (pool: IPool, description?: string | null) => {
         ignoreIf: alreadyApproved === true,
       },
     ]);
-    console.log('🦄 ~ file: useAddLiquidity.ts ~ line 72 ~ addLiquidity ~  permit ', permit);
+    console.log('🦄 ~ file: useAddLiquidity.ts ~ line 65 ~ addLiquidity ~ sigRes', sigRes);
 
     /**
-     * BUILD CALL DATA ARRAY
+     * Transact
      * */
-    const call: ICallData[] = [
-      ...permit,
-      /**
-       * Provide liquidity by BUYING :
-       * */
-      {
-        operation: RoutedActions.Fn.MINT_WITH_BASE,
-        args: [account, account, _fyTokenToBeMinted, minRatio, maxRatio] as RoutedActions.Args.MINT_WITH_BASE,
-        fnName: RoutedActions.Fn.MINT_WITH_BASE,
-        targetContract: pool.contract,
-        ignoreIf: method !== AddLiquidityType.BUY, // ignore if not BUY and POOL
-      },
+    try {
+      const overrides = {
+        gasLimit: 250000,
+        nonce: 0,
+      };
 
-      /**
-       * Provide liquidity by BORROWING:
-       * */
-      // {
-      //   operation: LadleActions.Fn.BUILD,
-      //   args: [series.id, base.idToUse, '0'] as LadleActions.Args.BUILD,
-      //   ignoreIf: method !== AddLiquidityType.BORROW ? true : !!matchingVaultId, // ingore if not BORROW and POOL
-      // },
-      // {
-      //   operation: LadleActions.Fn.TRANSFER,
-      //   args: [base.address, base.joinAddress, _baseToFyToken] as LadleActions.Args.TRANSFER,
-      //   ignoreIf: method !== AddLiquidityType.BORROW,
-      // },
-      // {
-      //   operation: LadleActions.Fn.TRANSFER,
-      //   args: [base.address, series.poolAddress, _baseToPoolWithSlippage] as LadleActions.Args.TRANSFER,
-      //   ignoreIf: method !== AddLiquidityType.BORROW,
-      // },
-      // {
-      //   operation: LadleActions.Fn.POUR,
-      //   args: [
-      //     matchingVaultId || BLANK_VAULT,
-      //     series.poolAddress,
-      //     _baseToFyToken,
-      //     _baseToFyToken,
-      //   ] as LadleActions.Args.POUR,
-      //   ignoreIf: method !== AddLiquidityType.BORROW,
-      // },
-      // {
-      //   operation: LadleActions.Fn.ROUTE,
-      //   args: [strategy.id || account, account, minRatio, maxRatio] as RoutedActions.Args.MINT_POOL_TOKENS,
-      //   fnName: RoutedActions.Fn.MINT_POOL_TOKENS,
-      //   targetContract: series.poolContract,
-      //   ignoreIf: method !== AddLiquidityType.BORROW,
-      // },
-    ];
+      const transferTokens = await erc20Contract.transfer(pool.address, _inputLessSlippage);
 
-    await transact(call);
-    // updateSeries([series]);
-    // updateAssets([base]);
-    // updateStrategies([strategy]);
-    // updateStrategyHistory([strategy]);
-    // updateVaults([]);
+      const txRes = await poolContract.mintWithBase(
+        account!,
+        account!,
+        _fyTokenToBeMinted,
+        minRatio,
+        maxRatio,
+        overrides
+      );
+      const waitedRes = await txRes.wait();
+      console.log('🦄 ~ file: useAddLiquidity.ts ~ line 73 ~ addLiquidity ~  waitedRes', waitedRes);
+      console.log('🦄 ~ file: useAddLiquidity.ts ~ line 73 ~ addLiquidity ~ res ', txRes);
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   return addLiquidity;
