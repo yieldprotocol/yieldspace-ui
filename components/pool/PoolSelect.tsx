@@ -35,7 +35,7 @@ const PoolSelect: FC<IPoolSelect> = ({ pools, pool, setPool, poolsLoading }) => 
             background: `linear-gradient(135deg, #f7953380, #f3705580, #ef4e7b80, #a166ab80, #5073b880, #1098ad80, #07b39b80, #6fba8280)`,
           }}
         >
-          <ButtonInner>{poolsLoading ? 'Pools loading...' : !pools ? 'No Pools Detected' : 'Select Pool'}</ButtonInner>
+          <ButtonInner>{pools ? 'Select Pool' : poolsLoading ? 'Pools loading...' : 'No Pools Detected'}</ButtonInner>
         </ButtonOuter>
       )}
       {modalOpen && <PoolSelectModal pools={pools!} open={modalOpen} setOpen={setModalOpen} action={setPool} />}
