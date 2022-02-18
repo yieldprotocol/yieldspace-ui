@@ -67,7 +67,7 @@ const AddLiquidity = () => {
 
   // use pool address from router query if available
   useEffect(() => {
-    setForm((f) => ({ ...f, pool: pools![address as string] }));
+    pools && setForm((f) => ({ ...f, pool: pools![address as string] }));
   }, [pools, address]);
 
   const { pool, baseAmount, fyTokenAmount } = form;
