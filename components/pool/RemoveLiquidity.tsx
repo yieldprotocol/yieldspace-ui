@@ -76,7 +76,7 @@ const RemoveLiquidity = () => {
       <Inner>
         <TopRow>
           <BackButton onClick={() => router.back()} />
-          <Header>Remove Liquidity </Header>
+          <Header>Remove Liquidity</Header>
           <ClearButton onClick={handleClearAll}>Clear All</ClearButton>
         </TopRow>
 
@@ -99,10 +99,18 @@ const RemoveLiquidity = () => {
             handleChange={handleInputChange}
           />
 
-          <Toggle enabled={burnForBase} setEnabled={setBurnForBase} label={`Receive all ${pool?.base.symbol}`} />
+          <Toggle
+            enabled={burnForBase}
+            setEnabled={setBurnForBase}
+            label={
+              burnForBase
+                ? `Receive all ${pool?.base.symbol}`
+                : `Receive both ${pool?.base.symbol} and fy${pool?.base.symbol}`
+            }
+          />
         </Grid>
-        <Button action={() => console.log('updating liq')} disabled={!account || !pool || !lpTokens || isRemovingLiq}>
-          {!account ? 'Connect Wallet' : 'Remove Liquidity'}
+        <Button action={handleSubmit} disabled={!account || !pool || !lpTokens || isRemovingLiq}>
+          {isRemovingLiq ? 'Removing Liquidity' : !account ? 'Connect Wallet' : 'Remove Liquidity'}
         </Button>
       </Inner>
     </BorderWrap>
