@@ -12,7 +12,7 @@ import { IPool } from '../../lib/protocol/types';
 import useConnector from '../../hooks/useConnector';
 import { BorderWrap, Header } from '../styles/';
 import { useAddLiquidity } from '../../hooks/protocol/useAddLiquidity';
-import { AddLiquidityType } from '../../lib/protocol/liquidity/types';
+import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
 
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
@@ -41,20 +41,24 @@ const AddLiquidity = () => {
   const [form, setForm] = useState<IAddLiquidityForm>(INITIAL_FORM_STATE);
 
   const [useFyTokenBalance, toggleUseFyTokenBalance] = useState<boolean>(false);
-  const [description, setDescription] = useState<string | null>();
 
-  const { addLiquidity, isAddingLiquidity } = useAddLiquidity(form.pool!, description);
+  const { addLiquidity, isAddingLiquidity } = useAddLiquidity(form.pool!);
 
   const handleClearAll = () => {
     setForm(INITIAL_FORM_STATE);
   };
 
   const handleSubmit = () => {
-    const _description = `Adding ${form.baseAmount} ${pool?.base.symbol}${
+    const description = `Adding ${form.baseAmount} ${pool?.base.symbol}${
       +form.fyTokenAmount > 0 && useFyTokenBalance ? ` and ${form.fyTokenAmount} ${pool?.fyToken.symbol}` : ''
     }`;
-    setDescription(_description);
-    form.pool && addLiquidity(form.baseAmount, AddLiquidityType.BUY);
+
+    form.pool &&
+      addLiquidity(
+        form.baseAmount,
+        useFyTokenBalance ? AddLiquidityActions.MINT : AddLiquidityActions.MINT_WITH_BASE,
+        description
+      );
   };
 
   const handleInputChange = (name: string, value: string) =>

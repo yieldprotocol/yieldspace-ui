@@ -1,29 +1,33 @@
 import { useState } from 'react';
-import { BigNumber, ethers } from 'ethers';
+import { BigNumber, ethers, PayableOverrides } from 'ethers';
 import { cleanValue } from '../../utils/appUtils';
 
 import { calcPoolRatios, calculateSlippage, fyTokenForMint, splitLiquidity } from '../../utils/yieldMath';
 import { IPool } from '../../lib/protocol/types';
 import useConnector from '../useConnector';
-import { AddLiquidityType } from '../../lib/protocol/liquidity/types';
+import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
 import useSignature from '../useSignature';
 import { toast } from 'react-toastify';
 
-export const useAddLiquidity = (pool: IPool, description?: string | null) => {
-  const { account } = useConnector();
+export const useAddLiquidity = (pool: IPool) => {
+  // settings
   const slippageTolerance = 0.001;
 
-  const { sign, signer } = useSignature(description!);
+  const { account } = useConnector();
+  const { signer } = useSignature();
 
   const [isAddingLiquidity, setIsAddingLiquidity] = useState<boolean>(false);
 
-  const addLiquidity = async (input: string, method: AddLiquidityType = AddLiquidityType.BUY) => {
+  const addLiquidity = async (
+    input: string,
+    method: AddLiquidityActions = AddLiquidityActions.MINT_WITH_BASE,
+    description: string | null = null
+  ) => {
     setIsAddingLiquidity(true);
     const erc20Contract = pool.base.contract.connect(signer!);
-    // console.log('allowance', await erc20Contract.allowance(account!, pool.address));
     const fyTokenContract = pool.fyToken.contract.connect(signer!);
     const poolContract = pool.contract.connect(signer!);
-    console.log('🦄 ~ file: useAddLiquidity.ts ~ line 18 ~ addLiquidity ~ poolContract ', poolContract);
+
     const base = pool.base;
     const cleanInput = cleanValue(input, base.decimals);
     const _input = ethers.utils.parseUnits(cleanInput, base.decimals);
@@ -60,38 +64,59 @@ export const useAddLiquidity = (pool: IPool, description?: string | null) => {
     /* if approveMAx, check if signature is still required */
     const alreadyApproved = (await base.getAllowance(account!, pool.address)).gt(_input);
 
+    const _mintWithBase = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction> => {
+      const [, res] = await Promise.all([
+        await erc20Contract.transfer(pool.address, _inputLessSlippage),
+        await poolContract.mintWithBase(account!, account!, _fyTokenToBeMinted, minRatio, maxRatio, overrides),
+      ]);
+      return res;
+    };
+
+    const _mint = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction> => {
+      const [, , res] = await Promise.all([
+        await erc20Contract.transfer(pool.address, _inputLessSlippage),
+        await fyTokenContract.transfer(pool.address, _inputLessSlippage),
+        await poolContract.mint(account!, account!, minRatio, maxRatio, overrides),
+      ]);
+      return res;
+    };
+
     /**
      * GET SIGNATURE/APPROVAL DATA
      * */
-    await sign([
-      {
-        target: base,
-        spender: pool.address,
-        amount: _input,
-        ignoreIf: alreadyApproved === true,
-      },
-    ]);
+    // await sign([
+    //   {
+    //     target: base,
+    //     spender: pool.address,
+    //     amount: _input,
+    //     ignoreIf: alreadyApproved === true,
+    //   },
+    // ]);
 
     /**
      * Transact
      * */
+    const overrides = {
+      gasLimit: 250000,
+    };
+
     try {
-      const overrides = {
-        gasLimit: 250000,
-      };
+      let res: ethers.ContractTransaction;
 
-      const [, txRes] = await Promise.all([
-        await erc20Contract.transfer(pool.address, _inputLessSlippage),
-        await poolContract.mintWithBase(account!, account!, _fyTokenToBeMinted, minRatio, maxRatio, overrides),
-      ]);
+      if (method === AddLiquidityActions.MINT_WITH_BASE) {
+        res = await _mintWithBase(overrides);
+      } else {
+        res = await _mint(overrides);
+      }
 
-      toast.promise(txRes.wait, {
+      toast.promise(res.wait, {
         pending: `Pending: ${description}`,
         success: `Success: ${description}`,
         error: `Failed: ${description}`,
       });
     } catch (e) {
       console.log(e);
+      toast.error('tx failed or rejected');
       setIsAddingLiquidity(false);
     }
     setIsAddingLiquidity(false);

@@ -18,7 +18,7 @@ import { LadleActions } from '../lib/tx/operations';
 // };
 
 /* Generic hook for chain transactions */
-const useSignature = (description: string | undefined) => {
+const useSignature = () => {
   const approveMax = false;
   const { account, provider, chainId } = useConnector();
 
@@ -38,7 +38,7 @@ const useSignature = (description: string | undefined) => {
    */
   const sign = async (requestedSignatures: ISignData[]): Promise<ICallData[]> => {
     console.log('signinggggggggggggggggg');
-    const _txProcess = addTxProcess(description);
+    const _txProcess = addTxProcess();
     setTxProcess(_txProcess);
 
     /* Get the spender if not provided, defaults to ladle */
