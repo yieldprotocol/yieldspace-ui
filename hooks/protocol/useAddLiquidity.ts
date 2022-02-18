@@ -7,6 +7,7 @@ import { IPool } from '../../lib/protocol/types';
 import useConnector from '../useConnector';
 import { AddLiquidityType } from '../../lib/protocol/liquidity/types';
 import useSignature from '../useSignature';
+import { toast } from 'react-toastify';
 
 export const useAddLiquidity = (pool: IPool, description?: string | null) => {
   const { account } = useConnector();
@@ -19,6 +20,7 @@ export const useAddLiquidity = (pool: IPool, description?: string | null) => {
   const addLiquidity = async (input: string, method: AddLiquidityType = AddLiquidityType.BUY) => {
     setIsAddingLiquidity(true);
     const erc20Contract = pool.base.contract.connect(signer!);
+    // console.log('allowance', await erc20Contract.allowance(account!, pool.address));
     const fyTokenContract = pool.fyToken.contract.connect(signer!);
     const poolContract = pool.contract.connect(signer!);
     console.log('🦄 ~ file: useAddLiquidity.ts ~ line 18 ~ addLiquidity ~ poolContract ', poolContract);
@@ -61,7 +63,7 @@ export const useAddLiquidity = (pool: IPool, description?: string | null) => {
     /**
      * GET SIGNATURE/APPROVAL DATA
      * */
-    const sigRes = await sign([
+    await sign([
       {
         target: base,
         spender: pool.address,
@@ -69,7 +71,6 @@ export const useAddLiquidity = (pool: IPool, description?: string | null) => {
         ignoreIf: alreadyApproved === true,
       },
     ]);
-    console.log('🦄 ~ file: useAddLiquidity.ts ~ line 65 ~ addLiquidity ~ sigRes', sigRes);
 
     /**
      * Transact
@@ -77,24 +78,21 @@ export const useAddLiquidity = (pool: IPool, description?: string | null) => {
     try {
       const overrides = {
         gasLimit: 250000,
-        nonce: 0,
       };
 
-      const transferTokens = await erc20Contract.transfer(pool.address, _inputLessSlippage);
+      const [, txRes] = await Promise.all([
+        await erc20Contract.transfer(pool.address, _inputLessSlippage),
+        await poolContract.mintWithBase(account!, account!, _fyTokenToBeMinted, minRatio, maxRatio, overrides),
+      ]);
 
-      const txRes = await poolContract.mintWithBase(
-        account!,
-        account!,
-        _fyTokenToBeMinted,
-        minRatio,
-        maxRatio,
-        overrides
-      );
-      const waitedRes = await txRes.wait();
-      console.log('🦄 ~ file: useAddLiquidity.ts ~ line 73 ~ addLiquidity ~  waitedRes', waitedRes);
-      console.log('🦄 ~ file: useAddLiquidity.ts ~ line 73 ~ addLiquidity ~ res ', txRes);
+      toast.promise(txRes.wait, {
+        pending: `Pending: ${description}`,
+        success: `Success: ${description}`,
+        error: `Failed: ${description}`,
+      });
     } catch (e) {
       console.log(e);
+      setIsAddingLiquidity(false);
     }
     setIsAddingLiquidity(false);
   };
