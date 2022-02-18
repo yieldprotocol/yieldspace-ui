@@ -13,11 +13,7 @@ const PoolDataWrap = tw.div`my-5 flex gap-5 flex-nowrap`;
 const PoolDataLabel = tw.div`text-lg text-gray-400`;
 const PoolData = tw.div`text-xl font-semibold text-gray-100`;
 
-interface IPoolItem {
-  pool: IPool;
-}
-
-const PoolItem: FC<IPoolItem> = () => {
+const PoolItem: FC = () => {
   const router = useRouter();
   const { data: pools } = usePools();
   const { address } = router.query;
