@@ -39,7 +39,6 @@ const AddLiquidity = () => {
   const { data: pools, loading } = usePools();
 
   const [form, setForm] = useState<IAddLiquidityForm>(INITIAL_FORM_STATE);
-
   const [useFyTokenBalance, toggleUseFyTokenBalance] = useState<boolean>(false);
 
   const { addLiquidity, isAddingLiquidity } = useAddLiquidity(form.pool!);
@@ -99,7 +98,7 @@ const AddLiquidity = () => {
           <InputWrap
             name="baseAmount"
             value={baseAmount}
-            asset={pool?.base}
+            item={pool?.base}
             balance={pool?.base.balance_!}
             handleChange={handleInputChange}
           />
@@ -112,7 +111,7 @@ const AddLiquidity = () => {
             <InputWrap
               name="fyTokenAmount"
               value={fyTokenAmount}
-              asset={pool?.fyToken}
+              item={pool?.fyToken}
               balance={pool?.fyToken.balance_!}
               handleChange={handleInputChange}
               unFocused={true}

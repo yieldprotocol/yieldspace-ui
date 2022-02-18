@@ -9,6 +9,9 @@ import PoolSelect from './PoolSelect';
 import { IPool } from '../../lib/protocol/types';
 import useConnector from '../../hooks/useConnector';
 import { BorderWrap, Header } from '../styles/';
+import { useRemoveLiquidity } from '../../hooks/protocol/useRemoveLiquidity';
+import { RemoveLiquidityActions } from '../../lib/protocol/liquidity/types';
+import Toggle from '../common/Toggle';
 
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
@@ -33,9 +36,25 @@ const RemoveLiquidity = () => {
   const { data: pools, loading } = usePools();
 
   const [form, setForm] = useState<IRemoveLiquidityForm>(INITIAL_FORM_STATE);
+  const [burnForBase, setBurnForBase] = useState<boolean>(true);
+
+  const { removeLiquidity, isRemovingLiq } = useRemoveLiquidity(form.pool!);
 
   const handleClearAll = () => {
     setForm(INITIAL_FORM_STATE);
+  };
+
+  const handleSubmit = () => {
+    const description = `Removing ${form.lpTokens} lp tokens${
+      burnForBase ? ` and receiving all base` : ' receiving both base and fyTokens'
+    }`;
+
+    form.pool &&
+      removeLiquidity(
+        form.lpTokens,
+        burnForBase ? RemoveLiquidityActions.BURN_FOR_BASE : RemoveLiquidityActions.BURN,
+        description
+      );
   };
 
   const handleInputChange = (name: string, value: string) => setForm((f) => ({ ...f, [name]: value }));
@@ -75,12 +94,14 @@ const RemoveLiquidity = () => {
           <InputWrap
             name="lpTokens"
             value={lpTokens}
-            asset={pool?.base}
+            item={pool}
             balance={pool?.lpTokenBalance_!}
             handleChange={handleInputChange}
           />
+
+          <Toggle enabled={burnForBase} setEnabled={setBurnForBase} label={`Receive all ${pool?.base.symbol}`} />
         </Grid>
-        <Button action={() => console.log('updating liq')} disabled={!account}>
+        <Button action={() => console.log('updating liq')} disabled={!account || !pool || !lpTokens || isRemovingLiq}>
           {!account ? 'Connect Wallet' : 'Remove Liquidity'}
         </Button>
       </Inner>

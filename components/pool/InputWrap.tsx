@@ -1,5 +1,5 @@
 import tw from 'tailwind-styled-components';
-import { IAsset } from '../../lib/protocol/types';
+import { IAsset, IPool } from '../../lib/protocol/types';
 import AssetSelect from '../common/AssetSelect';
 
 type DivProps = {
@@ -16,14 +16,14 @@ const Inner = tw.div`ml-3 text-center text-lg align-middle my-auto`;
 interface IDeposit {
   name: string;
   value: string;
-  asset: IAsset | undefined;
+  item: IAsset | IPool | undefined;
   balance: string;
   handleChange: (name: string, value: string) => void;
   disabled?: boolean;
   unFocused?: boolean;
 }
 
-const InputWrap = ({ name, value, asset, balance, handleChange, disabled, unFocused }: IDeposit) => (
+const InputWrap = ({ name, value, item, balance, handleChange, disabled, unFocused }: IDeposit) => (
   <Container $unFocused={unFocused}>
     <Inner>
       <Input
@@ -37,11 +37,11 @@ const InputWrap = ({ name, value, asset, balance, handleChange, disabled, unFocu
         disabled={disabled}
       />
     </Inner>
-    <div>
+    <div className="flex-grow">
       <div className="w-32 p-1 float-right">
-        <AssetSelect asset={asset} />
+        <AssetSelect item={item} />
       </div>
-      {asset && (
+      {item && (
         <div className="mt-2 text-xs align-middle text-right mr-2 dark:text-gray-300 text-gray-700">
           <span>Balance: {balance}</span>
         </div>
