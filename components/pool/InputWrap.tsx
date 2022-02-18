@@ -39,7 +39,7 @@ const InputWrap = ({ name, value, item, balance, handleChange, disabled, unFocus
     </Inner>
     <div className="grow min-w-fit">
       <div className="p-1">
-        <AssetSelect item={item} />
+        <AssetSelect item={item} isFyToken={item?.symbol.includes('FY') || false} />
       </div>
       {item && (
         <div className="flex items-center gap-1 my-[1px] text-xs justify-end mr-2 dark:text-gray-300 text-gray-700">
