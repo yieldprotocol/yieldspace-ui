@@ -12,7 +12,7 @@ interface IPools {}
 
 const Pools: FC<IPools> = () => {
   const { account } = useConnector();
-  const { data: pools } = usePools();
+  const { data: pools, loading } = usePools();
   const [poolsList, setPoolsList] = useState<IPool[]>([]);
 
   useEffect(() => {
@@ -23,6 +23,7 @@ const Pools: FC<IPools> = () => {
     }
   }, [pools]);
 
+  if (loading) return null;
   if (!account) return <Container>Please connect to your wallet</Container>;
 
   return (
