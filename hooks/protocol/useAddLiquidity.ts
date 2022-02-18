@@ -1,30 +1,39 @@
-import { BigNumber, ethers } from 'ethers';
+import { useState } from 'react';
+import { BigNumber, ethers, PayableOverrides } from 'ethers';
 import { cleanValue } from '../../utils/appUtils';
-// import { BLANK_VAULT } from '../../utils/constants';
-import useTransaction from '../useTransaction';
 
 import { calcPoolRatios, calculateSlippage, fyTokenForMint, splitLiquidity } from '../../utils/yieldMath';
 import { IPool } from '../../lib/protocol/types';
-import useContracts from './useContracts';
 import useConnector from '../useConnector';
-import { LADLE } from '../../constants';
-import { AddLiquidityType } from '../../lib/protocol/liquidity/types';
-import { ICallData } from '../../lib/tx/types';
-import { LadleActions, RoutedActions } from '../../lib/tx/operations';
+import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
+import useSignature from '../useSignature';
+import { toast } from 'react-toastify';
 
-export const useAddLiquidity = (pool: IPool, description?: string | null) => {
-  const { provider, chainId, account } = useConnector();
-  const contracts = useContracts(provider!, chainId!);
+export const useAddLiquidity = (pool: IPool) => {
+  // settings
   const slippageTolerance = 0.001;
 
-  const { sign, transact } = useTransaction(pool, description!);
+  const { account } = useConnector();
+  const { signer } = useSignature();
 
-  const addLiquidity = async (input: string, method: AddLiquidityType = AddLiquidityType.BUY) => {
-    console.log('adding liq', input, method);
+  const [isAddingLiquidity, setIsAddingLiquidity] = useState<boolean>(false);
+
+  const addLiquidity = async (
+    input: string,
+    method: AddLiquidityActions = AddLiquidityActions.MINT_WITH_BASE,
+    description: string | null = null
+  ) => {
+    setIsAddingLiquidity(true);
+
+    const erc20Contract = pool.base.contract.connect(signer!);
+    const fyTokenContract = pool.fyToken.contract.connect(signer!);
+    const poolContract = pool.contract.connect(signer!);
+
     const base = pool.base;
     const cleanInput = cleanValue(input, base.decimals);
     const _input = ethers.utils.parseUnits(cleanInput, base.decimals);
     const _inputLessSlippage = _input;
+
     // const _inputLessSlippage = calculateSlippage(_input, slippageTolerance.toString(), true);
 
     const [cachedBaseReserves, cachedFyTokenReserves] = await pool.contract.getCache();
@@ -56,79 +65,63 @@ export const useAddLiquidity = (pool: IPool, description?: string | null) => {
     /* if approveMAx, check if signature is still required */
     const alreadyApproved = (await base.getAllowance(account!, pool.address)).gt(_input);
 
+    const _mintWithBase = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction> => {
+      const [, res] = await Promise.all([
+        await erc20Contract.transfer(pool.address, _inputLessSlippage),
+        await poolContract.mintWithBase(account!, account!, _fyTokenToBeMinted, minRatio, maxRatio, overrides),
+      ]);
+      return res;
+    };
+
+    const _mint = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction> => {
+      const [, , res] = await Promise.all([
+        await erc20Contract.transfer(pool.address, _inputLessSlippage),
+        await fyTokenContract.transfer(pool.address, _inputLessSlippage),
+        await poolContract.mint(account!, account!, minRatio, maxRatio, overrides),
+      ]);
+      return res;
+    };
+
     /**
      * GET SIGNATURE/APPROVAL DATA
      * */
-    const permit = await sign([
-      {
-        target: base,
-        spender: pool.address,
-        amount: _input,
-        ignoreIf: alreadyApproved === true,
-      },
-    ]);
-    console.log('🦄 ~ file: useAddLiquidity.ts ~ line 72 ~ addLiquidity ~  permit ', permit);
+    // await sign([
+    //   {
+    //     target: base,
+    //     spender: pool.address,
+    //     amount: _input,
+    //     ignoreIf: alreadyApproved === true,
+    //   },
+    // ]);
 
     /**
-     * BUILD CALL DATA ARRAY
+     * Transact
      * */
-    const call: ICallData[] = [
-      ...permit,
-      /**
-       * Provide liquidity by BUYING :
-       * */
-      {
-        operation: RoutedActions.Fn.MINT_WITH_BASE,
-        args: [account, account, _fyTokenToBeMinted, minRatio, maxRatio] as RoutedActions.Args.MINT_WITH_BASE,
-        fnName: RoutedActions.Fn.MINT_WITH_BASE,
-        targetContract: pool.contract,
-        ignoreIf: method !== AddLiquidityType.BUY, // ignore if not BUY and POOL
-      },
+    const overrides = {
+      gasLimit: 250000,
+    };
 
-      /**
-       * Provide liquidity by BORROWING:
-       * */
-      // {
-      //   operation: LadleActions.Fn.BUILD,
-      //   args: [series.id, base.idToUse, '0'] as LadleActions.Args.BUILD,
-      //   ignoreIf: method !== AddLiquidityType.BORROW ? true : !!matchingVaultId, // ingore if not BORROW and POOL
-      // },
-      // {
-      //   operation: LadleActions.Fn.TRANSFER,
-      //   args: [base.address, base.joinAddress, _baseToFyToken] as LadleActions.Args.TRANSFER,
-      //   ignoreIf: method !== AddLiquidityType.BORROW,
-      // },
-      // {
-      //   operation: LadleActions.Fn.TRANSFER,
-      //   args: [base.address, series.poolAddress, _baseToPoolWithSlippage] as LadleActions.Args.TRANSFER,
-      //   ignoreIf: method !== AddLiquidityType.BORROW,
-      // },
-      // {
-      //   operation: LadleActions.Fn.POUR,
-      //   args: [
-      //     matchingVaultId || BLANK_VAULT,
-      //     series.poolAddress,
-      //     _baseToFyToken,
-      //     _baseToFyToken,
-      //   ] as LadleActions.Args.POUR,
-      //   ignoreIf: method !== AddLiquidityType.BORROW,
-      // },
-      // {
-      //   operation: LadleActions.Fn.ROUTE,
-      //   args: [strategy.id || account, account, minRatio, maxRatio] as RoutedActions.Args.MINT_POOL_TOKENS,
-      //   fnName: RoutedActions.Fn.MINT_POOL_TOKENS,
-      //   targetContract: series.poolContract,
-      //   ignoreIf: method !== AddLiquidityType.BORROW,
-      // },
-    ];
+    try {
+      let res: ethers.ContractTransaction;
 
-    await transact(call);
-    // updateSeries([series]);
-    // updateAssets([base]);
-    // updateStrategies([strategy]);
-    // updateStrategyHistory([strategy]);
-    // updateVaults([]);
+      if (method === AddLiquidityActions.MINT_WITH_BASE) {
+        res = await _mintWithBase(overrides);
+      } else {
+        res = await _mint(overrides);
+      }
+
+      toast.promise(res.wait, {
+        pending: `Pending: ${description}`,
+        success: `Success: ${description}`,
+        error: `Failed: ${description}`,
+      });
+    } catch (e) {
+      console.log(e);
+      toast.error('tx failed or rejected');
+      setIsAddingLiquidity(false);
+    }
+    setIsAddingLiquidity(false);
   };
 
-  return addLiquidity;
+  return { addLiquidity, isAddingLiquidity };
 };

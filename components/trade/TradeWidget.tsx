@@ -174,7 +174,7 @@ const TradeWidget = () => {
             name="fromAmount"
             value={fromValue()}
             balance={fromAsset?.balance_!}
-            asset={fromAsset}
+            item={fromAsset}
             handleChange={handleInputChange}
             unFocused={updatingToAmount && !!pool}
           />
@@ -194,7 +194,7 @@ const TradeWidget = () => {
             name="toAmount"
             value={toValue()}
             balance={toAsset?.balance_!}
-            asset={toAsset}
+            item={toAsset}
             handleChange={handleInputChange}
             unFocused={updatingFromAmount && !!pool}
           />

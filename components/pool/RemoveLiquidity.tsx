@@ -9,6 +9,9 @@ import PoolSelect from './PoolSelect';
 import { IPool } from '../../lib/protocol/types';
 import useConnector from '../../hooks/useConnector';
 import { BorderWrap, Header } from '../styles/';
+import { useRemoveLiquidity } from '../../hooks/protocol/useRemoveLiquidity';
+import { RemoveLiquidityActions } from '../../lib/protocol/liquidity/types';
+import Toggle from '../common/Toggle';
 
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
@@ -28,13 +31,30 @@ const INITIAL_FORM_STATE: IRemoveLiquidityForm = {
 
 const RemoveLiquidity = () => {
   const router = useRouter();
+  const { address } = router.query;
   const { chainId, account } = useConnector();
-  const { data: pools } = usePools();
+  const { data: pools, loading } = usePools();
 
   const [form, setForm] = useState<IRemoveLiquidityForm>(INITIAL_FORM_STATE);
+  const [burnForBase, setBurnForBase] = useState<boolean>(true);
+
+  const { removeLiquidity, isRemovingLiq } = useRemoveLiquidity(form.pool!);
 
   const handleClearAll = () => {
     setForm(INITIAL_FORM_STATE);
+  };
+
+  const handleSubmit = () => {
+    const description = `Removing ${form.lpTokens} lp tokens${
+      burnForBase ? ` and receiving all base` : ' receiving both base and fyTokens'
+    }`;
+
+    form.pool &&
+      removeLiquidity(
+        form.lpTokens,
+        burnForBase ? RemoveLiquidityActions.BURN_FOR_BASE : RemoveLiquidityActions.BURN,
+        description
+      );
   };
 
   const handleInputChange = (name: string, value: string) => setForm((f) => ({ ...f, [name]: value }));
@@ -44,6 +64,11 @@ const RemoveLiquidity = () => {
     setForm((f) => ({ ...f, pool: undefined }));
   }, [chainId]);
 
+  // use pool address from router query if avaialable
+  useEffect(() => {
+    pools && setForm((f) => ({ ...f, pool: pools![address as string] }));
+  }, [pools, address]);
+
   const { pool, lpTokens } = form;
 
   return (
@@ -51,12 +76,17 @@ const RemoveLiquidity = () => {
       <Inner>
         <TopRow>
           <BackButton onClick={() => router.back()} />
-          <Header>Remove Liquidity </Header>
+          <Header>Remove Liquidity</Header>
           <ClearButton onClick={handleClearAll}>Clear All</ClearButton>
         </TopRow>
 
         <Grid>
-          <PoolSelect pools={pools} pool={pool} setPool={(p) => setForm((f) => ({ ...f, pool: p }))} />
+          <PoolSelect
+            pools={pools}
+            pool={pool}
+            setPool={(p) => setForm((f) => ({ ...f, pool: p }))}
+            poolsLoading={loading}
+          />
         </Grid>
 
         <Grid>
@@ -64,13 +94,23 @@ const RemoveLiquidity = () => {
           <InputWrap
             name="lpTokens"
             value={lpTokens}
-            asset={pool?.base}
+            item={pool}
             balance={pool?.lpTokenBalance_!}
             handleChange={handleInputChange}
           />
+
+          <Toggle
+            enabled={burnForBase}
+            setEnabled={setBurnForBase}
+            label={
+              burnForBase
+                ? `Receive all ${pool?.base.symbol}`
+                : `Receive both ${pool?.base.symbol} and fy${pool?.base.symbol}`
+            }
+          />
         </Grid>
-        <Button action={() => console.log('updating liq')} disabled={!account}>
-          {!account ? 'Connect Wallet' : 'Remove Liquidity'}
+        <Button action={handleSubmit} disabled={!account || !pool || !lpTokens || isRemovingLiq}>
+          {isRemovingLiq ? 'Removing Liquidity' : !account ? 'Connect Wallet' : 'Remove Liquidity'}
         </Button>
       </Inner>
     </BorderWrap>

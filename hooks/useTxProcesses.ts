@@ -11,7 +11,7 @@ const useTxProcess = () => {
   const addTxProcess = (description?: string | undefined) => {
     const id = uuid();
     const newTxProcess = { id, description };
-    setTxProceses((_txProcesses) => _txProcesses.set(id, newTxProcess));
+    setTxProceses(txProcesses.set(id, newTxProcess));
     return newTxProcess;
   };
 

@@ -12,7 +12,7 @@ import { IPool } from '../../lib/protocol/types';
 import useConnector from '../../hooks/useConnector';
 import { BorderWrap, Header } from '../styles/';
 import { useAddLiquidity } from '../../hooks/protocol/useAddLiquidity';
-import { AddLiquidityType } from '../../lib/protocol/liquidity/types';
+import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
 
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
@@ -34,26 +34,30 @@ const INITIAL_FORM_STATE: IAddLiquidityForm = {
 
 const AddLiquidity = () => {
   const router = useRouter();
+  const { address } = router.query;
   const { chainId, account } = useConnector();
-  const { data: pools } = usePools();
+  const { data: pools, loading } = usePools();
 
   const [form, setForm] = useState<IAddLiquidityForm>(INITIAL_FORM_STATE);
-
   const [useFyTokenBalance, toggleUseFyTokenBalance] = useState<boolean>(false);
-  const [description, setDescription] = useState<string | null>();
 
-  const addLiquidity = useAddLiquidity(form.pool!, description);
+  const { addLiquidity, isAddingLiquidity } = useAddLiquidity(form.pool!);
 
   const handleClearAll = () => {
     setForm(INITIAL_FORM_STATE);
   };
 
   const handleSubmit = () => {
-    const _description = `Adding ${form.baseAmount} ${pool?.base.symbol}${
+    const description = `Adding ${form.baseAmount} ${pool?.base.symbol}${
       +form.fyTokenAmount > 0 && useFyTokenBalance ? ` and ${form.fyTokenAmount} ${pool?.fyToken.symbol}` : ''
     }`;
-    setDescription(_description);
-    form.pool && addLiquidity(form.baseAmount, AddLiquidityType.BUY);
+
+    form.pool &&
+      addLiquidity(
+        form.baseAmount,
+        useFyTokenBalance ? AddLiquidityActions.MINT : AddLiquidityActions.MINT_WITH_BASE,
+        description
+      );
   };
 
   const handleInputChange = (name: string, value: string) =>
@@ -63,6 +67,11 @@ const AddLiquidity = () => {
   useEffect(() => {
     setForm((f) => ({ ...f, pool: undefined }));
   }, [chainId]);
+
+  // use pool address from router query if available
+  useEffect(() => {
+    pools && setForm((f) => ({ ...f, pool: pools![address as string] }));
+  }, [pools, address]);
 
   const { pool, baseAmount, fyTokenAmount } = form;
 
@@ -76,7 +85,12 @@ const AddLiquidity = () => {
         </TopRow>
 
         <Grid>
-          <PoolSelect pools={pools} pool={pool} setPool={(p) => setForm((f) => ({ ...f, pool: p }))} />
+          <PoolSelect
+            pools={pools}
+            pool={pool}
+            setPool={(p) => setForm((f) => ({ ...f, pool: p }))}
+            poolsLoading={loading}
+          />
         </Grid>
 
         <Grid>
@@ -84,7 +98,7 @@ const AddLiquidity = () => {
           <InputWrap
             name="baseAmount"
             value={baseAmount}
-            asset={pool?.base}
+            item={pool?.base}
             balance={pool?.base.balance_!}
             handleChange={handleInputChange}
           />
@@ -97,7 +111,7 @@ const AddLiquidity = () => {
             <InputWrap
               name="fyTokenAmount"
               value={fyTokenAmount}
-              asset={pool?.fyToken}
+              item={pool?.fyToken}
               balance={pool?.fyToken.balance_!}
               handleChange={handleInputChange}
               unFocused={true}
@@ -105,8 +119,8 @@ const AddLiquidity = () => {
             />
           )}
         </Grid>
-        <Button action={handleSubmit} disabled={!account || !pool || !baseAmount}>
-          {!account ? 'Connect Wallet' : 'Add Liquidity'}
+        <Button action={handleSubmit} disabled={!account || !pool || !baseAmount || isAddingLiquidity}>
+          {isAddingLiquidity ? 'Adding Liquidity' : !account ? 'Connect Wallet' : 'Add Liquidity'}
         </Button>
       </Inner>
     </BorderWrap>
