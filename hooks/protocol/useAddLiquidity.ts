@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { BigNumber, ethers } from 'ethers';
 import { cleanValue } from '../../utils/appUtils';
 
@@ -13,7 +14,10 @@ export const useAddLiquidity = (pool: IPool, description?: string | null) => {
 
   const { sign, signer } = useSignature(description!);
 
+  const [isAddingLiquidity, setIsAddingLiquidity] = useState<boolean>(false);
+
   const addLiquidity = async (input: string, method: AddLiquidityType = AddLiquidityType.BUY) => {
+    setIsAddingLiquidity(true);
     const erc20Contract = pool.base.contract.connect(signer!);
     const fyTokenContract = pool.fyToken.contract.connect(signer!);
     const poolContract = pool.contract.connect(signer!);
@@ -92,7 +96,8 @@ export const useAddLiquidity = (pool: IPool, description?: string | null) => {
     } catch (e) {
       console.log(e);
     }
+    setIsAddingLiquidity(false);
   };
 
-  return addLiquidity;
+  return { addLiquidity, isAddingLiquidity };
 };

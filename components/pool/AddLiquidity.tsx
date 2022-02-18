@@ -43,7 +43,7 @@ const AddLiquidity = () => {
   const [useFyTokenBalance, toggleUseFyTokenBalance] = useState<boolean>(false);
   const [description, setDescription] = useState<string | null>();
 
-  const addLiquidity = useAddLiquidity(form.pool!, description);
+  const { addLiquidity, isAddingLiquidity } = useAddLiquidity(form.pool!, description);
 
   const handleClearAll = () => {
     setForm(INITIAL_FORM_STATE);
@@ -116,8 +116,8 @@ const AddLiquidity = () => {
             />
           )}
         </Grid>
-        <Button action={handleSubmit} disabled={!account || !pool || !baseAmount}>
-          {!account ? 'Connect Wallet' : 'Add Liquidity'}
+        <Button action={handleSubmit} disabled={!account || !pool || !baseAmount || isAddingLiquidity}>
+          {isAddingLiquidity ? 'Adding Liquidity' : !account ? 'Connect Wallet' : 'Add Liquidity'}
         </Button>
       </Inner>
     </BorderWrap>
