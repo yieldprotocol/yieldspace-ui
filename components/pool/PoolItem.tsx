@@ -10,8 +10,8 @@ import BackButton from '../common/BackButton';
 const Inner = tw.div`m-4 text-center`;
 const ButtonWrap = tw.div`flex justify-between gap-10`;
 const PoolDataWrap = tw.div`my-5 flex gap-5 flex-nowrap`;
-const PoolDataLabel = tw.div`text-lg text-gray-400`;
-const PoolData = tw.div`text-xl font-semibold text-gray-100`;
+const PoolDataLabel = tw.div`text-lg dark:text-gray-400 text-gray-500`;
+const PoolData = tw.div`text-xl font-semibold dark:text-gray-100 text-gray-800`;
 
 const PoolItem: FC = () => {
   const router = useRouter();

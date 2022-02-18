@@ -199,7 +199,7 @@ const TradeWidget = () => {
             unFocused={updatingFromAmount && !!pool}
           />
         </div>
-        <Button action={handleSubmit} disabled={!account}>
+        <Button action={handleSubmit} disabled={!account || !pool}>
           {!account ? 'Connect Wallet' : 'Trade'}
         </Button>
       </Inner>
