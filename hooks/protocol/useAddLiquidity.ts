@@ -24,6 +24,7 @@ export const useAddLiquidity = (pool: IPool) => {
     description: string | null = null
   ) => {
     setIsAddingLiquidity(true);
+
     const erc20Contract = pool.base.contract.connect(signer!);
     const fyTokenContract = pool.fyToken.contract.connect(signer!);
     const poolContract = pool.contract.connect(signer!);
