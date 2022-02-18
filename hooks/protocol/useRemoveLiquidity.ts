@@ -14,7 +14,7 @@ export const useRemoveLiquidity = (pool: IPool) => {
   const slippageTolerance = 0.001;
 
   const { account } = useConnector();
-  const { signer } = useSignature();
+  const { signer, sign } = useSignature();
 
   const [isRemovingLiq, setIsRemovingLiq] = useState<boolean>(false);
 
@@ -45,12 +45,18 @@ export const useRemoveLiquidity = (pool: IPool) => {
     const [minRatio, maxRatio] = calcPoolRatios(cachedBaseReserves, cachedRealReserves);
 
     const _burnForBase = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction> => {
-      const [res] = await Promise.all([poolContract.burnForBase(account!, minRatio, maxRatio, overrides)]);
+      const [, res] = await Promise.all([
+        poolContract.transfer(pool.address, _inputLessSlippage, overrides),
+        poolContract.burnForBase(account!, minRatio, maxRatio, overrides),
+      ]);
       return res;
     };
 
     const _burn = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction> => {
-      const [res] = await Promise.all([poolContract.burn(account!, account!, minRatio, maxRatio, overrides)]);
+      const [, res] = await Promise.all([
+        poolContract.transfer(pool.address, _inputLessSlippage, overrides),
+        poolContract.burn(account!, account!, minRatio, maxRatio, overrides),
+      ]);
       return res;
     };
 
