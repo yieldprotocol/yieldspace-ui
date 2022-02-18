@@ -23,7 +23,6 @@ interface IPoolSelect {
 const PoolSelect: FC<IPoolSelect> = ({ pools, pool, setPool, poolsLoading }) => {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
 
-  if (!pools) return <>no pools detected</>;
   return (
     <div className="h-12">
       {pool ? (
@@ -39,7 +38,7 @@ const PoolSelect: FC<IPoolSelect> = ({ pools, pool, setPool, poolsLoading }) => 
           <ButtonInner>{poolsLoading ? 'Pools loading...' : 'Select Pool'}</ButtonInner>
         </ButtonOuter>
       )}
-      {modalOpen && <PoolSelectModal pools={pools} open={modalOpen} setOpen={setModalOpen} action={setPool} />}
+      {modalOpen && <PoolSelectModal pools={pools!} open={modalOpen} setOpen={setModalOpen} action={setPool} />}
     </div>
   );
 };
