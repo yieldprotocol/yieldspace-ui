@@ -36,7 +36,7 @@ const AddLiquidity = () => {
   const router = useRouter();
   const { address } = router.query;
   const { chainId, account } = useConnector();
-  const { data: pools } = usePools();
+  const { data: pools, loading } = usePools();
 
   const [form, setForm] = useState<IAddLiquidityForm>(INITIAL_FORM_STATE);
 
@@ -82,7 +82,12 @@ const AddLiquidity = () => {
         </TopRow>
 
         <Grid>
-          <PoolSelect pools={pools} pool={pool} setPool={(p) => setForm((f) => ({ ...f, pool: p }))} />
+          <PoolSelect
+            pools={pools}
+            pool={pool}
+            setPool={(p) => setForm((f) => ({ ...f, pool: p }))}
+            poolsLoading={loading}
+          />
         </Grid>
 
         <Grid>
