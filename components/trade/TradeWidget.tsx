@@ -56,8 +56,12 @@ const TradeWidget = () => {
 
   const [updatingFromAmount, setUpdatingFromAmount] = useState<boolean>(false);
   const [updatingToAmount, setUpdatingToAmount] = useState<boolean>(false);
+  const [description, setDescription] = useState('');
 
-  const { trade, isTrading } = useTrade(pool!);
+  const [fromValue, setFromValue] = useState('');
+  const [toValue, setToValue] = useState('');
+
+  const { trade, isTrading } = useTrade(pool!, fromValue, toValue, tradeAction, description);
 
   const handleMaxFrom = () => {
     setUpdatingFromAmount(true);
@@ -89,8 +93,7 @@ const TradeWidget = () => {
   };
 
   const handleSubmit = () => {
-    const description = `Trading ${fromAmount} ${fromAsset?.symbol} to approximately ${toAmount} ${toAsset?.symbol}`;
-    pool && trade(fromValue(), tradeAction, description);
+    pool && trade();
   };
 
   const handleInputChange = (name: string, value: string) => {
@@ -108,38 +111,63 @@ const TradeWidget = () => {
   };
 
   // assess what the output value should be based on the trade direction and where the user is inputting
-  const fromValue = () => {
-    if (!updatingFromAmount && !updatingToAmount) return '';
-    switch (tradeAction) {
-      case TradeActions.SELL_FYTOKEN:
-        return updatingFromAmount ? fromAmount : baseOutPreview;
-      case TradeActions.SELL_BASE:
-        return updatingFromAmount ? fromAmount : fyTokenOutPreview;
-      case TradeActions.BUY_BASE:
-        return updatingFromAmount ? fromAmount : fyTokenInPreview;
-      case TradeActions.BUY_FYTOKEN:
-        return updatingFromAmount ? fromAmount : baseInPreview;
-      default:
-        return '';
-    }
-  };
+  useEffect(() => {
+    const _fromValue = () => {
+      if (!updatingFromAmount && !updatingToAmount) return '';
+      switch (tradeAction) {
+        case TradeActions.SELL_FYTOKEN:
+          return updatingFromAmount ? fromAmount : baseOutPreview;
+        case TradeActions.SELL_BASE:
+          return updatingFromAmount ? fromAmount : fyTokenOutPreview;
+        case TradeActions.BUY_BASE:
+          return updatingFromAmount ? fromAmount : fyTokenInPreview;
+        case TradeActions.BUY_FYTOKEN:
+          return updatingFromAmount ? fromAmount : baseInPreview;
+        default:
+          return '';
+      }
+    };
+    setFromValue(_fromValue());
+  }, [
+    updatingFromAmount,
+    fromAmount,
+    baseOutPreview,
+    fyTokenOutPreview,
+    fyTokenInPreview,
+    baseInPreview,
+    tradeAction,
+    updatingToAmount,
+  ]);
 
   // assess what the output value should be based on the trade direction and where the user is inputting
-  const toValue = () => {
-    // if (!updatingFromAmount && !updatingToAmount) return '';
-    switch (tradeAction) {
-      case TradeActions.SELL_FYTOKEN:
-        return updatingToAmount ? toAmount : baseOutPreview;
-      case TradeActions.SELL_BASE:
-        return updatingToAmount ? toAmount : fyTokenOutPreview;
-      case TradeActions.BUY_BASE:
-        return updatingToAmount ? toAmount : baseOutPreview;
-      case TradeActions.BUY_FYTOKEN:
-        return updatingToAmount ? toAmount : fyTokenOutPreview;
-      default:
-        return '';
-    }
-  };
+  useEffect(() => {
+    const _toValue = () => {
+      // if (!updatingFromAmount && !updatingToAmount) return '';
+      switch (tradeAction) {
+        case TradeActions.SELL_FYTOKEN:
+          return updatingToAmount ? toAmount : baseOutPreview;
+        case TradeActions.SELL_BASE:
+          return updatingToAmount ? toAmount : fyTokenOutPreview;
+        case TradeActions.BUY_BASE:
+          return updatingToAmount ? toAmount : baseOutPreview;
+        case TradeActions.BUY_FYTOKEN:
+          return updatingToAmount ? toAmount : fyTokenOutPreview;
+        default:
+          return '';
+      }
+    };
+    setToValue(_toValue());
+  }, [
+    updatingFromAmount,
+    fromAmount,
+    baseOutPreview,
+    fyTokenOutPreview,
+    fyTokenInPreview,
+    baseInPreview,
+    tradeAction,
+    updatingToAmount,
+    toAmount,
+  ]);
 
   // assess the trade action
   useEffect(() => {
@@ -170,6 +198,12 @@ const TradeWidget = () => {
       }));
   }, [form.pool]);
 
+  // set trade description to use in useTrade hook
+  useEffect(() => {
+    const _description = `Trading ${fromAmount} ${fromAsset?.symbol} to approximately ${toAmount} ${toAsset?.symbol}`;
+    setDescription(_description);
+  }, [fromAmount, fromAsset, toAmount, toAsset]);
+
   return (
     <BorderWrap>
       <Inner>
@@ -195,7 +229,7 @@ const TradeWidget = () => {
         <div className="flex flex-col gap-1 my-5">
           <InputWrap
             name="fromAmount"
-            value={fromValue()}
+            value={fromValue}
             balance={fromAsset?.balance_!}
             item={fromAsset}
             handleChange={handleInputChange}
@@ -216,7 +250,7 @@ const TradeWidget = () => {
           </div>
           <InputWrap
             name="toAmount"
-            value={toValue()}
+            value={toValue}
             balance={toAsset?.balance_!}
             item={toAsset}
             handleChange={handleInputChange}
