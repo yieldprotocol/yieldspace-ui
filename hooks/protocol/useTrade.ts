@@ -38,11 +38,11 @@ export const useTrade = (
     fyTokenOutput
   );
 
-  const [isTrading, setIsTrading] = useState<boolean>(false);
+  const [isTransacting, setIsTransacting] = useState<boolean>(false);
 
   const trade = async () => {
     if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
-    setIsTrading(true);
+    setIsTransacting(true);
 
     const erc20Contract = pool.base.contract.connect(signer!);
     const fyTokenContract = pool.fyToken.contract.connect(signer!);
@@ -101,6 +101,8 @@ export const useTrade = (
         res = await _sellFYToken(overrides);
       }
 
+      setIsTransacting(false);
+
       toast.promise(res.wait, {
         pending: `${description}`,
         success: `${description}`,
@@ -109,10 +111,9 @@ export const useTrade = (
     } catch (e) {
       console.log(e);
       toast.error('Transaction failed or rejected');
-      setIsTrading(false);
+      setIsTransacting(false);
     }
-    setIsTrading(false);
   };
 
-  return { trade, isTrading };
+  return { trade, isTransacting };
 };
