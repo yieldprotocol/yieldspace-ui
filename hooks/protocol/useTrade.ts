@@ -42,7 +42,7 @@ export const useTrade = (pool: IPool) => {
     const _sellBase = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction> => {
       const [, res] = await Promise.all([
         await erc20Contract.transfer(pool.address, _input),
-        await poolContract.sellBase(account!, _outputLessSlippage),
+        await poolContract.sellBase(account!, _outputLessSlippage, overrides),
       ]);
       return res;
     };
@@ -50,7 +50,7 @@ export const useTrade = (pool: IPool) => {
     const _sellFYToken = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction> => {
       const [, res] = await Promise.all([
         await erc20Contract.transfer(pool.address, _input),
-        await poolContract.sellFYToken(account!, _outputLessSlippage),
+        await poolContract.sellFYToken(account!, _outputLessSlippage, overrides),
       ]);
       return res;
     };
