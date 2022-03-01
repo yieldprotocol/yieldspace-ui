@@ -43,6 +43,10 @@ const AddLiquidity = () => {
 
   const { addLiquidity, isAddingLiquidity } = useAddLiquidity(form.pool!);
 
+  const handleMaxBase = () => {
+    setForm((f) => ({ ...f, baseAmount: pool?.base.balance_!, fyTokenAmount: pool?.base.balance_! }));
+  };
+
   const handleClearAll = () => {
     setForm(INITIAL_FORM_STATE);
   };
@@ -101,6 +105,7 @@ const AddLiquidity = () => {
             item={pool?.base}
             balance={pool?.base.balance_!}
             handleChange={handleInputChange}
+            useMax={handleMaxBase}
           />
 
           {useFyTokenBalance && <PlusIcon className="justify-self-center" height={20} width={20} />}

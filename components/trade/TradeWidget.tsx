@@ -54,6 +54,24 @@ const TradeWidget = () => {
   const [updatingFromAmount, setUpdatingFromAmount] = useState<boolean>(false);
   const [updatingToAmount, setUpdatingToAmount] = useState<boolean>(false);
 
+  const handleMaxFrom = () => {
+    setUpdatingFromAmount(true);
+    setUpdatingToAmount(false);
+    setForm((f) => ({
+      ...f,
+      fromAmount: f.fromAsset?.balance_!,
+    }));
+  };
+
+  const handleMaxTo = () => {
+    setUpdatingFromAmount(false);
+    setUpdatingToAmount(true);
+    setForm((f) => ({
+      ...f,
+      toAmount: f.toAsset?.balance_!,
+    }));
+  };
+
   const handleClearAll = () => setForm(INITIAL_FORM_STATE);
 
   const handleToggleDirection = () => {
@@ -85,6 +103,7 @@ const TradeWidget = () => {
 
   // assess what the output value should be based on the trade direction and where the user is inputting
   const fromValue = () => {
+    console.log('🦄 ~ file: TradeWidget.tsx ~ line 98 ~ fromValue ~ updatingFromAmount', updatingFromAmount);
     if (!updatingFromAmount && !updatingToAmount) return '';
     switch (form.tradeAction) {
       case TradeActions.SELL_FYTOKEN:
@@ -102,7 +121,7 @@ const TradeWidget = () => {
 
   // assess what the output value should be based on the trade direction and where the user is inputting
   const toValue = () => {
-    if (!updatingFromAmount && !updatingToAmount) return '';
+    // if (!updatingFromAmount && !updatingToAmount) return '';
     switch (form.tradeAction) {
       case TradeActions.SELL_FYTOKEN:
         return updatingToAmount ? toAmount : baseOutPreview;
@@ -177,6 +196,7 @@ const TradeWidget = () => {
             item={fromAsset}
             handleChange={handleInputChange}
             unFocused={updatingToAmount && !!pool}
+            useMax={handleMaxFrom}
           />
           <div className="relative flex justify-center items-center w-full">
             <div className="flex items-center justify-end relative w-full">
@@ -197,6 +217,7 @@ const TradeWidget = () => {
             item={toAsset}
             handleChange={handleInputChange}
             unFocused={updatingFromAmount && !!pool}
+            useMax={handleMaxTo}
           />
         </div>
         <Button action={handleSubmit} disabled={!account || !pool}>

@@ -21,9 +21,10 @@ interface IDeposit {
   handleChange: (name: string, value: string) => void;
   disabled?: boolean;
   unFocused?: boolean;
+  useMax?: () => void;
 }
 
-const InputWrap = ({ name, value, item, balance, handleChange, disabled, unFocused }: IDeposit) => (
+const InputWrap = ({ name, value, item, balance, handleChange, disabled, unFocused, useMax }: IDeposit) => (
   <Container $unFocused={unFocused}>
     <Inner>
       <Input
@@ -42,10 +43,13 @@ const InputWrap = ({ name, value, item, balance, handleChange, disabled, unFocus
         <AssetSelect item={item} isFyToken={item?.symbol.includes('FY') || false} />
       </div>
       {item && (
-        <div className="flex items-center gap-1 my-[1px] text-xs justify-end mr-2 dark:text-gray-300 text-gray-700">
+        <button
+          className="float-right flex items-center gap-1 my-[1px] text-xs mr-2 dark:text-gray-300 text-gray-700 hover:text-gray-600 dark:hover:text-gray-400"
+          onClick={useMax}
+        >
           <div>Balance:</div>
           <div>{balance}</div>
-        </div>
+        </button>
       )}
     </div>
   </Container>

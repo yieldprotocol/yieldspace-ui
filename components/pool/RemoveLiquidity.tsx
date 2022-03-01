@@ -40,6 +40,10 @@ const RemoveLiquidity = () => {
 
   const { removeLiquidity, isRemovingLiq } = useRemoveLiquidity(form.pool!);
 
+  const handleMaxLpTokens = () => {
+    setForm((f) => ({ ...f, lpTokens: pool?.lpTokenBalance_ }));
+  };
+
   const handleClearAll = () => {
     setForm(INITIAL_FORM_STATE);
   };
@@ -97,6 +101,7 @@ const RemoveLiquidity = () => {
             item={pool}
             balance={pool?.lpTokenBalance_!}
             handleChange={handleInputChange}
+            useMax={handleMaxLpTokens}
           />
 
           <Toggle
