@@ -90,7 +90,7 @@ const TradeWidget = () => {
 
   const handleSubmit = () => {
     const description = `Trading ${fromAmount} ${fromAsset?.symbol} to approximately ${toAmount} ${toAsset?.symbol}`;
-    pool && trade(fromAmount, tradeAction, description);
+    pool && trade(fromValue(), tradeAction, description);
   };
 
   const handleInputChange = (name: string, value: string) => {
