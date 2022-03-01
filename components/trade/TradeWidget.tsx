@@ -103,7 +103,6 @@ const TradeWidget = () => {
 
   // assess what the output value should be based on the trade direction and where the user is inputting
   const fromValue = () => {
-    console.log('🦄 ~ file: TradeWidget.tsx ~ line 98 ~ fromValue ~ updatingFromAmount', updatingFromAmount);
     if (!updatingFromAmount && !updatingToAmount) return '';
     switch (form.tradeAction) {
       case TradeActions.SELL_FYTOKEN:
