@@ -58,7 +58,7 @@ const TradeWidget = () => {
   const [updatingToAmount, setUpdatingToAmount] = useState<boolean>(false);
   const [description, setDescription] = useState('');
 
-  const { trade, isTrading } = useTrade(pool!, fromAmount, toAmount, tradeAction, description);
+  const { trade, isTransacting } = useTrade(pool!, fromAmount, toAmount, tradeAction, description);
 
   const handleMaxFrom = () => {
     setUpdatingFromAmount(true);
@@ -255,7 +255,7 @@ const TradeWidget = () => {
             useMax={handleMaxTo}
           />
         </div>
-        <Button action={handleSubmit} disabled={!account || !pool || isTrading}>
+        <Button action={handleSubmit} disabled={!account || !pool || isTransacting} loading={isTransacting}>
           {!account ? 'Connect Wallet' : 'Trade'}
         </Button>
       </Inner>
