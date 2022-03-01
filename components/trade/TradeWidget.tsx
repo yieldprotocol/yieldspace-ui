@@ -256,7 +256,7 @@ const TradeWidget = () => {
           />
         </div>
         <Button action={handleSubmit} disabled={!account || !pool || isTransacting} loading={isTransacting}>
-          {!account ? 'Connect Wallet' : 'Trade'}
+          {!account ? 'Connect Wallet' : isTransacting ? 'Trade Initiated...' : 'Trade'}
         </Button>
       </Inner>
     </BorderWrap>
