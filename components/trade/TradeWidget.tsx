@@ -11,6 +11,7 @@ import useTradePreview from '../../hooks/protocol/useTradePreview';
 import InterestRateInput from './InterestRateInput';
 import { TradeActions } from '../../lib/protocol/trade/types';
 import { BorderWrap, Header } from '../styles/';
+import { useTrade } from '../../hooks/protocol/useTrade';
 
 const Inner = tw.div`m-4 text-center`;
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
@@ -51,8 +52,12 @@ const TradeWidget = () => {
     form.toAmount,
     form.isFyTokenOutput
   );
+  const { pool, fromAsset, fromAmount, toAsset, toAmount, interestRate, tradeAction, isFyTokenOutput } = form;
+
   const [updatingFromAmount, setUpdatingFromAmount] = useState<boolean>(false);
   const [updatingToAmount, setUpdatingToAmount] = useState<boolean>(false);
+
+  const { trade, isTrading } = useTrade(pool!);
 
   const handleMaxFrom = () => {
     setUpdatingFromAmount(true);
@@ -84,7 +89,8 @@ const TradeWidget = () => {
   };
 
   const handleSubmit = () => {
-    console.log('submitting trade with details', form);
+    const description = `Trading ${fromAmount} ${fromAsset?.symbol} to approximately ${toAmount} ${toAsset?.symbol}`;
+    pool && trade(fromAmount, tradeAction, description);
   };
 
   const handleInputChange = (name: string, value: string) => {
@@ -104,7 +110,7 @@ const TradeWidget = () => {
   // assess what the output value should be based on the trade direction and where the user is inputting
   const fromValue = () => {
     if (!updatingFromAmount && !updatingToAmount) return '';
-    switch (form.tradeAction) {
+    switch (tradeAction) {
       case TradeActions.SELL_FYTOKEN:
         return updatingFromAmount ? fromAmount : baseOutPreview;
       case TradeActions.SELL_BASE:
@@ -121,7 +127,7 @@ const TradeWidget = () => {
   // assess what the output value should be based on the trade direction and where the user is inputting
   const toValue = () => {
     // if (!updatingFromAmount && !updatingToAmount) return '';
-    switch (form.tradeAction) {
+    switch (tradeAction) {
       case TradeActions.SELL_FYTOKEN:
         return updatingToAmount ? toAmount : baseOutPreview;
       case TradeActions.SELL_BASE:
@@ -137,16 +143,16 @@ const TradeWidget = () => {
 
   // assess the trade action
   useEffect(() => {
-    if (form.isFyTokenOutput && updatingToAmount) {
+    if (isFyTokenOutput && updatingToAmount) {
       setForm((f) => ({ ...f, tradeAction: TradeActions.BUY_FYTOKEN }));
-    } else if (form.isFyTokenOutput && !updatingToAmount) {
+    } else if (isFyTokenOutput && !updatingToAmount) {
       setForm((f) => ({ ...f, tradeAction: TradeActions.SELL_BASE }));
-    } else if (!form.isFyTokenOutput && updatingToAmount) {
+    } else if (!isFyTokenOutput && updatingToAmount) {
       setForm((f) => ({ ...f, tradeAction: TradeActions.BUY_BASE }));
-    } else if (!form.isFyTokenOutput && !updatingToAmount) {
+    } else if (!isFyTokenOutput && !updatingToAmount) {
       setForm((f) => ({ ...f, tradeAction: TradeActions.SELL_FYTOKEN }));
     }
-  }, [form.isFyTokenOutput, updatingToAmount, form.tradeAction]);
+  }, [isFyTokenOutput, updatingToAmount, tradeAction]);
 
   // reset form when chainId changes
   useEffect(() => {
@@ -163,8 +169,6 @@ const TradeWidget = () => {
         toAsset: f.pool?.fyToken,
       }));
   }, [form.pool]);
-
-  const { pool, fromAsset, fromAmount, toAsset, toAmount, interestRate } = form;
 
   return (
     <BorderWrap>
@@ -220,7 +224,7 @@ const TradeWidget = () => {
             useMax={handleMaxTo}
           />
         </div>
-        <Button action={handleSubmit} disabled={!account || !pool}>
+        <Button action={handleSubmit} disabled={!account || !pool || isTrading}>
           {!account ? 'Connect Wallet' : 'Trade'}
         </Button>
       </Inner>
