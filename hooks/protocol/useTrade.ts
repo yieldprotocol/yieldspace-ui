@@ -36,7 +36,7 @@ export const useTrade = (pool: IPool) => {
     const _outputLessSlippage = MAX_256;
 
     /* check if signature is still required */
-    const alreadyApproved = (await base.getAllowance(account!, pool.address)).gt(_input);
+    const alreadyApproved = (await pool.base.getAllowance(account!, pool.address)).gt(_input);
 
     const _sellBase = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction> => {
       const [, res] = await Promise.all([
