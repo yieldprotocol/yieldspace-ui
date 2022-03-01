@@ -108,7 +108,7 @@ export const useTrade = (
       });
     } catch (e) {
       console.log(e);
-      toast.error('tx failed or rejected');
+      toast.error('Transaction failed or rejected');
       setIsTrading(false);
     }
     setIsTrading(false);
