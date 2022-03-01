@@ -11,8 +11,9 @@ import { TradeActions } from '../../lib/protocol/trade/types';
 import useTradePreview from './useTradePreview';
 
 export const useTrade = (
-  pool: IPool,
-  input: string,
+  pool: IPool | undefined,
+  fromInput: string,
+  toInput: string,
   method: TradeActions = TradeActions.SELL_BASE,
   description: string | null = null
 ) => {
@@ -22,16 +23,25 @@ export const useTrade = (
   const { account } = useConnector();
   const { signer } = useSignature();
 
-  const cleanInput = cleanValue(input, pool.decimals);
-  const _input = ethers.utils.parseUnits(cleanInput, pool.decimals);
+  const decimals = pool?.decimals;
+  const cleanFromInput = cleanValue(fromInput, decimals);
+  const cleanToInput = cleanValue(toInput, decimals);
+  const _inputToUse = ethers.utils.parseUnits(cleanFromInput || '0', decimals);
 
-  const fyTokenOutput = method === (TradeActions.SELL_BASE || TradeActions.BUY_FYTOKEN);
+  const fyTokenOutput = [TradeActions.SELL_BASE, TradeActions.BUY_FYTOKEN].includes(method);
 
-  const { fyTokenOutPreview, baseOutPreview } = useTradePreview(pool, method, cleanInput, '', fyTokenOutput); // to amount not necessary here
+  const { fyTokenOutPreview, baseOutPreview } = useTradePreview(
+    pool,
+    method,
+    cleanFromInput,
+    cleanToInput,
+    fyTokenOutput
+  );
 
   const [isTrading, setIsTrading] = useState<boolean>(false);
 
   const trade = async () => {
+    if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
     setIsTrading(true);
 
     const erc20Contract = pool.base.contract.connect(signer!);
@@ -42,20 +52,22 @@ export const useTrade = (
     // const alreadyApproved = (await pool.base.getAllowance(account!, pool.address)).gt(_input);
 
     const _sellBase = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction> => {
-      const _fyTokenOutPreview = ethers.utils.parseUnits(fyTokenOutPreview, pool.decimals);
+      const _fyTokenOutPreview = ethers.utils.parseUnits(fyTokenOutPreview, decimals);
       const _outputLessSlippage = calculateSlippage(_fyTokenOutPreview, slippageTolerance.toString(), true);
+
       const [, res] = await Promise.all([
-        await erc20Contract.transfer(pool.address, _input),
+        await erc20Contract.transfer(pool.address, _inputToUse),
         await poolContract.sellBase(account!, _outputLessSlippage, overrides),
       ]);
       return res;
     };
 
     const _sellFYToken = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction> => {
-      const _baseOutPreview = ethers.utils.parseUnits(baseOutPreview, pool.decimals);
+      const _baseOutPreview = ethers.utils.parseUnits(baseOutPreview, decimals);
       const _outputLessSlippage = calculateSlippage(_baseOutPreview, slippageTolerance.toString(), true);
+
       const [, res] = await Promise.all([
-        await fyTokenContract.transfer(pool.address, _input),
+        await fyTokenContract.transfer(pool.address, _inputToUse),
         await poolContract.sellFYToken(account!, _outputLessSlippage, overrides),
       ]);
       return res;
@@ -83,7 +95,7 @@ export const useTrade = (
     try {
       let res: ethers.ContractTransaction;
 
-      if (method === (TradeActions.SELL_BASE || TradeActions.BUY_FYTOKEN)) {
+      if (fyTokenOutput) {
         res = await _sellBase(overrides);
       } else {
         res = await _sellFYToken(overrides);
