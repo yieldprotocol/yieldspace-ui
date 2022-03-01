@@ -58,10 +58,7 @@ const TradeWidget = () => {
   const [updatingToAmount, setUpdatingToAmount] = useState<boolean>(false);
   const [description, setDescription] = useState('');
 
-  const [fromValue, setFromValue] = useState('');
-  const [toValue, setToValue] = useState('');
-
-  const { trade, isTrading } = useTrade(pool!, fromValue, toValue, tradeAction, description);
+  const { trade, isTrading } = useTrade(pool!, fromAmount, toAmount, tradeAction, description);
 
   const handleMaxFrom = () => {
     setUpdatingFromAmount(true);
@@ -127,7 +124,7 @@ const TradeWidget = () => {
           return '';
       }
     };
-    setFromValue(_fromValue());
+    setForm((f) => ({ ...f, fromAmount: _fromValue() }));
   }, [
     updatingFromAmount,
     fromAmount,
@@ -142,7 +139,7 @@ const TradeWidget = () => {
   // assess what the output value should be based on the trade direction and where the user is inputting
   useEffect(() => {
     const _toValue = () => {
-      // if (!updatingFromAmount && !updatingToAmount) return '';
+      if (!updatingFromAmount && !updatingToAmount) return '';
       switch (tradeAction) {
         case TradeActions.SELL_FYTOKEN:
           return updatingToAmount ? toAmount : baseOutPreview;
@@ -156,7 +153,7 @@ const TradeWidget = () => {
           return '';
       }
     };
-    setToValue(_toValue());
+    setForm((f) => ({ ...f, toAmount: _toValue() }));
   }, [
     updatingFromAmount,
     fromAmount,
@@ -200,7 +197,7 @@ const TradeWidget = () => {
 
   // set trade description to use in useTrade hook
   useEffect(() => {
-    const _description = `Trading ${fromAmount} ${fromAsset?.symbol} to approximately ${toAmount} ${toAsset?.symbol}`;
+    const _description = `Trade ${fromAmount} ${fromAsset?.symbol} to ~${toAmount} ${toAsset?.symbol}`;
     setDescription(_description);
   }, [fromAmount, fromAsset, toAmount, toAsset]);
 
@@ -229,7 +226,7 @@ const TradeWidget = () => {
         <div className="flex flex-col gap-1 my-5">
           <InputWrap
             name="fromAmount"
-            value={fromValue}
+            value={fromAmount}
             balance={fromAsset?.balance_!}
             item={fromAsset}
             handleChange={handleInputChange}
@@ -250,7 +247,7 @@ const TradeWidget = () => {
           </div>
           <InputWrap
             name="toAmount"
-            value={toValue}
+            value={toAmount}
             balance={toAsset?.balance_!}
             item={toAsset}
             handleChange={handleInputChange}
