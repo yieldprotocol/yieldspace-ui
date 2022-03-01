@@ -30,9 +30,8 @@ export const useTrade = (pool: IPool) => {
     const fyTokenContract = pool.fyToken.contract.connect(signer!);
     const poolContract = pool.contract.connect(signer!);
 
-    const base = pool.base;
-    const cleanInput = cleanValue(input, base.decimals);
-    const _input = ethers.utils.parseUnits(cleanInput, base.decimals);
+    const cleanInput = cleanValue(input, pool.decimals);
+    const _input = ethers.utils.parseUnits(cleanInput, pool.decimals);
     // const _outputLessSlippage = calculateSlippage(_input, slippageTolerance.toString(), true);
     const _outputLessSlippage = MAX_256;
 
@@ -49,7 +48,7 @@ export const useTrade = (pool: IPool) => {
 
     const _sellFYToken = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction> => {
       const [, res] = await Promise.all([
-        await erc20Contract.transfer(pool.address, _input),
+        await fyTokenContract.transfer(pool.address, _input),
         await poolContract.sellFYToken(account!, _outputLessSlippage, overrides),
       ]);
       return res;
