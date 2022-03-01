@@ -44,7 +44,7 @@ const TradeWidget = () => {
   const { data: pools, loading } = usePools();
 
   const [form, setForm] = useState<ITradeForm>(INITIAL_FORM_STATE);
-  const { fyTokenOutPreview, baseOutPreview, fyTokenInPreview, baseInPreview } = useTradePreview(
+  const { fyTokenOutPreview, baseOutPreview, fyTokenInPreview, baseInPreview, interestRatePreview } = useTradePreview(
     form.pool,
     form.tradeAction,
     form.fromAmount,
@@ -182,8 +182,9 @@ const TradeWidget = () => {
             poolsLoading={loading}
           />
           <InterestRateInput
-            rate={interestRate}
+            rate={interestRatePreview}
             setRate={(rate: string) => setForm((f) => ({ ...f, interestRate: rate }))}
+            disabled={true}
           />
         </Grid>
 
