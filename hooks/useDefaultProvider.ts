@@ -1,9 +1,14 @@
 import { ethers } from 'ethers';
 import { useMemo } from 'react';
+import { URLS } from '../config/chains';
 
-export const DEFAULT_CHAIN_ID = Number(process.env.defaultChainId);
+const useDefaultProvider = (chainId: number) => {
+  console.log('in use default provider hook');
 
-const useDefaultProvider = (chainId: number = DEFAULT_CHAIN_ID) =>
-  useMemo(() => new ethers.providers.InfuraProvider(chainId, process.env.infuraKey), [chainId]);
+  return useMemo(() => {
+    console.log('fetching provider');
+    return new ethers.providers.JsonRpcProvider(URLS[chainId][0]);
+  }, [chainId]);
+};
 
 export default useDefaultProvider;
