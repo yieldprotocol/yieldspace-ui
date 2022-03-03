@@ -3,7 +3,7 @@ import { BigNumber, Contract, ethers } from 'ethers';
 import { ERC20Permit, FYToken, Pool } from '../../contracts/types';
 import { ISignable } from '../tx/types';
 
-export type Provider = Web3Provider | ethers.providers.InfuraProvider;
+export type Provider = Web3Provider | ethers.providers.JsonRpcProvider;
 
 export interface IContractMap {
   [name: string]: Contract | null;
