@@ -15,6 +15,7 @@ import { useTrade } from '../../hooks/protocol/useTrade';
 import Arrow from './Arrow';
 import Modal from '../common/Modal';
 import TradeConfirmation from './TradeConfirmation';
+import InputsWrap from '../styles/InputsWrap';
 
 const Inner = tw.div`m-4 text-center`;
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
@@ -227,7 +228,7 @@ const TradeWidget = () => {
           />
         </Grid>
 
-        <div className="flex flex-col gap-1 my-5">
+        <InputsWrap>
           <InputWrap
             name="fromAmount"
             value={fromAmount}
@@ -237,18 +238,7 @@ const TradeWidget = () => {
             unFocused={updatingToAmount && !!pool}
             useMax={handleMaxFrom}
           />
-          <div className="relative flex justify-center items-center w-full">
-            <div className="flex items-center justify-end relative w-full">
-              <div className="absolute left-0 right-0 flex items-center justify-center">
-                <ArrowCircleDownIcon
-                  className="justify-self-center text-gray-400 hover:border hover:border-secondary-500 rounded-full hover:cursor-pointer z-10"
-                  height={27}
-                  width={27}
-                  onClick={handleToggleDirection}
-                />
-              </div>
-            </div>
-          </div>
+          <Arrow toggleDirection={handleToggleDirection} />
           <InputWrap
             name="toAmount"
             value={toAmount}
@@ -258,7 +248,7 @@ const TradeWidget = () => {
             unFocused={updatingFromAmount && !!pool}
             useMax={handleMaxTo}
           />
-        </div>
+        </InputsWrap>
         <Button action={handleSubmit} disabled={!account || !pool || isTransacting} loading={isTransacting}>
           {!account ? 'Connect Wallet' : isTransacting ? 'Trade Initiated...' : 'Trade'}
         </Button>
