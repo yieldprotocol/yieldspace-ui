@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import tw from 'tailwind-styled-components';
 import Button from '../common/Button';
 import InputWrap from '../pool/InputWrap';
-import { ArrowCircleDownIcon } from '@heroicons/react/solid';
 import usePools from '../../hooks/protocol/usePools';
 import PoolSelect from '../pool/PoolSelect';
 import { IAsset, IPool } from '../../lib/protocol/types';

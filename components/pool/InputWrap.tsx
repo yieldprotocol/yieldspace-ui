@@ -10,10 +10,11 @@ const Container = tw.div<DivProps>`${(p) =>
   p.$unFocused
     ? 'opacity-60'
     : ''}  flex rounded-md justify-between p-1 w-full gap-5 align-middle hover:border border hover:border-gray-400 dark:hover:border-gray-600 dark:border-gray-800 dark:bg-gray-800 bg-gray-300 border-gray-300`;
-export const Input = tw.input`h-full caret-gray-800 dark:caret-gray-50 text-2xl appearance-none w-full dark:bg-gray-800 bg-gray-300 dark:focus:text-gray-50 focus:text-gray-800 dark:text-gray-300 text-gray-800 py-1 px-4 leading-tight focus:outline-none `;
+const Input = tw.input`h-full caret-gray-800 dark:caret-gray-50 text-2xl appearance-none w-full dark:bg-gray-800 bg-gray-300 dark:focus:text-gray-50 focus:text-gray-800 dark:text-gray-300 text-gray-800 py-1 px-4 leading-tight focus:outline-none `;
 const Inner = tw.div`grow-0 w-auto ml-3 text-center text-lg align-middle my-1 items-center`;
 const AssetSelectOuter = tw.div`grow min-w-fit`;
 const AssetSelectWrap = tw.div`p-1`;
+const MaxButton = tw.button`float-right flex items-center gap-1 my-[1px] text-xs mr-2 dark:text-gray-300 text-gray-700 hover:text-gray-600 dark:hover:text-gray-400`;
 
 interface IDeposit {
   name: string;
@@ -45,13 +46,10 @@ const InputWrap = ({ name, value, item, balance, handleChange, disabled, unFocus
         <AssetSelect item={item} isFyToken={item?.symbol.includes('FY') || false} />
       </AssetSelectWrap>
       {item && (
-        <button
-          className="float-right flex items-center gap-1 my-[1px] text-xs mr-2 dark:text-gray-300 text-gray-700 hover:text-gray-600 dark:hover:text-gray-400"
-          onClick={useMax}
-        >
+        <MaxButton onClick={useMax}>
           <div>Balance:</div>
           <div>{balance}</div>
-        </button>
+        </MaxButton>
       )}
     </AssetSelectOuter>
   </Container>
