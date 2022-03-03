@@ -14,7 +14,9 @@ const Arrow = ({ toggleDirection }: IArrow) => (
     <Outer>
       <ArrowWrap>
         <ArrowCircleDownIcon
-          className="justify-self-center text-gray-400 hover:border hover:border-secondary-500 rounded-full hover:cursor-pointer z-10"
+          className={`justify-self-center text-gray-400 ${
+            toggleDirection && `hover:border hover:border-secondary-500 hover:cursor-pointer`
+          } rounded-full z-10`}
           height={27}
           width={27}
           onClick={toggleDirection}
