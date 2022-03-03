@@ -104,7 +104,9 @@ export const CHAINS: { [chainId: number]: BasicChainInformation | ExtendedChainI
   },
   421611: {
     urls: [
-      process.env.infuraKey ? `https://arbitrum-rinkeby.infura.io/v3/${process.env.infuraKey}` : undefined,
+      process.env.alchemyKeyArbitrumRinkeby
+        ? `https://arb-rinkeby.g.alchemy.com/v2/${process.env.alchemyKeyArbitrumRinkeby}`
+        : undefined,
       'https://rinkeby.arbitrum.io/rpc',
     ],
     name: 'Arbitrum Testnet',
