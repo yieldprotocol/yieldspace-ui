@@ -12,6 +12,9 @@ import InterestRateInput from './InterestRateInput';
 import { TradeActions } from '../../lib/protocol/trade/types';
 import { BorderWrap, Header } from '../styles/';
 import { useTrade } from '../../hooks/protocol/useTrade';
+import Arrow from './Arrow';
+import Modal from '../common/Modal';
+import TradeConfirmation from './TradeConfirmation';
 
 const Inner = tw.div`m-4 text-center`;
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
@@ -57,6 +60,7 @@ const TradeWidget = () => {
   const [updatingFromAmount, setUpdatingFromAmount] = useState<boolean>(false);
   const [updatingToAmount, setUpdatingToAmount] = useState<boolean>(false);
   const [description, setDescription] = useState('');
+  const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
 
   const { trade, isTransacting } = useTrade(pool!, fromAmount, toAmount, tradeAction, description);
 
@@ -258,6 +262,11 @@ const TradeWidget = () => {
         <Button action={handleSubmit} disabled={!account || !pool || isTransacting} loading={isTransacting}>
           {!account ? 'Connect Wallet' : isTransacting ? 'Trade Initiated...' : 'Trade'}
         </Button>
+        {/* {conifirmModalOpen && (
+          <Modal isOpen={confirm} setIsOpen={setModalOpen}>
+            <TradeConfirmation />
+          </Modal>
+        )} */}
       </Inner>
     </BorderWrap>
   );
