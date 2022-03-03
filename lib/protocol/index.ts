@@ -9,6 +9,7 @@ import { CONTRACTS_TO_FETCH } from '../../hooks/protocol/useContracts';
 import * as contractTypes from '../../contracts/types';
 import { ERC20Permit__factory } from '../../contracts/types/factories/ERC20Permit__factory';
 import { FYToken__factory } from '../../contracts/types/factories/FYToken__factory';
+import { PoolAddedEvent } from '../../contracts/types/Ladle';
 
 const { seasonColors } = yieldEnv;
 
@@ -17,6 +18,7 @@ const { seasonColors } = yieldEnv;
  *
  * @param provider
  * @param contractMap the contracts to use for events
+ * @param chainId currently connected chain id or mainnet as default
  * @param account user's account address if there is a connected account
  * @param blockNum
  * @returns  {IPoolMap}
@@ -24,86 +26,90 @@ const { seasonColors } = yieldEnv;
 export const getPools = async (
   provider: Provider,
   contractMap: IContractMap,
-  account: string | undefined = undefined,
-  blockNum: number | undefined = undefined
+  chainId: number = 1,
+  account: string | undefined = undefined
 ): Promise<IPoolMap | undefined> => {
   const Ladle = contractMap[LADLE];
   if (!Ladle) return undefined;
-  const poolAddedEvents = await Ladle.queryFilter('PoolAdded' as ethers.EventFilter, blockNum!);
-  const poolAddresses: string[] = poolAddedEvents.map((log) => Ladle.interface.parseLog(log).args[1]);
+  const poolAddedEvents = await Ladle.queryFilter('PoolAdded' as ethers.EventFilter);
+  const poolAddresses: string[] = poolAddedEvents.map((e: PoolAddedEvent) => e.args.pool);
 
-  return poolAddresses.reduce(async (pools: any, x) => {
-    const address = x;
-    const poolContract = Pool__factory.connect(address, provider);
-    const [
-      name,
-      symbol,
-      version,
-      decimals,
-      maturity,
-      ts,
-      g1,
-      g2,
-      fyTokenAddress,
-      baseAddress,
-      lpTokenBalance,
-      baseReserves,
-      fyTokenReserves,
-      totalSupply,
-    ] = await Promise.all([
-      poolContract.name(),
-      poolContract.symbol(),
-      poolContract.version(),
-      poolContract.decimals(),
-      poolContract.maturity(),
-      poolContract.ts(),
-      poolContract.g1(),
-      poolContract.g2(),
-      poolContract.fyToken(),
-      poolContract.base(),
-      poolContract.balanceOf(account!),
-      poolContract.getBaseBalance(),
-      poolContract.getFYTokenBalance(),
-      poolContract.totalSupply(),
-    ]);
+  try {
+    return poolAddresses.reduce(async (pools: any, x) => {
+      const address = x;
+      const poolContract = Pool__factory.connect(address, provider);
+      const [
+        name,
+        symbol,
+        version,
+        decimals,
+        maturity,
+        ts,
+        g1,
+        g2,
+        fyTokenAddress,
+        baseAddress,
+        lpTokenBalance,
+        baseReserves,
+        fyTokenReserves,
+        totalSupply,
+      ] = await Promise.all([
+        poolContract.name(),
+        poolContract.symbol(),
+        poolContract.version(),
+        poolContract.decimals(),
+        poolContract.maturity(),
+        poolContract.ts(),
+        poolContract.g1(),
+        poolContract.g2(),
+        poolContract.fyToken(),
+        poolContract.base(),
+        poolContract.balanceOf(account!),
+        poolContract.getBaseBalance(),
+        poolContract.getFYTokenBalance(),
+        poolContract.totalSupply(),
+      ]);
 
-    const base = await getAsset(provider, baseAddress, account);
-    const fyToken = await getAsset(provider, fyTokenAddress, account, true);
-    const getTimeTillMaturity = () => maturity - Math.round(new Date().getTime() / 1000);
+      const base = await getAsset(provider, baseAddress, account);
+      const fyToken = await getAsset(provider, fyTokenAddress, account, true);
+      const getTimeTillMaturity = () => maturity - Math.round(new Date().getTime() / 1000);
 
-    const newPool = {
-      address,
-      name,
-      symbol,
-      version,
-      decimals,
-      maturity,
-      ts,
-      g1,
-      g2,
-      base,
-      fyToken,
-      isMature: maturity > (await provider.getBlock('latest')).timestamp,
-      lpTokenBalance,
-      lpTokenBalance_: cleanValue(ethers.utils.formatUnits(lpTokenBalance, decimals), 2),
-      baseReserves,
-      baseReserves_: cleanValue(ethers.utils.formatUnits(baseReserves, decimals), 2),
-      fyTokenReserves,
-      fyTokenReserves_: cleanValue(ethers.utils.formatUnits(fyTokenReserves, decimals), 2),
-      getTimeTillMaturity,
-      contract: poolContract,
-      totalSupply,
-    };
-    return { ...(await pools), [address]: _chargePool(newPool) };
-  }, {});
+      const newPool = {
+        address,
+        name,
+        symbol,
+        version,
+        decimals,
+        maturity,
+        ts,
+        g1,
+        g2,
+        base,
+        fyToken,
+        isMature: maturity > (await provider.getBlock('latest')).timestamp,
+        lpTokenBalance,
+        lpTokenBalance_: cleanValue(ethers.utils.formatUnits(lpTokenBalance, decimals), 2),
+        baseReserves,
+        baseReserves_: cleanValue(ethers.utils.formatUnits(baseReserves, decimals), 2),
+        fyTokenReserves,
+        fyTokenReserves_: cleanValue(ethers.utils.formatUnits(fyTokenReserves, decimals), 2),
+        getTimeTillMaturity,
+        contract: poolContract,
+        totalSupply,
+      };
+      return { ...(await pools), [address]: _chargePool(newPool, chainId) };
+    }, {});
+  } catch (e) {
+    console.log('error fetching pools', e);
+  }
 };
 
 /* add on extra/calculated ASYNC series info and contract instances */
-const _chargePool = (_pool: { maturity: number }) => {
-  const season = getSeason(_pool.maturity) as SeasonType;
-  const oppSeason = (_season: SeasonType) => getSeason(_pool.maturity + 23670000) as SeasonType;
-  const [startColor, endColor, textColor]: string[] = seasonColors[season];
-  const [oppStartColor, oppEndColor, oppTextColor]: string[] = seasonColors[oppSeason(season)];
+const _chargePool = (_pool: { maturity: number }, _chainId: number) => {
+  const season = getSeason(_pool.maturity);
+  const oppSeason = (_season: SeasonType) => getSeason(_pool.maturity + 23670000);
+  const [startColor, endColor, textColor]: string[] = seasonColors[_chainId][season];
+  const [oppStartColor, oppEndColor, oppTextColor]: string[] = seasonColors[_chainId][oppSeason(season)];
   return {
     ..._pool,
     displayName: format(new Date(_pool.maturity * 1000), 'dd MMM yyyy'),
