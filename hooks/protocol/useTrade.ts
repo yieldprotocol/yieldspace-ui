@@ -43,6 +43,7 @@ export const useTrade = (
 
   const trade = async () => {
     if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
+    setTradeSubmitted(false);
     setIsTransacting(true);
 
     const erc20Contract = pool.base.contract.connect(signer!);

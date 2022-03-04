@@ -209,7 +209,7 @@ const TradeWidget = () => {
   useEffect(() => {
     if (tradeSubmitted) {
       setConfirmModalOpen(false);
-      setForm(INITIAL_FORM_STATE);
+      setForm((f) => ({ ...f, fromAmount: '', toAmount: '' }));
     }
   }, [tradeSubmitted]);
 
