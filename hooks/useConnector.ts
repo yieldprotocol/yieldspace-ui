@@ -5,17 +5,19 @@ import { hooks as metaMaskHooks, metaMask } from '../connectors/metaMask';
 // import { hooks as walletConnectHooks, walletConnect } from '../connectors/walletConnect'
 
 const useConnector = () => {
-  const { usePriorityChainId, usePriorityAccount, usePriorityENSName, usePriorityProvider } = getPriorityConnector(
-    [metaMask as MetaMask, metaMaskHooks]
-    //   [walletConnect, walletConnectHooks],
-  );
+  const { usePriorityConnector, usePriorityChainId, usePriorityAccount, usePriorityENSName, usePriorityProvider } =
+    getPriorityConnector(
+      [metaMask as MetaMask, metaMaskHooks]
+      //   [walletConnect, walletConnectHooks],
+    );
 
+  const connector = usePriorityConnector();
   const chainId = usePriorityChainId();
   const account = usePriorityAccount();
   const provider = usePriorityProvider();
   const ensName = usePriorityENSName(provider);
 
-  return { chainId, account, provider, ensName };
+  return { connector, chainId, account, provider, ensName };
 };
 
 export default useConnector;
