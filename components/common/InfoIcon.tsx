@@ -23,7 +23,7 @@ const InfoIcon = ({ height, width, infoText }: IInfoIcon) => {
       />
       <Popover open={isHovered}>
         <div className="flex p-2 dark:bg-gray-700 rounded-lg">
-          <div className="dark:text-gray-300 text-xs">{infoText}</div>
+          <div className="dark:text-gray-300 text-xs w-full whitespace-nowrap">{infoText}</div>
         </div>
       </Popover>
     </div>
