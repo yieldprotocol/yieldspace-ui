@@ -16,6 +16,7 @@ import Modal from '../common/Modal';
 import TradeConfirmation from './TradeConfirmation';
 import InputsWrap from '../styles/InputsWrap';
 import CloseButton from '../common/CloseButton';
+import { cleanValue } from '../../utils/appUtils';
 
 const Inner = tw.div`m-4 text-center`;
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
@@ -28,7 +29,6 @@ interface ITradeForm {
   fromAmount: string;
   toAsset: IAsset | undefined;
   toAmount: string;
-  interestRate: string;
   isFyTokenOutput: boolean;
   tradeAction: TradeActions;
 }
@@ -39,7 +39,6 @@ const INITIAL_FORM_STATE: ITradeForm = {
   fromAmount: '',
   toAsset: undefined,
   toAmount: '',
-  interestRate: '',
   isFyTokenOutput: true,
   tradeAction: TradeActions.SELL_BASE,
 };
@@ -56,7 +55,7 @@ const TradeWidget = () => {
     form.toAmount,
     form.isFyTokenOutput
   );
-  const { pool, fromAsset, fromAmount, toAsset, toAmount, interestRate, tradeAction, isFyTokenOutput } = form;
+  const { pool, fromAsset, fromAmount, toAsset, toAmount, tradeAction, isFyTokenOutput } = form;
 
   const [updatingFromAmount, setUpdatingFromAmount] = useState<boolean>(false);
   const [updatingToAmount, setUpdatingToAmount] = useState<boolean>(false);
@@ -268,11 +267,11 @@ const TradeWidget = () => {
             </TopRow>
             <TradeConfirmation
               pool={pool!}
-              fromValue={fromAmount}
+              fromValue={cleanValue(fromAmount, 2)}
               fromAsset={fromAsset!}
-              toValue={toAmount}
+              toValue={cleanValue(toAmount, 2)}
               toAsset={toAsset!}
-              interestRate={interestRate}
+              interestRate={interestRatePreview}
               action={trade}
               disabled={isTransacting}
               loading={isTransacting}

@@ -3,6 +3,8 @@ import Arrow from './Arrow';
 import AssetSelect from '../common/AssetSelect';
 import { IAsset, IPool } from '../../lib/protocol/types';
 import Button from '../common/Button';
+import { useState } from 'react';
+import useTimeTillMaturity from '../../hooks/useTimeTillMaturity';
 
 const Container = tw.div`relative flex justify-center items-center w-full`;
 const Wrap = tw.div`w-full text-center text-lg align-middle items-center`;
@@ -54,49 +56,56 @@ const TradeConfirmation = ({
   action,
   disabled,
   loading,
-}: ITradeConfirmation) => (
-  <Container>
-    <Wrap>
-      <InputsOuter>
-        <InputsWrap>
-          <ConfirmItem value={fromValue} asset={fromAsset} />
-          <Arrow />
-          <ConfirmItem value={toValue} asset={toAsset} />
-        </InputsWrap>
-      </InputsOuter>
-      {/* <div className="w-full align-middle justify-start mx-2 text-gray-50">
+}: ITradeConfirmation) => {
+  const timeTillMaturity_ = useTimeTillMaturity(pool.maturity);
+
+  return (
+    <Container>
+      <Wrap>
+        <InputsOuter>
+          <InputsWrap>
+            <ConfirmItem value={fromValue} asset={fromAsset} />
+            <Arrow />
+            <ConfirmItem value={toValue} asset={toAsset} />
+          </InputsWrap>
+        </InputsOuter>
+        {/* <div className="w-full align-middle justify-start mx-2 text-gray-50">
         1 {fromAsset.symbol} = x {toAsset.symbol}
       </div> */}
-      <InputStyleContainer>
-        <DetailsWrap>
-          <DetailWrap>
-            <Detail>Maturity</Detail>
-            <Detail>{pool.displayName}</Detail>
-          </DetailWrap>
-          <DetailWrap>
-            <Detail>Expected output</Detail>
-            <Detail>
-              {toValue} {toAsset.symbol}
-            </Detail>
-          </DetailWrap>
-          <DetailWrap>
-            <DetailGray>Minimum received after slippage</DetailGray>
-            <DetailGray>{toValue}</DetailGray>
-          </DetailWrap>
-          <DetailWrap>
-            <DetailGray>Expected interest rate</DetailGray>
-            <DetailGray>{interestRate}</DetailGray>
-          </DetailWrap>
-        </DetailsWrap>
-      </InputStyleContainer>
-      <Italic>
-        Output is estimated. You will receive at least {toValue} in {toAsset.symbol} or the transaction will revert.
-      </Italic>
-      <Button action={action} disabled={disabled} loading={loading}>
-        {loading ? 'Trade Initiated...' : 'Confirm Trade'}
-      </Button>
-    </Wrap>
-  </Container>
-);
+        <InputStyleContainer>
+          <DetailsWrap>
+            <DetailWrap>
+              <Detail>Maturity</Detail>
+              <div className="text-sm dark:text-gray-50">
+                <div className="flex justify-end">{pool.displayName}</div>
+                <div className="italic text-xs dark:text-gray-300">{timeTillMaturity_} until maturity</div>
+              </div>
+            </DetailWrap>
+            <DetailWrap>
+              <Detail>Expected output</Detail>
+              <Detail>
+                {toValue} {toAsset.symbol}
+              </Detail>
+            </DetailWrap>
+            <DetailWrap>
+              <DetailGray>Minimum received after slippage</DetailGray>
+              <DetailGray>{toValue}</DetailGray>
+            </DetailWrap>
+            <DetailWrap>
+              <DetailGray>Expected interest rate</DetailGray>
+              <DetailGray>{interestRate}</DetailGray>
+            </DetailWrap>
+          </DetailsWrap>
+        </InputStyleContainer>
+        <Italic>
+          Output is estimated. You will receive at least {toValue} in {toAsset.symbol} or the transaction will revert.
+        </Italic>
+        <Button action={action} disabled={disabled} loading={loading}>
+          {loading ? 'Trade Initiated...' : 'Confirm Trade'}
+        </Button>
+      </Wrap>
+    </Container>
+  );
+};
 
 export default TradeConfirmation;
