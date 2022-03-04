@@ -7,7 +7,7 @@ const useDefaultProvider = () => {
   const { chainId } = useConnector();
 
   return useMemo(
-    () => (chainId ? new ethers.providers.StaticJsonRpcProvider(URLS[chainId!][0]) : undefined),
+    () => (chainId ? new ethers.providers.JsonRpcProvider(URLS[chainId][0], chainId) : undefined),
     [chainId]
   );
 };

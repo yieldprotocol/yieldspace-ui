@@ -20,7 +20,6 @@ interface BasicChainInformation {
 export interface ExtendedChainInformation extends BasicChainInformation {
   nativeCurrency: AddEthereumChainParameter['nativeCurrency'];
   blockExplorerUrls: AddEthereumChainParameter['blockExplorerUrls'];
-  rpcName: string;
 }
 
 function isExtendedChainInformation(
@@ -53,31 +52,26 @@ export const CHAINS: { [chainId: number]: BasicChainInformation | ExtendedChainI
     ],
     name: 'Mainnet',
     blockExplorerUrls: ['https://etherscan.io'],
-    rpcName: 'homestead',
   },
   3: {
     urls: [process.env.infuraKey ? `https://ropsten.infura.io/v3/${process.env.infuraKey}` : undefined],
     name: 'Ropsten',
     blockExplorerUrls: ['https://ropsten.etherscan.io'],
-    rpcName: 'ropsten',
   },
   4: {
     urls: [process.env.infuraKey ? `https://rinkeby.infura.io/v3/${process.env.infuraKey}` : undefined],
     name: 'Rinkeby',
     blockExplorerUrls: ['https://rinkeby.etherscan.io'],
-    rpcName: 'rinkeby',
   },
   5: {
     urls: [process.env.infuraKey ? `https://goerli.infura.io/v3/${process.env.infuraKey}` : undefined],
     name: 'Görli',
     blockExplorerUrls: ['https://goerli.etherscan.io'],
-    rpcName: 'goerli',
   },
   42: {
     urls: [process.env.infuraKey ? `https://kovan.infura.io/v3/${process.env.infuraKey}` : undefined],
     name: 'Kovan',
     blockExplorerUrls: ['https://kovan.etherscan.io'],
-    rpcName: 'kovan',
   },
   // Optimism
   10: {
@@ -88,7 +82,6 @@ export const CHAINS: { [chainId: number]: BasicChainInformation | ExtendedChainI
     name: 'Optimistic Ethereum',
     nativeCurrency: ETH,
     blockExplorerUrls: ['https://optimistic.etherscan.io'],
-    rpcName: 'optimism',
   },
   69: {
     urls: [
@@ -98,7 +91,6 @@ export const CHAINS: { [chainId: number]: BasicChainInformation | ExtendedChainI
     name: 'Optimistic Kovan',
     nativeCurrency: ETH,
     blockExplorerUrls: ['https://kovan-optimistic.etherscan.io'],
-    rpcName: 'optimism-kovan',
   },
   // Arbitrum
   42161: {
@@ -109,7 +101,6 @@ export const CHAINS: { [chainId: number]: BasicChainInformation | ExtendedChainI
     name: 'Arbitrum One',
     nativeCurrency: ETH,
     blockExplorerUrls: ['https://arbiscan.io'],
-    rpcName: 'arbitrum',
   },
   421611: {
     urls: [
@@ -121,7 +112,6 @@ export const CHAINS: { [chainId: number]: BasicChainInformation | ExtendedChainI
     name: 'Arbitrum Testnet',
     nativeCurrency: ETH,
     blockExplorerUrls: ['https://testnet.arbiscan.io'],
-    rpcName: 'arbitrum-rinkeby',
   },
   // Polygon
   137: {
