@@ -62,7 +62,7 @@ const TradeWidget = () => {
   const [description, setDescription] = useState('');
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
 
-  const { trade, isTransacting } = useTrade(pool!, fromAmount, toAmount, tradeAction, description);
+  const { trade, isTransacting, tradeSubmitted } = useTrade(pool!, fromAmount, toAmount, tradeAction, description);
 
   const handleMaxFrom = () => {
     setUpdatingFromAmount(true);
@@ -204,6 +204,11 @@ const TradeWidget = () => {
     const _description = `Trade ${fromAmount} ${fromAsset?.symbol} to ~${toAmount} ${toAsset?.symbol}`;
     setDescription(_description);
   }, [fromAmount, fromAsset, toAmount, toAsset]);
+
+  // close modal when the trade was successfullly submitted (use took all actions to get tx through)
+  useEffect(() => {
+    tradeSubmitted && setConfirmModalOpen(false);
+  }, [tradeSubmitted]);
 
   return (
     <BorderWrap>

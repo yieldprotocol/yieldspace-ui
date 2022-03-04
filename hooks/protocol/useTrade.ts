@@ -39,6 +39,7 @@ export const useTrade = (
   );
 
   const [isTransacting, setIsTransacting] = useState<boolean>(false);
+  const [tradeSubmitted, setTradeSubmitted] = useState<boolean>(false);
 
   const trade = async () => {
     if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
@@ -102,6 +103,7 @@ export const useTrade = (
       }
 
       setIsTransacting(false);
+      setTradeSubmitted(true);
 
       toast.promise(res.wait, {
         pending: `${description}`,
@@ -115,5 +117,5 @@ export const useTrade = (
     }
   };
 
-  return { trade, isTransacting };
+  return { trade, isTransacting, tradeSubmitted };
 };
