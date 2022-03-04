@@ -40,8 +40,13 @@ const AddLiquidity = () => {
 
   const [form, setForm] = useState<IAddLiquidityForm>(INITIAL_FORM_STATE);
   const [useFyTokenBalance, toggleUseFyTokenBalance] = useState<boolean>(false);
+  const { pool, baseAmount, fyTokenAmount } = form;
 
-  const { addLiquidity, isAddingLiquidity } = useAddLiquidity(form.pool!);
+  const { addLiquidity, isAddingLiquidity } = useAddLiquidity(pool!);
+
+  const handleMaxBase = () => {
+    setForm((f) => ({ ...f, baseAmount: pool?.base.balance_!, fyTokenAmount: pool?.base.balance_! }));
+  };
 
   const handleClearAll = () => {
     setForm(INITIAL_FORM_STATE);
@@ -49,12 +54,12 @@ const AddLiquidity = () => {
 
   const handleSubmit = () => {
     const description = `Adding ${form.baseAmount} ${pool?.base.symbol}${
-      +form.fyTokenAmount > 0 && useFyTokenBalance ? ` and ${form.fyTokenAmount} ${pool?.fyToken.symbol}` : ''
+      +fyTokenAmount > 0 && useFyTokenBalance ? ` and ${fyTokenAmount} ${pool?.fyToken.symbol}` : ''
     }`;
 
-    form.pool &&
+    pool &&
       addLiquidity(
-        form.baseAmount,
+        baseAmount,
         useFyTokenBalance ? AddLiquidityActions.MINT : AddLiquidityActions.MINT_WITH_BASE,
         description
       );
@@ -72,8 +77,6 @@ const AddLiquidity = () => {
   useEffect(() => {
     pools && setForm((f) => ({ ...f, pool: pools![address as string] }));
   }, [pools, address]);
-
-  const { pool, baseAmount, fyTokenAmount } = form;
 
   return (
     <BorderWrap>
@@ -101,6 +104,7 @@ const AddLiquidity = () => {
             item={pool?.base}
             balance={pool?.base.balance_!}
             handleChange={handleInputChange}
+            useMax={handleMaxBase}
           />
 
           {useFyTokenBalance && <PlusIcon className="justify-self-center" height={20} width={20} />}

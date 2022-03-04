@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { TradeActions } from '../../lib/protocol/trade/types';
 import { IPool } from '../../lib/protocol/types';
 import { cleanValue } from '../../utils/appUtils';
-import { buyBase, buyFYToken, sellBase, sellFYToken } from '../../utils/yieldMath';
+import { buyBase, buyFYToken, calculateAPR, sellBase, sellFYToken } from '../../utils/yieldMath';
 
 const useTradePreview = (
   pool: IPool | undefined,
@@ -17,6 +17,8 @@ const useTradePreview = (
 
   const [baseOutPreview, setBaseOutPreview] = useState<string>('');
   const [baseInPreview, setBaseInPreview] = useState<string>('');
+
+  const [interestRatePreview, setInterestRatePreview] = useState<string>('');
 
   const validatePreview = (preview: BigNumber) => (preview.lt(ethers.constants.Zero) ? ethers.constants.Zero : preview);
 
@@ -38,6 +40,7 @@ const useTradePreview = (
           pool.decimals
         );
         setFyTokenOutPreview(ethers.utils.formatUnits(validatePreview(_fyTokenOutPreview), pool.decimals));
+        setInterestRatePreview(cleanValue(calculateAPR(baseIn, _fyTokenOutPreview, pool.maturity)!, 2));
       } else if (tradeAction === TradeActions.SELL_FYTOKEN) {
         // sellFyToken
         // baseOutForFYTokenIn
@@ -55,6 +58,7 @@ const useTradePreview = (
         );
 
         setBaseOutPreview(ethers.utils.formatUnits(validatePreview(_baseOutPreview), pool.decimals));
+        setInterestRatePreview(cleanValue(calculateAPR(_baseOutPreview, fyTokenIn, pool.maturity)!, 2));
       } else if (tradeAction === TradeActions.BUY_BASE) {
         // buyBase
         // fyTokenInForBaseOut
@@ -71,6 +75,7 @@ const useTradePreview = (
           pool.decimals
         );
         setFyTokenInPreview(ethers.utils.formatUnits(validatePreview(_fyTokenInPreview), pool.decimals));
+        setInterestRatePreview(cleanValue(calculateAPR(baseOut, _fyTokenInPreview, pool.maturity)!, 2));
       } else if (tradeAction === TradeActions.BUY_FYTOKEN) {
         // buyFYToken
         // baseInForFYTokenOut
@@ -87,11 +92,12 @@ const useTradePreview = (
           pool.decimals
         );
         setBaseInPreview(ethers.utils.formatUnits(validatePreview(_baseInPreview), pool.decimals));
+        setInterestRatePreview(cleanValue(calculateAPR(_baseInPreview, fyTokenOut, pool.maturity)!, 2));
       }
     }
   }, [fromInput, isFyTokenOutput, pool, tradeAction, toInput]);
 
-  return { fyTokenOutPreview, baseOutPreview, fyTokenInPreview, baseInPreview };
+  return { fyTokenOutPreview, baseOutPreview, fyTokenInPreview, baseInPreview, interestRatePreview };
 };
 
 export default useTradePreview;

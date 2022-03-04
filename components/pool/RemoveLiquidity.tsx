@@ -37,21 +37,26 @@ const RemoveLiquidity = () => {
 
   const [form, setForm] = useState<IRemoveLiquidityForm>(INITIAL_FORM_STATE);
   const [burnForBase, setBurnForBase] = useState<boolean>(true);
+  const { pool, lpTokens } = form;
 
-  const { removeLiquidity, isRemovingLiq } = useRemoveLiquidity(form.pool!);
+  const { removeLiquidity, isRemovingLiq } = useRemoveLiquidity(pool!);
+
+  const handleMaxLpTokens = () => {
+    setForm((f) => ({ ...f, lpTokens: pool?.lpTokenBalance_! }));
+  };
 
   const handleClearAll = () => {
     setForm(INITIAL_FORM_STATE);
   };
 
   const handleSubmit = () => {
-    const description = `Removing ${form.lpTokens} lp tokens${
+    const description = `Removing ${lpTokens} lp tokens${
       burnForBase ? ` and receiving all base` : ' receiving both base and fyTokens'
     }`;
 
-    form.pool &&
+    pool &&
       removeLiquidity(
-        form.lpTokens,
+        lpTokens,
         burnForBase ? RemoveLiquidityActions.BURN_FOR_BASE : RemoveLiquidityActions.BURN,
         description
       );
@@ -68,8 +73,6 @@ const RemoveLiquidity = () => {
   useEffect(() => {
     pools && setForm((f) => ({ ...f, pool: pools![address as string] }));
   }, [pools, address]);
-
-  const { pool, lpTokens } = form;
 
   return (
     <BorderWrap>
@@ -97,6 +100,7 @@ const RemoveLiquidity = () => {
             item={pool}
             balance={pool?.lpTokenBalance_!}
             handleChange={handleInputChange}
+            useMax={handleMaxLpTokens}
           />
 
           <Toggle
