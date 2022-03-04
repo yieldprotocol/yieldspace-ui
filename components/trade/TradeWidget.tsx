@@ -94,7 +94,7 @@ const TradeWidget = () => {
   };
 
   const handleSubmit = () => {
-    pool && trade();
+    setConfirmModalOpen(true);
   };
 
   const handleInputChange = (name: string, value: string) => {
@@ -251,11 +251,19 @@ const TradeWidget = () => {
         <Button action={handleSubmit} disabled={!account || !pool || isTransacting} loading={isTransacting}>
           {!account ? 'Connect Wallet' : isTransacting ? 'Trade Initiated...' : 'Trade'}
         </Button>
-        {/* {conifirmModalOpen && (
-          <Modal isOpen={confirm} setIsOpen={setModalOpen}>
-            <TradeConfirmation />
+        {confirmModalOpen && (
+          <Modal isOpen={confirmModalOpen} setIsOpen={setConfirmModalOpen}>
+            <TradeConfirmation
+              fromValue={fromAmount}
+              fromAsset={fromAsset!}
+              toValue={toAmount}
+              toAsset={toAsset!}
+              action={trade}
+              disabled={isTransacting}
+              loading={isTransacting}
+            />
           </Modal>
-        )} */}
+        )}
       </Inner>
     </BorderWrap>
   );

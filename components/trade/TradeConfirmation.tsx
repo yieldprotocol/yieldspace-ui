@@ -3,12 +3,14 @@ import Arrow from './Arrow';
 import InputsWrap from '../styles/InputsWrap';
 import AssetSelect from '../common/AssetSelect';
 import { IAsset } from '../../lib/protocol/types';
+import Button from '../common/Button';
 
 const Container = tw.div`relative flex justify-center items-center w-full`;
-const Outer = tw.div`flex items-center justify-end relative w-full`;
+const InputStyleContainer = tw.div`flex rounded-md justify-between p-1 w-full gap-5 align-middle border dark:border-gray-800 dark:bg-gray-800 bg-gray-300 border-gray-300`;
+const InputsOuter = tw.div`flex items-center justify-center relative w-full`;
 const InputStyle = tw.div`h-full caret-gray-800 dark:caret-gray-50 text-2xl appearance-none w-full dark:bg-gray-800 bg-gray-300 dark:focus:text-gray-50 focus:text-gray-800 dark:text-gray-300 text-gray-800 py-1 px-4 leading-tight focus:outline-none `;
-const Inner = tw.div`grow-0 w-auto ml-3 text-center text-lg align-middle my-1 items-center`;
-const AssetSelectOuter = tw.div`grow min-w-fit`;
+const Inner = tw.div`w-auto ml-3 text-center text-lg align-middle my-1 items-center`;
+const AssetSelectOuter = tw.div`min-w-fit`;
 const AssetSelectWrap = tw.div`p-1`;
 
 interface ITradeConfirmation {
@@ -16,28 +18,46 @@ interface ITradeConfirmation {
   fromAsset: IAsset;
   toValue: string;
   toAsset: IAsset;
+  action: () => void;
+  disabled?: boolean;
+  loading?: boolean;
 }
 
-const ConfirmItem = (value: string, asset: IAsset) => (
-  <Inner>
-    <InputStyle>{value}</InputStyle>
+const ConfirmItem = ({ value, asset }: { value: string; asset: IAsset }) => (
+  <InputStyleContainer>
+    <Inner>
+      <InputStyle>{value}</InputStyle>
+    </Inner>
     <AssetSelectOuter>
       <AssetSelectWrap>
         <AssetSelect item={asset} isFyToken={asset.symbol.includes('FY') || false} />
       </AssetSelectWrap>
     </AssetSelectOuter>
-  </Inner>
+  </InputStyleContainer>
 );
 
-const TradeConfirmation = ({ fromValue, fromAsset, toValue, toAsset }: ITradeConfirmation) => (
+const TradeConfirmation = ({
+  fromValue,
+  fromAsset,
+  toValue,
+  toAsset,
+  action,
+  disabled,
+  loading,
+}: ITradeConfirmation) => (
   <Container>
-    <Outer>
-      <InputsWrap>
-        <ConfirmItem value={fromValue} asset={fromAsset} />
-        <Arrow />
-        <ConfirmItem value={toValue} asset={toAsset} />
-      </InputsWrap>
-    </Outer>
+    <Inner>
+      <InputsOuter>
+        <InputsWrap>
+          <ConfirmItem value={fromValue} asset={fromAsset} />
+          <Arrow />
+          <ConfirmItem value={toValue} asset={toAsset} />
+        </InputsWrap>
+      </InputsOuter>
+      <Button action={action} disabled={disabled} loading={loading}>
+        {loading ? 'Trade Initiated...' : 'Confirm Trade'}
+      </Button>
+    </Inner>
   </Container>
 );
 
