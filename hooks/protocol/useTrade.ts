@@ -114,7 +114,9 @@ export const useTrade = (
       console.log(e);
       toast.error('Transaction failed or rejected');
       setIsTransacting(false);
+      setTradeSubmitted(false);
     }
+    setTradeSubmitted(false);
   };
 
   return { trade, isTransacting, tradeSubmitted };

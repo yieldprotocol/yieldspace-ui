@@ -1,7 +1,7 @@
 import { AppProps } from 'next/dist/shared/lib/router/router';
 import '../styles/globals.css';
 import dynamic from 'next/dynamic';
-import { toast, ToastContainer } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useColorTheme } from '../hooks/useColorTheme';
 import { XIcon } from '@heroicons/react/solid';

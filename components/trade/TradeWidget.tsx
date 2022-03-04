@@ -15,10 +15,11 @@ import Arrow from './Arrow';
 import Modal from '../common/Modal';
 import TradeConfirmation from './TradeConfirmation';
 import InputsWrap from '../styles/InputsWrap';
+import CloseButton from '../common/CloseButton';
 
 const Inner = tw.div`m-4 text-center`;
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
-const TopRow = tw.div`flex justify-between align-middle text-center items-center`;
+const TopRow = tw.div`flex justify-between align-middle text-center items-center dark:text-gray-50`;
 const ClearButton = tw.button`text-sm`;
 
 interface ITradeForm {
@@ -205,9 +206,12 @@ const TradeWidget = () => {
     setDescription(_description);
   }, [fromAmount, fromAsset, toAmount, toAsset]);
 
-  // close modal when the trade was successfullly submitted (use took all actions to get tx through)
+  // close modal when the trade was successfullly submitted (user took all actions to get tx through)
   useEffect(() => {
-    tradeSubmitted && setConfirmModalOpen(false);
+    if (tradeSubmitted) {
+      setConfirmModalOpen(false);
+      setForm(INITIAL_FORM_STATE);
+    }
   }, [tradeSubmitted]);
 
   return (
@@ -258,11 +262,17 @@ const TradeWidget = () => {
         </Button>
         {confirmModalOpen && (
           <Modal isOpen={confirmModalOpen} setIsOpen={setConfirmModalOpen}>
+            <TopRow>
+              <Header>Confirm Trade</Header>
+              <CloseButton action={() => setConfirmModalOpen(false)} height="1.2rem" width="1.2rem" />
+            </TopRow>
             <TradeConfirmation
+              pool={pool!}
               fromValue={fromAmount}
               fromAsset={fromAsset!}
               toValue={toAmount}
               toAsset={toAsset!}
+              interestRate={interestRate}
               action={trade}
               disabled={isTransacting}
               loading={isTransacting}
