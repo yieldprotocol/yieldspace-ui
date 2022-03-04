@@ -5,6 +5,8 @@ import { IAsset, IPool } from '../../lib/protocol/types';
 import Button from '../common/Button';
 import { useState } from 'react';
 import useTimeTillMaturity from '../../hooks/useTimeTillMaturity';
+import { InformationCircleIcon } from '@heroicons/react/solid';
+import InfoIcon from '../common/InfoIcon';
 
 const Container = tw.div`relative flex justify-center items-center w-full`;
 const Wrap = tw.div`w-full text-center text-lg align-middle items-center`;
@@ -69,9 +71,6 @@ const TradeConfirmation = ({
             <ConfirmItem value={toValue} asset={toAsset} />
           </InputsWrap>
         </InputsOuter>
-        {/* <div className="w-full align-middle justify-start mx-2 text-gray-50">
-        1 {fromAsset.symbol} = x {toAsset.symbol}
-      </div> */}
         <InputStyleContainer>
           <DetailsWrap>
             <DetailWrap>
@@ -87,13 +86,17 @@ const TradeConfirmation = ({
                 {toValue} {toAsset.symbol}
               </Detail>
             </DetailWrap>
+            <div className="w-full h-[1px] bg-gray-700" />
             <DetailWrap>
               <DetailGray>Minimum received after slippage</DetailGray>
               <DetailGray>{toValue}</DetailGray>
             </DetailWrap>
             <DetailWrap>
-              <DetailGray>Expected interest rate</DetailGray>
-              <DetailGray>{interestRate}</DetailGray>
+              <div className="flex">
+                <DetailGray>Expected interest rate</DetailGray>
+                <InfoIcon infoText="if held until maturity" height=".9rem" width=".9rem" />
+              </div>
+              <DetailGray>{interestRate}%</DetailGray>
             </DetailWrap>
           </DetailsWrap>
         </InputStyleContainer>
