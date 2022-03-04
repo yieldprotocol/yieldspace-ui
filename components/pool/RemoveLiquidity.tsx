@@ -42,7 +42,7 @@ const RemoveLiquidity = () => {
   const { removeLiquidity, isRemovingLiq } = useRemoveLiquidity(pool!);
 
   const handleMaxLpTokens = () => {
-    setForm((f) => ({ ...f, lpTokens: pool?.lpTokenBalance_ }));
+    setForm((f) => ({ ...f, lpTokens: pool?.lpTokenBalance_! }));
   };
 
   const handleClearAll = () => {
