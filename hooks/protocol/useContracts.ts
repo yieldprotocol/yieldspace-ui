@@ -1,16 +1,13 @@
 import { useMemo } from 'react';
 import { CAULDRON, LADLE } from '../../constants';
 import { getContracts } from '../../lib/protocol';
-import useDefaultProvider from '../useDefaultProvider';
+import useConnector from '../useConnector';
 
 export const CONTRACTS_TO_FETCH = [LADLE, CAULDRON];
 
-const useContracts = (chainId: number) => {
-  const provider = useDefaultProvider(chainId);
-  return useMemo(() => {
-    console.log('fetching contracts');
-    return getContracts(provider!, chainId);
-  }, [provider, chainId]);
+const useContracts = () => {
+  const { provider, chainId } = useConnector();
+  return useMemo(() => getContracts(provider!, chainId!), [provider, chainId]);
 };
 
 export default useContracts;

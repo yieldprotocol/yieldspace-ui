@@ -1,14 +1,14 @@
 import { ethers } from 'ethers';
 import { useMemo } from 'react';
 import { URLS } from '../config/chains';
+import useConnector from './useConnector';
 
-const useDefaultProvider = (chainId: number) => {
-  console.log('in use default provider hook');
+const useDefaultProvider = () => {
+  const { chainId } = useConnector();
 
-  return useMemo(() => {
-    console.log('fetching provider');
-    return new ethers.providers.JsonRpcProvider(URLS[chainId][0]);
-  }, [chainId]);
+  return useMemo(
+    () => (chainId ? new ethers.providers.StaticJsonRpcProvider(URLS[chainId!][0]) : undefined),
+    [chainId]
+  );
 };
-
 export default useDefaultProvider;
