@@ -29,9 +29,9 @@ export const getPools = async (
   chainId: number = 1,
   account: string | undefined = undefined
 ): Promise<IPoolMap | undefined> => {
-  console.log('fetching pools');
   const Ladle = contractMap[LADLE];
   if (!Ladle) return undefined;
+  console.log('fetching pools');
   const poolAddedEvents = await Ladle.queryFilter('PoolAdded' as ethers.EventFilter);
   const poolAddresses: string[] = poolAddedEvents.map((e: PoolAddedEvent) => e.args.pool);
 

@@ -5,7 +5,7 @@ import { hooks as metaMaskHooks, metaMask } from '../connectors/metaMask';
 // import { hooks as walletConnectHooks, walletConnect } from '../connectors/walletConnect'
 
 const useConnector = () => {
-  console.log('fetching connector');
+  // console.log('fetching connector');
   const { usePriorityConnector, usePriorityChainId, usePriorityAccount, usePriorityENSName, usePriorityProvider } =
     getPriorityConnector(
       [metaMask as MetaMask, metaMaskHooks]
