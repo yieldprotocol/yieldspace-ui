@@ -3,9 +3,7 @@ import Arrow from './Arrow';
 import AssetSelect from '../common/AssetSelect';
 import { IAsset, IPool } from '../../lib/protocol/types';
 import Button from '../common/Button';
-import { useState } from 'react';
 import useTimeTillMaturity from '../../hooks/useTimeTillMaturity';
-import { InformationCircleIcon } from '@heroicons/react/solid';
 import InfoIcon from '../common/InfoIcon';
 
 const Container = tw.div`relative flex justify-center items-center w-full`;
