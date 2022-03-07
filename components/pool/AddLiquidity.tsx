@@ -105,6 +105,7 @@ const AddLiquidity = () => {
             balance={pool?.base.balance_!}
             handleChange={handleInputChange}
             useMax={handleMaxBase}
+            pool={pool}
           />
 
           {useFyTokenBalance && <PlusIcon className="justify-self-center" height={20} width={20} />}
@@ -120,6 +121,7 @@ const AddLiquidity = () => {
               handleChange={handleInputChange}
               unFocused={true}
               disabled
+              pool={pool}
             />
           )}
         </Grid>

@@ -1,20 +1,21 @@
-import { FC } from 'react';
 import tw from 'tailwind-styled-components';
 import { IAsset, IPool } from '../../lib/protocol/types';
 import AssetLogo from './AssetLogo';
+import FyTokenLogo from './FyTokenLogo';
 
 const Container = tw.div`p-2 dark:bg-gray-600 bg-gray-400 rounded-lg`;
 
 interface IItemSelect {
   item: IAsset | IPool | undefined;
-  isFyToken: boolean;
+  isFyToken?: boolean;
+  pool?: IPool;
 }
 
-const AssetSelect: FC<IItemSelect> = ({ item, isFyToken = false }) => (
+const AssetSelect = ({ item, isFyToken = false, pool }: IItemSelect) => (
   <Container>
     {item ? (
       <div className="flex gap-2 items-center">
-        <AssetLogo image={item.symbol} isFyToken={isFyToken} />
+        {isFyToken ? <FyTokenLogo pool={pool!} /> : <AssetLogo image={item.symbol} />}
         <div className="text-md font-bold align-middle">{item.symbol}</div>
       </div>
     ) : (

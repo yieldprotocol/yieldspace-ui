@@ -16,7 +16,7 @@ const AssetSelectOuter = tw.div`grow min-w-fit`;
 const AssetSelectWrap = tw.div`p-1`;
 const MaxButton = tw.button`float-right flex items-center gap-1 my-[1px] text-xs mr-2 dark:text-gray-300 text-gray-700 hover:text-gray-600 dark:hover:text-gray-400`;
 
-interface IDeposit {
+interface IInputWrap {
   name: string;
   value: string;
   item: IAsset | IPool | undefined;
@@ -25,9 +25,10 @@ interface IDeposit {
   disabled?: boolean;
   unFocused?: boolean;
   useMax?: () => void;
+  pool?: IPool;
 }
 
-const InputWrap = ({ name, value, item, balance, handleChange, disabled, unFocused, useMax }: IDeposit) => (
+const InputWrap = ({ name, value, item, balance, handleChange, disabled, unFocused, useMax, pool }: IInputWrap) => (
   <Container $unFocused={unFocused}>
     <Inner>
       <Input
@@ -43,7 +44,7 @@ const InputWrap = ({ name, value, item, balance, handleChange, disabled, unFocus
     </Inner>
     <AssetSelectOuter>
       <AssetSelectWrap>
-        <AssetSelect item={item} isFyToken={item?.symbol.includes('FY') || false} />
+        <AssetSelect item={item} isFyToken={item?.symbol.includes('FY') || false} pool={pool} />
       </AssetSelectWrap>
       {item && (
         <MaxButton onClick={useMax}>

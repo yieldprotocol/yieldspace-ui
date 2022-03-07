@@ -2,6 +2,7 @@ import tw from 'tailwind-styled-components';
 import Link from 'next/link';
 import Account from './Account';
 import { useRouter } from 'next/router';
+import YieldMark from './common/YieldMark';
 
 const Container = tw.div`
   sticky
@@ -19,8 +20,8 @@ type LinkItemProps = {
   $current: boolean;
 };
 
-const InnerContainer = tw.div`flex py-4 px-10 align-middle relative items-center justify-between`;
-const LinksWrap = tw.div`flex space-x-8`;
+const InnerContainer = tw.div`flex py-2 px-10 align-middle relative items-center justify-between`;
+const LinksWrap = tw.div`flex space-x-8 items-center`;
 const LinkItem = tw.a<LinkItemProps>`${(p) =>
   p.$current
     ? 'text-primary-500'
@@ -37,6 +38,13 @@ const Navigation = () => {
     <Container>
       <InnerContainer>
         <LinksWrap>
+          <Link href="/trade" passHref>
+            <div className="hover:cursor-pointer p-2.5 rounded-full bg-gray-700/20">
+              <YieldMark
+                colors={['#f79533', '#f37055', '#ef4e7b', '#a166ab', '#5073b8', '#1098ad', '#07b39b', '#6fba82']}
+              />
+            </div>
+          </Link>
           {navigation.map((x) => (
             <Link href={x.href} key={x.name} passHref>
               <LinkItem $current={router.pathname.includes(x.href)}>{x.name}</LinkItem>
