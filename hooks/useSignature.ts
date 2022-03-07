@@ -10,6 +10,7 @@ import { MAX_256 } from '../constants';
 import { ERC20Permit__factory } from '../contracts/types';
 import { DAI_PERMIT_ASSETS, NON_PERMIT_ASSETS } from '../config/assets';
 import { LadleActions } from '../lib/tx/operations';
+import useLadle from './protocol/useLadle';
 
 /* Get ETH value from JOIN_ETHER OPCode, else zero -> N.B. other values sent in with other OPS are ignored for now */
 // const _getCallValue = (calls: ICallData[]): BigNumber => {
@@ -21,6 +22,7 @@ import { LadleActions } from '../lib/tx/operations';
 const useSignature = () => {
   const approveMax = false;
   const { account, provider, chainId } = useConnector();
+  const { ladleContract } = useLadle();
 
   const { handleTx, handleSign, addTxProcess } = useTxProcesses();
   const signer = provider?.getSigner(account);
@@ -37,7 +39,6 @@ const useSignature = () => {
    * @returns { Promise<ICallData[]> }
    */
   const sign = async (requestedSignatures: ISignData[]): Promise<ICallData[]> => {
-    console.log('signinggggggggggggggggg');
     const _txProcess = addTxProcess();
     setTxProcess(_txProcess);
 
@@ -46,7 +47,8 @@ const useSignature = () => {
       if (ethers.utils.isAddress(spender)) {
         return spender;
       }
-      return spender;
+
+      return ladleContract.address;
     };
 
     /* First, filter out any ignored calls */
