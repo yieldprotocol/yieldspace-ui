@@ -2,7 +2,6 @@ import tw from 'tailwind-styled-components';
 import Link from 'next/link';
 import Account from './Account';
 import { useRouter } from 'next/router';
-import YieldLogo from './common/YieldLogo';
 import YieldMark from './common/YieldMark';
 
 const Container = tw.div`
