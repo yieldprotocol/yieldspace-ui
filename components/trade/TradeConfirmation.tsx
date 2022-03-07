@@ -12,7 +12,7 @@ const InputStyleContainer = tw.div`flex rounded-md justify-between p-1 w-full ga
 const InputsOuter = tw.div`flex items-center justify-center relative w-full`;
 const InputStyle = tw.div`h-full caret-gray-800 dark:caret-gray-50 text-2xl appearance-none w-full dark:bg-gray-800 bg-gray-300 dark:focus:text-gray-50 focus:text-gray-800 dark:text-gray-300 text-gray-800 py-1 px-4 leading-tight focus:outline-none `;
 const InputInner = tw.div`w-auto ml-3 text-center text-lg align-middle my-1 items-center`;
-const AssetSelectOuter = tw.div`min-w-fit`;
+const AssetSelectOuter = tw.div`min-w-fit dark:text-gray-50`;
 const AssetSelectWrap = tw.div`p-1`;
 const InputsWrap = tw.div`w-full flex flex-col gap-1 my-5`;
 const DetailsWrap = tw.div`grid w-full p-2 gap-2`;
@@ -33,14 +33,14 @@ interface ITradeConfirmation {
   loading?: boolean;
 }
 
-const ConfirmItem = ({ value, asset }: { value: string; asset: IAsset }) => (
+const ConfirmItem = ({ value, asset, pool }: { value: string; asset: IAsset; pool: IPool }) => (
   <InputStyleContainer>
     <InputInner>
       <InputStyle>{value}</InputStyle>
     </InputInner>
     <AssetSelectOuter>
       <AssetSelectWrap>
-        <AssetSelect item={asset} isFyToken={asset.symbol.includes('FY') || false} />
+        <AssetSelect item={asset} isFyToken={asset.symbol.includes('FY') || false} pool={pool} />
       </AssetSelectWrap>
     </AssetSelectOuter>
   </InputStyleContainer>
@@ -64,9 +64,9 @@ const TradeConfirmation = ({
       <Wrap>
         <InputsOuter>
           <InputsWrap>
-            <ConfirmItem value={fromValue} asset={fromAsset} />
+            <ConfirmItem value={fromValue} asset={fromAsset} pool={pool} />
             <Arrow />
-            <ConfirmItem value={toValue} asset={toAsset} />
+            <ConfirmItem value={toValue} asset={toAsset} pool={pool} />
           </InputsWrap>
         </InputsOuter>
         <InputStyleContainer>

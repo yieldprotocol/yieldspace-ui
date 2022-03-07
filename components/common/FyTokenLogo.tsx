@@ -7,7 +7,7 @@ interface IFyTokenLogo {
 }
 
 const FyTokenLogo: FC<IFyTokenLogo> = ({ pool }) => (
-  <div className="rounded-full p-[1px] text-gray-50" style={{ background: pool?.color! }}>
+  <div className="rounded-full p-[1px] dark:text-gray-50" style={{ background: pool?.color! }}>
     <div className="p-1 bg-gray-50 rounded-full">
       <YieldMark height={14} width={14} colors={[pool?.startColor!, pool?.endColor!]} />
     </div>
