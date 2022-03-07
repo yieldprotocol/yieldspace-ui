@@ -135,7 +135,7 @@ export const getContracts = (provider: Provider, chainId: number): IContractMap 
   return Object.keys(chainAddrs).reduce((contracts: IContractMap, name: string) => {
     if (CONTRACTS_TO_FETCH.includes(name)) {
       try {
-        const contract = contractTypes[`${name}__factory`].connect(chainAddrs[name], provider);
+        const contract: ethers.Contract = contractTypes[`${name}__factory`].connect(chainAddrs[name], provider);
         return { ...contracts, [name]: contract || null };
       } catch (e) {
         console.log(`could not connect directly to contract ${name}`);
