@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ethers, PayableOverrides } from 'ethers';
+import { BigNumberish, ethers, PayableOverrides } from 'ethers';
 import { cleanValue } from '../../utils/appUtils';
 
 import { calculateSlippage } from '../../utils/yieldMath';
@@ -9,6 +9,7 @@ import useSignature from '../useSignature';
 import { toast } from 'react-toastify';
 import { TradeActions } from '../../lib/protocol/trade/types';
 import useTradePreview from './useTradePreview';
+import useLadle from './useLadle';
 
 export const useTrade = (
   pool: IPool | undefined,
@@ -21,7 +22,8 @@ export const useTrade = (
   const slippageTolerance = 0.001;
 
   const { account } = useConnector();
-  const { signer } = useSignature();
+  const { sign } = useSignature();
+  const { ladleContract, forwardPermitAction, batch, transferAction, sellBaseAction } = useLadle();
 
   const decimals = pool?.decimals;
   const cleanFromInput = cleanValue(fromInput, decimals);
@@ -46,21 +48,41 @@ export const useTrade = (
     setTradeSubmitted(false);
     setIsTransacting(true);
 
-    const erc20Contract = pool.base.contract.connect(signer!);
-    const fyTokenContract = pool.fyToken.contract.connect(signer!);
-    const poolContract = pool.contract.connect(signer!);
+    const { base, fyToken, contract } = pool;
 
     /* check if signature is still required */
-    // const alreadyApproved = (await pool.base.getAllowance(account!, pool.address)).gt(_input);
+    const alreadyApproved = (await pool.base.getAllowance(account!, pool.address)).gt(_inputToUse);
 
     const _sellBase = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction> => {
       const _fyTokenOutPreview = ethers.utils.parseUnits(fyTokenOutPreview, decimals);
       const _outputLessSlippage = calculateSlippage(_fyTokenOutPreview, slippageTolerance.toString(), true);
-
-      const [, res] = await Promise.all([
-        await erc20Contract.transfer(pool.address, _inputToUse),
-        await poolContract.sellBase(account!, _outputLessSlippage, overrides),
+      const permits = await sign([
+        {
+          target: pool.base,
+          spender: ladleContract.address,
+          amount: _inputToUse,
+          ignoreIf: alreadyApproved,
+        },
       ]);
+      const [deadline, v, r, s] = permits[0].args!;
+
+      const res = await batch(
+        [
+          forwardPermitAction(
+            base.address,
+            ladleContract.address,
+            _inputToUse,
+            deadline as BigNumberish,
+            v as BigNumberish,
+            r as Buffer,
+            s as Buffer
+          ),
+          transferAction(base.address, account!, _inputToUse),
+          sellBaseAction(contract, account!, _outputLessSlippage),
+        ],
+        overrides
+      );
+
       return res;
     };
 
@@ -68,22 +90,23 @@ export const useTrade = (
       const _baseOutPreview = ethers.utils.parseUnits(baseOutPreview, decimals);
       const _outputLessSlippage = calculateSlippage(_baseOutPreview, slippageTolerance.toString(), true);
 
-      const [, res] = await Promise.all([
-        await fyTokenContract.transfer(pool.address, _inputToUse),
-        await poolContract.sellFYToken(account!, _outputLessSlippage, overrides),
+      const res = await batch([
+        transferAction(base.address, account!, _inputToUse),
+        sellBaseAction(contract, account!, _outputLessSlippage),
       ]);
+
       return res;
     };
 
     /**
      * GET SIGNATURE/APPROVAL DATA
      * */
-    // await sign([
+    // const permits = await sign([
     //   {
-    //     target: base,
+    //     target: pool.base,
     //     spender: pool.address,
-    //     amount: _input,
-    //     ignoreIf: alreadyApproved === true,
+    //     amount: _inputToUse,
+    //     ignoreIf: alreadyApproved,
     //   },
     // ]);
 
