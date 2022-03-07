@@ -244,6 +244,7 @@ const TradeWidget = () => {
             handleChange={handleInputChange}
             unFocused={updatingToAmount && !!pool}
             useMax={handleMaxFrom}
+            pool={pool}
           />
           <Arrow toggleDirection={handleToggleDirection} />
           <InputWrap
@@ -254,6 +255,7 @@ const TradeWidget = () => {
             handleChange={handleInputChange}
             unFocused={updatingFromAmount && !!pool}
             useMax={handleMaxTo}
+            pool={pool}
           />
         </InputsWrap>
         <Button action={handleSubmit} disabled={!account || !pool || isTransacting} loading={isTransacting}>

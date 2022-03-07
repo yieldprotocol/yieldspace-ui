@@ -101,6 +101,7 @@ const RemoveLiquidity = () => {
             balance={pool?.lpTokenBalance_!}
             handleChange={handleInputChange}
             useMax={handleMaxLpTokens}
+            pool={pool!}
           />
 
           <Toggle
