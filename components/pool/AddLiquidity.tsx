@@ -103,14 +103,6 @@ const AddLiquidity = () => {
     }
   }, [addSubmitted]);
 
-  // close modal when the adding liquidity was successfullly submitted (user took all actions to get tx through)
-  useEffect(() => {
-    if (addSubmitted) {
-      setConfirmModalOpen(false);
-      setForm((f) => ({ ...f, baseAmount: '', fyTokenAmount: '' }));
-    }
-  }, [addSubmitted]);
-
   // update form when toggling useFyTokenToggle
   useEffect(() => {
     setForm((f) => ({ ...f, useFyToken: useFyTokenToggle }));
