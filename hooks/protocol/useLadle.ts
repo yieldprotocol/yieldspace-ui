@@ -75,6 +75,23 @@ const useLadle = () => {
       poolContract.interface.encodeFunctionData(RoutedActions.Fn.MINT_POOL_TOKENS, [to, remainder, minRatio, maxRatio]),
     ]);
 
+  const burnAction = (
+    poolContract: Pool,
+    baseTo: string,
+    fyTokenTo: string,
+    minRatio: BigNumberish,
+    maxRatio: BigNumberish
+  ): string | undefined =>
+    ladle?.interface.encodeFunctionData(LadleActions.Fn.ROUTE, [
+      poolContract.address,
+      poolContract.interface.encodeFunctionData(RoutedActions.Fn.BURN_POOL_TOKENS, [
+        baseTo,
+        fyTokenTo,
+        minRatio,
+        maxRatio,
+      ]),
+    ]);
+
   return {
     forwardPermitAction,
     batch,
@@ -84,6 +101,7 @@ const useLadle = () => {
     sellFYTokenAction,
     mintWithBaseAction,
     mintAction,
+    burnAction,
     ladleContract: ladle,
   };
 };

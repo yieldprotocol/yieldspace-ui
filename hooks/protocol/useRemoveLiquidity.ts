@@ -1,4 +1,4 @@
-import { ethers, PayableOverrides } from 'ethers';
+import { BigNumberish, ethers, PayableOverrides } from 'ethers';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { RemoveLiquidityActions } from '../../lib/protocol/liquidity/types';
@@ -7,6 +7,7 @@ import { cleanValue } from '../../utils/appUtils';
 import { burn, calcPoolRatios } from '../../utils/yieldMath';
 import useConnector from '../useConnector';
 import useSignature from '../useSignature';
+import useLadle from './useLadle';
 
 export const useRemoveLiquidity = (pool: IPool) => {
   // settings
@@ -14,20 +15,22 @@ export const useRemoveLiquidity = (pool: IPool) => {
   const slippageTolerance = 0.001;
 
   const { account } = useConnector();
-  const { signer, sign } = useSignature();
+  const { sign } = useSignature();
+  const { ladleContract, forwardPermitAction, batch, transferAction } = useLadle();
 
   const [isRemovingLiq, setIsRemovingLiq] = useState<boolean>(false);
+  const [removeSubmitted, setRemoveSubmitted] = useState<boolean>(false);
 
   const removeLiquidity = async (
     input: string,
     method: RemoveLiquidityActions = RemoveLiquidityActions.BURN_FOR_BASE,
     description: string | null = null
   ) => {
+    if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
+    setRemoveSubmitted(false);
     setIsRemovingLiq(true);
 
-    const poolContract = pool.contract.connect(signer!);
-
-    const base = pool.base;
+    const { base, fyToken } = pool;
     const cleanInput = cleanValue(input, base.decimals);
     const _input = ethers.utils.parseUnits(cleanInput, base.decimals);
     const _inputLessSlippage = _input;
@@ -44,11 +47,36 @@ export const useRemoveLiquidity = (pool: IPool) => {
 
     const [minRatio, maxRatio] = calcPoolRatios(cachedBaseReserves, cachedRealReserves);
 
+    const alreadyApproved = (await pool.contract.allowance(account!, ladleContract?.address!)).gt(_input);
+
     const _burnForBase = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction> => {
-      const [, res] = await Promise.all([
-        poolContract.transfer(pool.address, _inputLessSlippage, overrides),
-        poolContract.burnForBase(account!, minRatio, maxRatio, overrides),
+      const permits = await sign([
+        {
+          target: pool.base,
+          spender: ladleContract?.address!,
+          amount: _input,
+          ignoreIf: alreadyApproved,
+        },
       ]);
+      const [, , , deadline, v, r, s] = permits[0].args!;
+
+      const res = await batch(
+        [
+          forwardPermitAction(
+            base.address,
+            ladleContract?.address!,
+            _input,
+            deadline as BigNumberish,
+            v as BigNumberish,
+            r as Buffer,
+            s as Buffer
+          )!,
+          transferAction(base.address, pool.address, _input)!,
+          mintWithBaseAction(pool.contract, account!, account!, _fyTokenToBeMinted, minRatio, maxRatio)!,
+        ],
+        overrides
+      );
+
       return res;
     };
 
