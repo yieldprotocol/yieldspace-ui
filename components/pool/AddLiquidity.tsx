@@ -16,6 +16,7 @@ import Modal from '../common/Modal';
 import AddConfirmation from './AddConfirmation';
 import CloseButton from '../common/CloseButton';
 import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
+import Arrow from '../trade/Arrow';
 
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
@@ -146,9 +147,7 @@ const AddLiquidity = () => {
             pool={pool}
           />
 
-          {useFyToken && <PlusIcon className="justify-self-center" height={20} width={20} />}
-
-          <Toggle enabled={useFyToken} setEnabled={setUseFyTokenToggle} label="Use fyToken Balance" />
+          {useFyToken && <Arrow isPlusIcon={true} />}
 
           {useFyToken && (
             <InputWrap
@@ -162,6 +161,7 @@ const AddLiquidity = () => {
               pool={pool}
             />
           )}
+          <Toggle enabled={useFyToken} setEnabled={setUseFyTokenToggle} label="Use fyToken Balance" />
         </Grid>
         <Button action={handleSubmit} disabled={!account || !pool || !baseAmount || isAddingLiquidity}>
           {!account ? 'Connect Wallet' : isAddingLiquidity ? 'Add Liquidity Initiated...' : 'Add Liquidity'}
