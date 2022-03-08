@@ -31,7 +31,7 @@ export const useAddLiquidity = (
     setAddSubmitted(false);
     setIsAddingLiquidity(true);
 
-    const base = pool.base;
+    const { base, fyToken } = pool;
     const cleanInput = cleanValue(input, base.decimals);
     const _input = ethers.utils.parseUnits(cleanInput, base.decimals);
     const _inputLessSlippage = _input;
@@ -104,25 +104,42 @@ export const useAddLiquidity = (
         {
           target: pool.base,
           spender: ladleContract?.address!,
-          amount: _baseToPool,
+          amount: _input,
+          ignoreIf: alreadyApproved,
+        },
+        {
+          target: pool.fyToken,
+          spender: ladleContract?.address!,
+          amount: _input,
           ignoreIf: alreadyApproved,
         },
       ]);
-      const [, , , deadline, v, r, s] = permits[0].args!;
+      const [, , , baseDeadline, baseV, baseR, baseS] = permits[0].args!;
+      const [, , , fyDeadline, fyV, fyR, fyS] = permits[1].args!;
 
       const res = await batch(
         [
           forwardPermitAction(
             base.address,
             ladleContract?.address!,
-            _baseToPool,
-            deadline as BigNumberish,
-            v as BigNumberish,
-            r as Buffer,
-            s as Buffer
+            _input,
+            baseDeadline as BigNumberish,
+            baseV as BigNumberish,
+            baseR as Buffer,
+            baseS as Buffer
           )!,
-          transferAction(base.address, pool.address, _baseToPool)!,
-          mintWithBaseAction(pool.contract, account!, _baseToFyToken, _minTokensMinted)!,
+          forwardPermitAction(
+            fyToken.address,
+            ladleContract?.address!,
+            _input,
+            fyDeadline as BigNumberish,
+            fyV as BigNumberish,
+            fyR as Buffer,
+            fyS as Buffer
+          )!,
+          transferAction(base.address, pool.address, _input)!,
+          transferAction(fyToken.address, pool.address, _input)!,
+          mintAction(pool.contract, account!, account!, minRatio, maxRatio)!,
         ],
         overrides
       );
