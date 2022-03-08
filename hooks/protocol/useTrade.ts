@@ -23,7 +23,7 @@ export const useTrade = (
 
   const { account } = useConnector();
   const { sign } = useSignature();
-  const { ladleContract, forwardPermitAction, batch, transferAction, sellBaseAction } = useLadle();
+  const { ladleContract, forwardPermitAction, batch, transferAction, sellBaseAction, sellFYTokenAction } = useLadle();
 
   const decimals = pool?.decimals;
   const cleanFromInput = cleanValue(fromInput, decimals);
@@ -64,8 +64,7 @@ export const useTrade = (
           ignoreIf: alreadyApproved,
         },
       ]);
-      const [a, b, c, deadline, v, r, s] = permits[0].args!;
-      console.log(a, b, c);
+      const [, , , deadline, v, r, s] = permits[0].args!;
 
       const res = await batch(
         [
@@ -87,13 +86,31 @@ export const useTrade = (
       return res;
     };
 
-    const _sellFYToken = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction> => {
+    const _sellFYToken = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction | undefined> => {
       const _baseOutPreview = ethers.utils.parseUnits(baseOutPreview, decimals);
       const _outputLessSlippage = calculateSlippage(_baseOutPreview, slippageTolerance.toString(), true);
+      const permits = await sign([
+        {
+          target: pool.fyToken,
+          spender: ladleContract?.address!,
+          amount: _inputToUse,
+          ignoreIf: alreadyApproved,
+        },
+      ]);
+      const [, , , deadline, v, r, s] = permits[0].args!;
 
       const res = await batch([
-        transferAction(base.address, account!, _inputToUse),
-        sellBaseAction(contract, account!, _outputLessSlippage),
+        forwardPermitAction(
+          fyToken?.address!,
+          ladleContract?.address!,
+          _inputToUse,
+          deadline as BigNumberish,
+          v as BigNumberish,
+          r as Buffer,
+          s as Buffer
+        )!,
+        transferAction(base.address, account!, _inputToUse)!,
+        sellFYTokenAction(contract, account!, _outputLessSlippage)!,
       ]);
 
       return res;

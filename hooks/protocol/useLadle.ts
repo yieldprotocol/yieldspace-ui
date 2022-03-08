@@ -38,7 +38,20 @@ const useLadle = () => {
       poolContract.interface.encodeFunctionData(RoutedActions.Fn.SELL_BASE, [receiver, min]),
     ]);
 
-  return { forwardPermitAction, batch, transferAction, routeAction, sellBaseAction, ladleContract: ladle };
+  const sellFYTokenAction = (poolContract: Pool, receiver: string, min: BigNumberish): string | undefined =>
+    ladle?.interface.encodeFunctionData(LadleActions.Fn.ROUTE, [
+      poolContract.address,
+      poolContract.interface.encodeFunctionData(RoutedActions.Fn.SELL_FYTOKEN, [receiver, min]),
+    ]);
+  return {
+    forwardPermitAction,
+    batch,
+    transferAction,
+    routeAction,
+    sellBaseAction,
+    sellFYTokenAction,
+    ladleContract: ladle,
+  };
 };
 
 export default useLadle;
