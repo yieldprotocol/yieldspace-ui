@@ -6,8 +6,10 @@ const useTimeTillMaturity = (maturity: number) => {
   const [secondsTillMaturity, setSecondsTillMaturity] = useState<number>(0);
 
   useEffect(() => {
-    const _secondsTillMaturity = Number(secondsToFrom(maturity.toString()));
-    _secondsTillMaturity > 0 ? setSecondsTillMaturity(_secondsTillMaturity) : setSecondsTillMaturity(0);
+    if (maturity) {
+      const _secondsTillMaturity = Number(secondsToFrom(maturity.toString()));
+      _secondsTillMaturity > 0 ? setSecondsTillMaturity(_secondsTillMaturity) : setSecondsTillMaturity(0);
+    }
   }, [maturity]);
 
   useEffect(() => {
