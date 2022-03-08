@@ -19,7 +19,7 @@ export const useTrade = (
   description: string | null = null
 ) => {
   // settings
-  const slippageTolerance = 0.001;
+  const slippageTolerance = 0.01;
 
   const { account } = useConnector();
   const { sign } = useSignature();
@@ -99,19 +99,22 @@ export const useTrade = (
       ]);
       const [, , , deadline, v, r, s] = permits[0].args!;
 
-      const res = await batch([
-        forwardPermitAction(
-          fyToken?.address!,
-          ladleContract?.address!,
-          _inputToUse,
-          deadline as BigNumberish,
-          v as BigNumberish,
-          r as Buffer,
-          s as Buffer
-        )!,
-        transferAction(base.address, account!, _inputToUse)!,
-        sellFYTokenAction(contract, account!, _outputLessSlippage)!,
-      ]);
+      const res = await batch(
+        [
+          forwardPermitAction(
+            fyToken?.address!,
+            ladleContract?.address!,
+            _inputToUse,
+            deadline as BigNumberish,
+            v as BigNumberish,
+            r as Buffer,
+            s as Buffer
+          )!,
+          transferAction(fyToken.address, account!, _inputToUse)!,
+          sellFYTokenAction(contract, account!, _outputLessSlippage)!,
+        ],
+        overrides
+      );
 
       return res;
     };
@@ -124,7 +127,7 @@ export const useTrade = (
     };
 
     try {
-      let res: ethers.ContractTransaction;
+      let res: ethers.ContractTransaction | undefined;
 
       if (fyTokenOutput) {
         res = await _sellBase(overrides);
@@ -135,11 +138,12 @@ export const useTrade = (
       setIsTransacting(false);
       setTradeSubmitted(true);
 
-      toast.promise(res.wait, {
-        pending: `${description}`,
-        success: `${description}`,
-        error: `Could not ${description}`,
-      });
+      res &&
+        toast.promise(res.wait, {
+          pending: `${description}`,
+          success: `${description}`,
+          error: `Could not ${description}`,
+        });
     } catch (e) {
       console.log(e);
       toast.error('Transaction failed or rejected');
