@@ -35,7 +35,7 @@ const ConfirmItem = ({ value, pool }: { value: string; pool: IPool }) => (
     </InputInner>
     <AssetSelectOuter>
       <AssetSelectWrap>
-        <AssetSelect item={pool} pool={pool} />
+        <AssetSelect item={pool} pool={pool} isFyToken={true} />
       </AssetSelectWrap>
     </AssetSelectOuter>
   </InputStyleContainer>
