@@ -78,10 +78,10 @@ const useSignature = () => {
                   verifyingContract: reqSig.target.address,
                 },
                 account!,
-                _spender
+                _spender!
               ),
             /* This is the function to call if using fallback approvals */
-            () => handleTx(() => tokenContract.approve(_spender, _amount!), _txProcess, true),
+            () => handleTx(() => tokenContract.approve(_spender!, _amount!), _txProcess, true),
             _txProcess,
             approvalMethod
           );
@@ -122,11 +122,11 @@ const useSignature = () => {
                 verifyingContract: reqSig.target.address,
               },
               account!,
-              _spender,
+              _spender!,
               _amount
             ),
           /* this is the function for if using fallback approvals */
-          () => handleTx(() => tokenContract.approve(_spender, _amount!), _txProcess, true),
+          () => handleTx(() => tokenContract.approve(_spender!, _amount!), _txProcess, true),
           _txProcess,
           NON_PERMIT_ASSETS.includes(reqSig.target.symbol) ? ApprovalType.TX : approvalMethod
         );
