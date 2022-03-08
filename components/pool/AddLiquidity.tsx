@@ -12,7 +12,10 @@ import { IPool } from '../../lib/protocol/types';
 import useConnector from '../../hooks/useConnector';
 import { BorderWrap, Header } from '../styles/';
 import { useAddLiquidity } from '../../hooks/protocol/useAddLiquidity';
-import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
+import Modal from '../common/Modal';
+import AddConfirmation from './AddConfirmation';
+import CloseButton from '../common/CloseButton';
+import { cleanValue } from '../../utils/appUtils';
 
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
@@ -20,7 +23,7 @@ const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
 const TopRow = tw.div`flex justify-between align-middle text-center items-center`;
 const ClearButton = tw.button`text-sm`;
 
-interface IAddLiquidityForm {
+export interface IAddLiquidityForm {
   pool: IPool | undefined;
   baseAmount: string;
   fyTokenAmount: string;
@@ -39,8 +42,10 @@ const AddLiquidity = () => {
   const { data: pools, loading } = usePools();
 
   const [form, setForm] = useState<IAddLiquidityForm>(INITIAL_FORM_STATE);
-  const [useFyTokenBalance, toggleUseFyTokenBalance] = useState<boolean>(false);
   const { pool, baseAmount, fyTokenAmount } = form;
+  const [useFyTokenBalance, toggleUseFyTokenBalance] = useState<boolean>(false);
+  const [description, setDescription] = useState<string>('');
+  const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
 
   const { addLiquidity, isAddingLiquidity } = useAddLiquidity(pool!);
 
@@ -53,16 +58,7 @@ const AddLiquidity = () => {
   };
 
   const handleSubmit = () => {
-    const description = `Adding ${form.baseAmount} ${pool?.base.symbol}${
-      +fyTokenAmount > 0 && useFyTokenBalance ? ` and ${fyTokenAmount} ${pool?.fyToken.symbol}` : ''
-    }`;
-
-    pool &&
-      addLiquidity(
-        baseAmount,
-        useFyTokenBalance ? AddLiquidityActions.MINT : AddLiquidityActions.MINT_WITH_BASE,
-        description
-      );
+    setConfirmModalOpen(true);
   };
 
   const handleInputChange = (name: string, value: string) =>
@@ -77,6 +73,14 @@ const AddLiquidity = () => {
   useEffect(() => {
     pools && setForm((f) => ({ ...f, pool: pools![address as string] }));
   }, [pools, address]);
+
+  // set add liquidity description to use in useAddLiquidity hook
+  useEffect(() => {
+    const _description = `Adding ${baseAmount} ${pool?.base.symbol}${
+      +fyTokenAmount > 0 && useFyTokenBalance ? ` and ${fyTokenAmount} ${pool?.fyToken.symbol}` : ''
+    }`;
+    setDescription(_description);
+  }, [pool?.base.symbol, baseAmount, useFyTokenBalance, fyTokenAmount, pool?.fyToken.symbol]);
 
   return (
     <BorderWrap>
@@ -126,8 +130,22 @@ const AddLiquidity = () => {
           )}
         </Grid>
         <Button action={handleSubmit} disabled={!account || !pool || !baseAmount || isAddingLiquidity}>
-          {isAddingLiquidity ? 'Adding Liquidity' : !account ? 'Connect Wallet' : 'Add Liquidity'}
+          {!account ? 'Connect Wallet' : isAddingLiquidity ? 'Add Liquidity Initiated...' : 'Add Liquidity'}
         </Button>
+        {confirmModalOpen && (
+          <Modal isOpen={confirmModalOpen} setIsOpen={setConfirmModalOpen}>
+            <TopRow>
+              <Header>Confirm Add Liquidity</Header>
+              <CloseButton action={() => setConfirmModalOpen(false)} height="1.2rem" width="1.2rem" />
+            </TopRow>
+            <AddConfirmation
+              form={form}
+              action={addLiquidity}
+              disabled={isAddingLiquidity}
+              loading={isAddingLiquidity}
+            />
+          </Modal>
+        )}
       </Inner>
     </BorderWrap>
   );
