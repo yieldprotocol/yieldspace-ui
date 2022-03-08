@@ -8,7 +8,7 @@ import useContracts from './useContracts';
 const useLadle = () => {
   const contracts = useContracts();
   const { signer } = useSignature();
-  const ladle = (contracts![LADLE] as Ladle)?.connect(signer!);
+  const ladle = contracts ? (contracts![LADLE]?.connect(signer!) as Ladle) : undefined;
 
   const forwardPermitAction = (
     token: string,
@@ -18,20 +18,22 @@ const useLadle = () => {
     v: BigNumberish,
     r: Buffer,
     s: Buffer
-  ): string =>
-    ladle.interface.encodeFunctionData(LadleActions.Fn.FORWARD_PERMIT, [token, spender, amount, deadline, v, r, s]);
+  ): string | undefined =>
+    ladle?.interface.encodeFunctionData(LadleActions.Fn.FORWARD_PERMIT, [token, spender, amount, deadline, v, r, s]);
 
-  const batch = async (actions: Array<string>, overrides?: PayableOverrides): Promise<ContractTransaction> =>
-    ladle.batch(actions, overrides);
+  const batch = async (
+    actions: Array<string>,
+    overrides?: PayableOverrides
+  ): Promise<ContractTransaction | undefined> => ladle?.batch(actions, overrides);
 
-  const transferAction = (token: string, receiver: string, wad: BigNumberish): string =>
-    ladle.interface.encodeFunctionData(LadleActions.Fn.TRANSFER, [token, receiver, wad]);
+  const transferAction = (token: string, receiver: string, wad: BigNumberish): string | undefined =>
+    ladle?.interface.encodeFunctionData(LadleActions.Fn.TRANSFER, [token, receiver, wad]);
 
-  const routeAction = (target: string, calldata: string): string =>
-    ladle.interface.encodeFunctionData(LadleActions.Fn.ROUTE, [target, calldata]);
+  const routeAction = (target: string, calldata: string): string | undefined =>
+    ladle?.interface.encodeFunctionData(LadleActions.Fn.ROUTE, [target, calldata]);
 
-  const sellBaseAction = (poolContract: Pool, receiver: string, min: BigNumberish): string =>
-    ladle.interface.encodeFunctionData(LadleActions.Fn.ROUTE, [
+  const sellBaseAction = (poolContract: Pool, receiver: string, min: BigNumberish): string | undefined =>
+    ladle?.interface.encodeFunctionData(LadleActions.Fn.ROUTE, [
       poolContract.address,
       poolContract.interface.encodeFunctionData(RoutedActions.Fn.SELL_BASE, [receiver, min]),
     ]);

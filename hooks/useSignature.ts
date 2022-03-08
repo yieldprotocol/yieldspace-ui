@@ -23,7 +23,7 @@ const useSignature = () => {
   const approveMax = false;
   const { account, provider, chainId } = useConnector();
   const contracts = useContracts();
-  const ladle = contracts![LADLE];
+  const ladle = contracts && contracts![LADLE];
 
   const { handleTx, handleSign, addTxProcess } = useTxProcesses();
   const signer = provider?.getSigner(account);

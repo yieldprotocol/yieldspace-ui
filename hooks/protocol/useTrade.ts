@@ -53,32 +53,33 @@ export const useTrade = (
     /* check if signature is still required */
     const alreadyApproved = (await pool.base.getAllowance(account!, pool.address)).gt(_inputToUse);
 
-    const _sellBase = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction> => {
+    const _sellBase = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction | undefined> => {
       const _fyTokenOutPreview = ethers.utils.parseUnits(fyTokenOutPreview, decimals);
       const _outputLessSlippage = calculateSlippage(_fyTokenOutPreview, slippageTolerance.toString(), true);
       const permits = await sign([
         {
           target: pool.base,
-          spender: ladleContract.address,
+          spender: ladleContract?.address!,
           amount: _inputToUse,
           ignoreIf: alreadyApproved,
         },
       ]);
-      const [deadline, v, r, s] = permits[0].args!;
+      const [a, b, c, deadline, v, r, s] = permits[0].args!;
+      console.log(a, b, c);
 
       const res = await batch(
         [
           forwardPermitAction(
-            base.address,
-            ladleContract.address,
+            base?.address!,
+            ladleContract?.address!,
             _inputToUse,
             deadline as BigNumberish,
             v as BigNumberish,
             r as Buffer,
             s as Buffer
-          ),
-          transferAction(base.address, pool.address, _inputToUse),
-          sellBaseAction(contract, account!, _outputLessSlippage),
+          )!,
+          transferAction(base.address, pool.address, _inputToUse)!,
+          sellBaseAction(contract, account!, _outputLessSlippage)!,
         ],
         overrides
       );
