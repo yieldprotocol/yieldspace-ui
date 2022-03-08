@@ -6,6 +6,7 @@ import useTimeTillMaturity from '../../hooks/useTimeTillMaturity';
 import InfoIcon from '../common/InfoIcon';
 import { PlusIcon } from '@heroicons/react/solid';
 import { IAddLiquidityForm } from './AddLiquidity';
+import Arrow from '../trade/Arrow';
 
 const Container = tw.div`relative flex justify-center items-center w-full`;
 const Wrap = tw.div`w-full text-center text-lg align-middle items-center`;
@@ -55,7 +56,7 @@ const AddConfirmation = ({ form, action, disabled, loading }: IAddConfirmation) 
             <ConfirmItem value={baseAmount} asset={pool?.base!} pool={pool!} />
             {useFyToken && (
               <>
-                <PlusIcon className="w-full justify-self-center dark:text-gray-50" height={20} width={20} />
+                <Arrow isPlusIcon={true} />
                 <ConfirmItem value={fyTokenAmount} asset={pool?.fyToken!} pool={pool!} />
               </>
             )}
