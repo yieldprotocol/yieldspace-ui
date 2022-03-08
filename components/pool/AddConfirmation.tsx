@@ -24,7 +24,7 @@ const Italic = tw.div`italic text-xs text-gray-300 my-3`;
 
 interface IAddConfirmation {
   form: IAddLiquidityForm;
-  action: () => void;
+  action: any;
   disabled?: boolean;
   loading?: boolean;
 }
@@ -43,7 +43,7 @@ const ConfirmItem = ({ value, asset, pool }: { value: string; asset: IAsset; poo
 );
 
 const AddConfirmation = ({ form, action, disabled, loading }: IAddConfirmation) => {
-  const { pool, baseAmount, fyTokenAmount } = form;
+  const { pool, baseAmount, fyTokenAmount, method, description } = form;
   const timeTillMaturity_ = useTimeTillMaturity(pool?.maturity!);
   const output = 'some';
 
@@ -82,8 +82,8 @@ const AddConfirmation = ({ form, action, disabled, loading }: IAddConfirmation) 
           </DetailsWrap>
         </InputStyleContainer>
         <Italic>Output is estimated.</Italic>
-        <Button action={action} disabled={disabled} loading={loading}>
-          {loading ? 'Trade Initiated...' : 'Confirm Trade'}
+        <Button action={() => action(baseAmount, method, description)} disabled={disabled} loading={loading}>
+          {loading ? 'Add Liquidity Initiated...' : 'Confirm Add Liquidity'}
         </Button>
       </Wrap>
     </Container>
