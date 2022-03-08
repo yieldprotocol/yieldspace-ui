@@ -91,7 +91,7 @@ export const useAddLiquidity = (
             s as Buffer
           )!,
           transferAction(base.address, pool.address, _input)!,
-          mintWithBaseAction(pool.contract, account!, _fyTokenToBeMinted, minRatio, maxRatio)!,
+          mintWithBaseAction(pool.contract, account!, account!, _fyTokenToBeMinted, minRatio, maxRatio)!,
         ],
         overrides
       );

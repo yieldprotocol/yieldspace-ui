@@ -46,7 +46,8 @@ const useLadle = () => {
 
   const mintWithBaseAction = (
     poolContract: Pool,
-    receiver: string,
+    to: string,
+    remainder: string,
     fyTokenToBuy: BigNumberish,
     minRatio: BigNumberish,
     maxRatio: BigNumberish
@@ -55,7 +56,7 @@ const useLadle = () => {
       poolContract.address,
       poolContract.interface.encodeFunctionData(
         'mintWithBase' as 'version',
-        [receiver, fyTokenToBuy, minRatio, maxRatio] as any
+        [to, remainder, fyTokenToBuy, minRatio, maxRatio] as any
       ),
     ]);
 
