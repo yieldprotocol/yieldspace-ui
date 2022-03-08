@@ -63,7 +63,6 @@ export const useAddLiquidity = (
     ) as [BigNumber, BigNumber];
 
     const _baseToPoolWithSlippage = BigNumber.from(calculateSlippage(_baseToPool, slippageTolerance.toString()));
-    const _minTokensMinted = BigNumber.from('0');
 
     /* if approveMAx, check if signature is still required */
     const alreadyApproved = (await base.getAllowance(account!, pool.address)).gt(_input);

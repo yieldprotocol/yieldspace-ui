@@ -45,7 +45,6 @@ const ConfirmItem = ({ value, asset, pool }: { value: string; asset: IAsset; poo
 const AddConfirmation = ({ form, action, disabled, loading }: IAddConfirmation) => {
   const { pool, baseAmount, fyTokenAmount, useFyToken } = form;
   const timeTillMaturity_ = useTimeTillMaturity(pool?.maturity!);
-  const output = 'some';
 
   return (
     <Container>
@@ -71,13 +70,13 @@ const AddConfirmation = ({ form, action, disabled, loading }: IAddConfirmation) 
               </div>
             </DetailWrap>
             <DetailWrap>
-              <Detail>Expected output</Detail>
-              <Detail>{output} LP Tokens</Detail>
+              <Detail>something</Detail>
+              <Detail>something maybe</Detail>
             </DetailWrap>
             <div className="w-full h-[1px] bg-gray-700" />
             <DetailWrap>
-              <DetailGray>Minimum received after slippage</DetailGray>
-              <DetailGray>{output} LP Tokens</DetailGray>
+              <DetailGray>some data</DetailGray>
+              <DetailGray>some other data</DetailGray>
             </DetailWrap>
           </DetailsWrap>
         </InputStyleContainer>
