@@ -77,7 +77,7 @@ export const useTrade = (
             r as Buffer,
             s as Buffer
           ),
-          transferAction(base.address, account!, _inputToUse),
+          transferAction(base.address, pool.address, _inputToUse),
           sellBaseAction(contract, account!, _outputLessSlippage),
         ],
         overrides
@@ -97,18 +97,6 @@ export const useTrade = (
 
       return res;
     };
-
-    /**
-     * GET SIGNATURE/APPROVAL DATA
-     * */
-    // const permits = await sign([
-    //   {
-    //     target: pool.base,
-    //     spender: pool.address,
-    //     amount: _inputToUse,
-    //     ignoreIf: alreadyApproved,
-    //   },
-    // ]);
 
     /**
      * Transact
