@@ -29,6 +29,7 @@ export interface IAddLiquidityForm {
   fyTokenAmount: string;
   method: AddLiquidityActions | undefined;
   description: string;
+  useFyToken: boolean;
 }
 
 const INITIAL_FORM_STATE: IAddLiquidityForm = {
@@ -37,6 +38,7 @@ const INITIAL_FORM_STATE: IAddLiquidityForm = {
   fyTokenAmount: '',
   method: undefined,
   description: '',
+  useFyToken: false,
 };
 
 const AddLiquidity = () => {
@@ -46,9 +48,9 @@ const AddLiquidity = () => {
   const { data: pools, loading } = usePools();
 
   const [form, setForm] = useState<IAddLiquidityForm>(INITIAL_FORM_STATE);
-  const { pool, baseAmount, fyTokenAmount, method, description } = form;
-  const [useFyTokenBalance, toggleUseFyTokenBalance] = useState<boolean>(false);
+  const { pool, baseAmount, fyTokenAmount, method, description, useFyToken } = form;
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
+  const [useFyTokenToggle, setUseFyTokenToggle] = useState<boolean>(false);
 
   const { addLiquidity, isAddingLiquidity, addSubmitted } = useAddLiquidity(pool!);
 
@@ -80,18 +82,18 @@ const AddLiquidity = () => {
   // set add liquidity description to use in useAddLiquidity hook
   useEffect(() => {
     const _description = `Adding ${baseAmount} ${pool?.base.symbol}${
-      +fyTokenAmount > 0 && useFyTokenBalance ? ` and ${fyTokenAmount} ${pool?.fyToken.symbol}` : ''
+      +fyTokenAmount > 0 && useFyToken ? ` and ${fyTokenAmount} ${pool?.fyToken.symbol}` : ''
     }`;
     setForm((f) => ({ ...f, description: _description }));
-  }, [pool?.base.symbol, baseAmount, useFyTokenBalance, fyTokenAmount, pool?.fyToken.symbol]);
+  }, [pool?.base.symbol, baseAmount, useFyToken, fyTokenAmount, pool?.fyToken.symbol]);
 
   // set add liquidity method when useFyTokenBalance changes
   useEffect(() => {
     setForm((f) => ({
       ...f,
-      method: useFyTokenBalance ? AddLiquidityActions.MINT : AddLiquidityActions.MINT_WITH_BASE,
+      method: useFyToken ? AddLiquidityActions.MINT : AddLiquidityActions.MINT_WITH_BASE,
     }));
-  }, [useFyTokenBalance]);
+  }, [useFyToken]);
 
   // close modal when the adding liquidity was successfullly submitted (user took all actions to get tx through)
   useEffect(() => {
@@ -100,6 +102,19 @@ const AddLiquidity = () => {
       setForm((f) => ({ ...f, baseAmount: '', fyTokenAmount: '' }));
     }
   }, [addSubmitted]);
+
+  // close modal when the adding liquidity was successfullly submitted (user took all actions to get tx through)
+  useEffect(() => {
+    if (addSubmitted) {
+      setConfirmModalOpen(false);
+      setForm((f) => ({ ...f, baseAmount: '', fyTokenAmount: '' }));
+    }
+  }, [addSubmitted]);
+
+  // update form when toggling useFyTokenToggle
+  useEffect(() => {
+    setForm((f) => ({ ...f, useFyToken: useFyTokenToggle }));
+  }, [useFyTokenToggle]);
 
   return (
     <BorderWrap>
@@ -131,11 +146,11 @@ const AddLiquidity = () => {
             pool={pool}
           />
 
-          {useFyTokenBalance && <PlusIcon className="justify-self-center" height={20} width={20} />}
+          {useFyToken && <PlusIcon className="justify-self-center" height={20} width={20} />}
 
-          <Toggle enabled={useFyTokenBalance} setEnabled={toggleUseFyTokenBalance} label="Use fyToken Balance" />
+          <Toggle enabled={useFyToken} setEnabled={setUseFyTokenToggle} label="Use fyToken Balance" />
 
-          {useFyTokenBalance && (
+          {useFyToken && (
             <InputWrap
               name="fyTokenAmount"
               value={fyTokenAmount}

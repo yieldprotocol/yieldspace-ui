@@ -43,7 +43,7 @@ const ConfirmItem = ({ value, asset, pool }: { value: string; asset: IAsset; poo
 );
 
 const AddConfirmation = ({ form, action, disabled, loading }: IAddConfirmation) => {
-  const { pool, baseAmount, fyTokenAmount } = form;
+  const { pool, baseAmount, fyTokenAmount, useFyToken } = form;
   const timeTillMaturity_ = useTimeTillMaturity(pool?.maturity!);
   const output = 'some';
 
@@ -53,7 +53,7 @@ const AddConfirmation = ({ form, action, disabled, loading }: IAddConfirmation) 
         <InputsOuter>
           <InputsWrap>
             <ConfirmItem value={baseAmount} asset={pool?.base!} pool={pool!} />
-            {fyTokenAmount !== '' && +fyTokenAmount !== 0 && (
+            {useFyToken && (
               <>
                 <PlusIcon className="w-full justify-self-center dark:text-gray-50" height={20} width={20} />
                 <ConfirmItem value={fyTokenAmount} asset={pool?.fyToken!} pool={pool!} />
