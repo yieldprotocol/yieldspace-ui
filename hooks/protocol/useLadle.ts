@@ -54,24 +54,25 @@ const useLadle = () => {
   ): string | undefined =>
     ladle?.interface.encodeFunctionData(LadleActions.Fn.ROUTE, [
       poolContract.address,
-      poolContract.interface.encodeFunctionData(
-        'mintWithBase' as 'version',
-        [to, remainder, fyTokenToBuy, minRatio, maxRatio] as any
-      ),
+      poolContract.interface.encodeFunctionData(RoutedActions.Fn.MINT_WITH_BASE, [
+        to,
+        remainder,
+        fyTokenToBuy,
+        minRatio,
+        maxRatio,
+      ]),
     ]);
 
   const mintAction = (
     poolContract: Pool,
-    receiver: string,
-    fyTokenToBuy: BigNumberish,
-    minTokensMinted: BigNumberish
+    to: string,
+    remainder: string,
+    minRatio: BigNumberish,
+    maxRatio: BigNumberish
   ): string | undefined =>
     ladle?.interface.encodeFunctionData(LadleActions.Fn.ROUTE, [
       poolContract.address,
-      poolContract.interface.encodeFunctionData(
-        'mintWithBase' as 'version',
-        [receiver, fyTokenToBuy, minTokensMinted] as any
-      ),
+      poolContract.interface.encodeFunctionData(RoutedActions.Fn.MINT_POOL_TOKENS, [to, remainder, minRatio, maxRatio]),
     ]);
 
   return {
