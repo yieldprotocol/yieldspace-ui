@@ -28,21 +28,21 @@ interface IRemoveConfirmation {
   loading?: boolean;
 }
 
-const ConfirmItem = ({ value, asset, pool }: { value: string; asset: IAsset; pool: IPool }) => (
+const ConfirmItem = ({ value, pool }: { value: string; pool: IPool }) => (
   <InputStyleContainer>
     <InputInner>
       <InputStyle>{value}</InputStyle>
     </InputInner>
     <AssetSelectOuter>
       <AssetSelectWrap>
-        <AssetSelect item={asset} isFyToken={asset.symbol.includes('FY') || false} pool={pool} />
+        <AssetSelect item={pool} pool={pool} />
       </AssetSelectWrap>
     </AssetSelectOuter>
   </InputStyleContainer>
 );
 
 const RemoveConfirmation = ({ form, action, disabled, loading }: IRemoveConfirmation) => {
-  const { pool, baseAmount, fyTokenAmount, method, description } = form;
+  const { pool, lpTokens } = form;
   const output = 'some';
 
   return (
@@ -50,13 +50,7 @@ const RemoveConfirmation = ({ form, action, disabled, loading }: IRemoveConfirma
       <Wrap>
         <InputsOuter>
           <InputsWrap>
-            <ConfirmItem value={baseAmount} asset={pool?.base!} pool={pool!} />
-            {fyTokenAmount !== '' && +fyTokenAmount !== 0 && (
-              <>
-                <PlusIcon className="w-full justify-self-center dark:text-gray-50" height={20} width={20} />
-                <ConfirmItem value={fyTokenAmount} asset={pool?.fyToken!} pool={pool!} />
-              </>
-            )}
+            <ConfirmItem value={lpTokens} pool={pool!} />
           </InputsWrap>
         </InputsOuter>
         <InputStyleContainer>
@@ -73,7 +67,7 @@ const RemoveConfirmation = ({ form, action, disabled, loading }: IRemoveConfirma
           </DetailsWrap>
         </InputStyleContainer>
         <Italic>Output is estimated.</Italic>
-        <Button action={() => action(baseAmount, method, description)} disabled={disabled} loading={loading}>
+        <Button action={action} disabled={disabled} loading={loading}>
           {loading ? 'Remove Liquidity Initiated...' : 'Confirm Remove Liquidity'}
         </Button>
       </Wrap>

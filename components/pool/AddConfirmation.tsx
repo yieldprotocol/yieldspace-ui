@@ -43,7 +43,7 @@ const ConfirmItem = ({ value, asset, pool }: { value: string; asset: IAsset; poo
 );
 
 const AddConfirmation = ({ form, action, disabled, loading }: IAddConfirmation) => {
-  const { pool, baseAmount, fyTokenAmount, method, description } = form;
+  const { pool, baseAmount, fyTokenAmount } = form;
   const timeTillMaturity_ = useTimeTillMaturity(pool?.maturity!);
   const output = 'some';
 
