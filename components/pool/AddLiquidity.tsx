@@ -4,7 +4,6 @@ import tw from 'tailwind-styled-components';
 import BackButton from '../common/BackButton';
 import Button from '../common/Button';
 import InputWrap from './InputWrap';
-import { PlusIcon } from '@heroicons/react/solid';
 import Toggle from '../common/Toggle';
 import usePools from '../../hooks/protocol/usePools';
 import PoolSelect from './PoolSelect';
@@ -53,7 +52,7 @@ const AddLiquidity = () => {
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
   const [useFyTokenToggle, setUseFyTokenToggle] = useState<boolean>(false);
 
-  const { addLiquidity, isAddingLiquidity, addSubmitted } = useAddLiquidity(pool!);
+  const { addLiquidity, isAddingLiquidity, addSubmitted } = useAddLiquidity(pool!, baseAmount, method, description);
 
   const handleMaxBase = () => {
     setForm((f) => ({ ...f, baseAmount: pool?.base.balance_!, fyTokenAmount: pool?.base.balance_! }));
@@ -174,7 +173,7 @@ const AddLiquidity = () => {
             </TopRow>
             <AddConfirmation
               form={form}
-              action={() => addLiquidity(baseAmount, method, description)}
+              action={addLiquidity}
               disabled={isAddingLiquidity}
               loading={isAddingLiquidity}
             />

@@ -43,6 +43,35 @@ const useLadle = () => {
       poolContract.address,
       poolContract.interface.encodeFunctionData(RoutedActions.Fn.SELL_FYTOKEN, [receiver, min]),
     ]);
+
+  const mintWithBaseAction = (
+    poolContract: Pool,
+    receiver: string,
+    fyTokenToBuy: BigNumberish,
+    minTokensMinted: BigNumberish
+  ): string | undefined =>
+    ladle?.interface.encodeFunctionData(LadleActions.Fn.ROUTE, [
+      poolContract.address,
+      poolContract.interface.encodeFunctionData(
+        'mintWithBase' as 'version',
+        [receiver, fyTokenToBuy, minTokensMinted] as any
+      ),
+    ]);
+
+  const mintAction = (
+    poolContract: Pool,
+    receiver: string,
+    fyTokenToBuy: BigNumberish,
+    minTokensMinted: BigNumberish
+  ): string | undefined =>
+    ladle?.interface.encodeFunctionData(LadleActions.Fn.ROUTE, [
+      poolContract.address,
+      poolContract.interface.encodeFunctionData(
+        'mintWithBase' as 'version',
+        [receiver, fyTokenToBuy, minTokensMinted] as any
+      ),
+    ]);
+
   return {
     forwardPermitAction,
     batch,
@@ -50,6 +79,8 @@ const useLadle = () => {
     routeAction,
     sellBaseAction,
     sellFYTokenAction,
+    mintWithBaseAction,
+    mintAction,
     ladleContract: ladle,
   };
 };

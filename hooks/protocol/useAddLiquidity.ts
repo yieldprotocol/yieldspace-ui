@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BigNumber, ethers, PayableOverrides } from 'ethers';
+import { BigNumber, BigNumberish, ethers, PayableOverrides } from 'ethers';
 import { cleanValue } from '../../utils/appUtils';
 
 import { calcPoolRatios, calculateSlippage, fyTokenForMint, splitLiquidity } from '../../utils/yieldMath';
@@ -8,26 +8,28 @@ import useConnector from '../useConnector';
 import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
 import useSignature from '../useSignature';
 import { toast } from 'react-toastify';
+import useLadle from './useLadle';
 
-export const useAddLiquidity = (pool: IPool) => {
+export const useAddLiquidity = (
+  pool: IPool,
+  input: string,
+  method: AddLiquidityActions = AddLiquidityActions.MINT_WITH_BASE,
+  description: string | null = null
+) => {
   // settings
   const slippageTolerance = 0.001;
 
   const { account } = useConnector();
-  const { signer } = useSignature();
+  const { sign } = useSignature();
+  const { ladleContract, forwardPermitAction, batch, transferAction, mintWithBaseAction, mintAction } = useLadle();
 
   const [isAddingLiquidity, setIsAddingLiquidity] = useState<boolean>(false);
+  const [addSubmitted, setAddSubmitted] = useState<boolean>(false);
 
-  const addLiquidity = async (
-    input: string,
-    method: AddLiquidityActions = AddLiquidityActions.MINT_WITH_BASE,
-    description: string | null = null
-  ) => {
+  const addLiquidity = async () => {
+    if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
+    setAddSubmitted(false);
     setIsAddingLiquidity(true);
-
-    const erc20Contract = pool.base.contract.connect(signer!);
-    const fyTokenContract = pool.fyToken.contract.connect(signer!);
-    const poolContract = pool.contract.connect(signer!);
 
     const base = pool.base;
     const cleanInput = cleanValue(input, base.decimals);
@@ -61,38 +63,72 @@ export const useAddLiquidity = (pool: IPool) => {
     ) as [BigNumber, BigNumber];
 
     const _baseToPoolWithSlippage = BigNumber.from(calculateSlippage(_baseToPool, slippageTolerance.toString()));
+    const _minTokensMinted = BigNumber.from('0');
 
     /* if approveMAx, check if signature is still required */
     const alreadyApproved = (await base.getAllowance(account!, pool.address)).gt(_input);
 
-    const _mintWithBase = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction> => {
-      const [, res] = await Promise.all([
-        await erc20Contract.transfer(pool.address, _inputLessSlippage),
-        await poolContract.mintWithBase(account!, account!, _fyTokenToBeMinted, minRatio, maxRatio, overrides),
+    const _mintWithBase = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction | undefined> => {
+      const permits = await sign([
+        {
+          target: pool.base,
+          spender: ladleContract?.address!,
+          amount: _baseToPool,
+          ignoreIf: alreadyApproved,
+        },
       ]);
+      const [, , , deadline, v, r, s] = permits[0].args!;
+
+      const res = await batch(
+        [
+          forwardPermitAction(
+            base.address,
+            ladleContract?.address!,
+            _baseToPool,
+            deadline as BigNumberish,
+            v as BigNumberish,
+            r as Buffer,
+            s as Buffer
+          )!,
+          transferAction(base.address, pool.address, _baseToPool)!,
+          mintWithBaseAction(pool.contract, account!, _baseToFyToken, _minTokensMinted)!,
+        ],
+        overrides
+      );
+
       return res;
     };
 
-    const _mint = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction> => {
-      const [, , res] = await Promise.all([
-        await erc20Contract.transfer(pool.address, _inputLessSlippage),
-        await fyTokenContract.transfer(pool.address, _inputLessSlippage),
-        await poolContract.mint(account!, account!, minRatio, maxRatio, overrides),
+    const _mint = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction | undefined> => {
+      const permits = await sign([
+        {
+          target: pool.base,
+          spender: ladleContract?.address!,
+          amount: _baseToPool,
+          ignoreIf: alreadyApproved,
+        },
       ]);
+      const [, , , deadline, v, r, s] = permits[0].args!;
+
+      const res = await batch(
+        [
+          forwardPermitAction(
+            base.address,
+            ladleContract?.address!,
+            _baseToPool,
+            deadline as BigNumberish,
+            v as BigNumberish,
+            r as Buffer,
+            s as Buffer
+          )!,
+          transferAction(base.address, pool.address, _baseToPool)!,
+          mintWithBaseAction(pool.contract, account!, _baseToFyToken, _minTokensMinted)!,
+        ],
+        overrides
+      );
+
       return res;
     };
-
-    /**
-     * GET SIGNATURE/APPROVAL DATA
-     * */
-    // await sign([
-    //   {
-    //     target: base,
-    //     spender: pool.address,
-    //     amount: _input,
-    //     ignoreIf: alreadyApproved === true,
-    //   },
-    // ]);
 
     /**
      * Transact
@@ -102,7 +138,7 @@ export const useAddLiquidity = (pool: IPool) => {
     };
 
     try {
-      let res: ethers.ContractTransaction;
+      let res: ethers.ContractTransaction | undefined;
 
       if (method === AddLiquidityActions.MINT_WITH_BASE) {
         res = await _mintWithBase(overrides);
@@ -110,17 +146,21 @@ export const useAddLiquidity = (pool: IPool) => {
         res = await _mint(overrides);
       }
 
-      toast.promise(res.wait, {
-        pending: `Pending: ${description}`,
-        success: `Success: ${description}`,
-        error: `Failed: ${description}`,
-      });
+      setIsAddingLiquidity(false);
+      setAddSubmitted(true);
+
+      res &&
+        toast.promise(res.wait, {
+          pending: `${description}`,
+          success: `${description}`,
+          error: `Could not ${description}`,
+        });
     } catch (e) {
       console.log(e);
       toast.error('tx failed or rejected');
       setIsAddingLiquidity(false);
+      setAddSubmitted(false);
     }
-    setIsAddingLiquidity(false);
   };
 
   return { addLiquidity, isAddingLiquidity };
