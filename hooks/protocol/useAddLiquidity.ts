@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { BigNumber, BigNumberish, ethers, PayableOverrides } from 'ethers';
 import { cleanValue } from '../../utils/appUtils';
 
-import { calcPoolRatios, calculateSlippage, fyTokenForMint, splitLiquidity } from '../../utils/yieldMath';
+import { calcPoolRatios, calculateSlippage, fyTokenForMint, mint, splitLiquidity } from '../../utils/yieldMath';
 import { IPool } from '../../lib/protocol/types';
 import useConnector from '../useConnector';
 import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
@@ -73,7 +73,7 @@ export const useAddLiquidity = (
         {
           target: pool.base,
           spender: ladleContract?.address!,
-          amount: _baseToPool,
+          amount: _input,
           ignoreIf: alreadyApproved,
         },
       ]);
@@ -84,14 +84,14 @@ export const useAddLiquidity = (
           forwardPermitAction(
             base.address,
             ladleContract?.address!,
-            _baseToPool,
+            _input,
             deadline as BigNumberish,
             v as BigNumberish,
             r as Buffer,
             s as Buffer
           )!,
-          transferAction(base.address, pool.address, _baseToPool)!,
-          mintWithBaseAction(pool.contract, account!, _baseToFyToken, _minTokensMinted)!,
+          transferAction(base.address, pool.address, _input)!,
+          mintWithBaseAction(pool.contract, account!, _fyTokenToBeMinted, minRatio, maxRatio)!,
         ],
         overrides
       );
@@ -163,5 +163,5 @@ export const useAddLiquidity = (
     }
   };
 
-  return { addLiquidity, isAddingLiquidity };
+  return { addLiquidity, isAddingLiquidity, addSubmitted };
 };

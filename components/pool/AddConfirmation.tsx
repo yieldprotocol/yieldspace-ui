@@ -4,7 +4,6 @@ import { IAsset, IPool } from '../../lib/protocol/types';
 import Button from '../common/Button';
 import useTimeTillMaturity from '../../hooks/useTimeTillMaturity';
 import InfoIcon from '../common/InfoIcon';
-import { PlusIcon } from '@heroicons/react/solid';
 import { IAddLiquidityForm } from './AddLiquidity';
 import Arrow from '../trade/Arrow';
 

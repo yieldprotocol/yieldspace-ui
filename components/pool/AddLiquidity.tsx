@@ -154,7 +154,11 @@ const AddLiquidity = () => {
           )}
           <Toggle enabled={useFyToken} setEnabled={setUseFyTokenToggle} label="Use fyToken Balance" />
         </Grid>
-        <Button action={handleSubmit} disabled={!account || !pool || !baseAmount || isAddingLiquidity}>
+        <Button
+          action={handleSubmit}
+          disabled={!account || !pool || !baseAmount || isAddingLiquidity}
+          loading={isAddingLiquidity}
+        >
           {!account ? 'Connect Wallet' : isAddingLiquidity ? 'Add Liquidity Initiated...' : 'Add Liquidity'}
         </Button>
         {confirmModalOpen && (
