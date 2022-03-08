@@ -46,7 +46,7 @@ const AddLiquidity = () => {
   const { data: pools, loading } = usePools();
 
   const [form, setForm] = useState<IAddLiquidityForm>(INITIAL_FORM_STATE);
-  const { pool, baseAmount, fyTokenAmount } = form;
+  const { pool, baseAmount, fyTokenAmount, method, description } = form;
   const [useFyTokenBalance, toggleUseFyTokenBalance] = useState<boolean>(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
 
@@ -79,10 +79,10 @@ const AddLiquidity = () => {
 
   // set add liquidity description to use in useAddLiquidity hook
   useEffect(() => {
-    const description = `Adding ${baseAmount} ${pool?.base.symbol}${
+    const _description = `Adding ${baseAmount} ${pool?.base.symbol}${
       +fyTokenAmount > 0 && useFyTokenBalance ? ` and ${fyTokenAmount} ${pool?.fyToken.symbol}` : ''
     }`;
-    setForm((f) => ({ ...f, description }));
+    setForm((f) => ({ ...f, description: _description }));
   }, [pool?.base.symbol, baseAmount, useFyTokenBalance, fyTokenAmount, pool?.fyToken.symbol]);
 
   // set add liquidity method when useFyTokenBalance changes
@@ -159,7 +159,7 @@ const AddLiquidity = () => {
             </TopRow>
             <AddConfirmation
               form={form}
-              action={addLiquidity}
+              action={() => addLiquidity(baseAmount, method, description)}
               disabled={isAddingLiquidity}
               loading={isAddingLiquidity}
             />

@@ -2,10 +2,9 @@ import tw from 'tailwind-styled-components';
 import AssetSelect from '../common/AssetSelect';
 import { IAsset, IPool } from '../../lib/protocol/types';
 import Button from '../common/Button';
-import useTimeTillMaturity from '../../hooks/useTimeTillMaturity';
 import InfoIcon from '../common/InfoIcon';
 import { PlusIcon } from '@heroicons/react/solid';
-import { IAddLiquidityForm } from './AddLiquidity';
+import { IRemoveLiquidityForm } from './RemoveLiquidity';
 
 const Container = tw.div`relative flex justify-center items-center w-full`;
 const Wrap = tw.div`w-full text-center text-lg align-middle items-center`;
@@ -22,9 +21,9 @@ const Detail = tw.div`text-sm dark:text-gray-50`;
 const DetailGray = tw.div`italic text-gray-300 text-sm`;
 const Italic = tw.div`italic text-xs text-gray-300 my-3`;
 
-interface IAddConfirmation {
-  form: IAddLiquidityForm;
-  action: () => void;
+interface IRemoveConfirmation {
+  form: IRemoveLiquidityForm;
+  action: any;
   disabled?: boolean;
   loading?: boolean;
 }
@@ -42,9 +41,8 @@ const ConfirmItem = ({ value, asset, pool }: { value: string; asset: IAsset; poo
   </InputStyleContainer>
 );
 
-const AddConfirmation = ({ form, action, disabled, loading }: IAddConfirmation) => {
+const RemoveConfirmation = ({ form, action, disabled, loading }: IRemoveConfirmation) => {
   const { pool, baseAmount, fyTokenAmount, method, description } = form;
-  const timeTillMaturity_ = useTimeTillMaturity(pool?.maturity!);
   const output = 'some';
 
   return (
@@ -64,30 +62,23 @@ const AddConfirmation = ({ form, action, disabled, loading }: IAddConfirmation) 
         <InputStyleContainer>
           <DetailsWrap>
             <DetailWrap>
-              <Detail>Maturity</Detail>
-              <div className="text-sm dark:text-gray-50">
-                <div className="flex justify-end">{pool?.displayName}</div>
-                <div className="italic text-xs dark:text-gray-300">{timeTillMaturity_} until maturity</div>
-              </div>
-            </DetailWrap>
-            <DetailWrap>
               <Detail>Expected output</Detail>
-              <Detail>{output} LP Tokens</Detail>
+              <Detail>{output} base or base + fyToken</Detail>
             </DetailWrap>
             <div className="w-full h-[1px] bg-gray-700" />
             <DetailWrap>
               <DetailGray>Minimum received after slippage</DetailGray>
-              <DetailGray>{output} LP Tokens</DetailGray>
+              <DetailGray>{output} base or base + fyToken</DetailGray>
             </DetailWrap>
           </DetailsWrap>
         </InputStyleContainer>
         <Italic>Output is estimated.</Italic>
-        <Button action={action} disabled={disabled} loading={loading}>
-          {loading ? 'Add Liquidity Initiated...' : 'Confirm Add Liquidity'}
+        <Button action={() => action(baseAmount, method, description)} disabled={disabled} loading={loading}>
+          {loading ? 'Remove Liquidity Initiated...' : 'Confirm Remove Liquidity'}
         </Button>
       </Wrap>
     </Container>
   );
 };
 
-export default AddConfirmation;
+export default RemoveConfirmation;
