@@ -32,7 +32,7 @@ export interface IRemoveLiquidityForm {
 const INITIAL_FORM_STATE: IRemoveLiquidityForm = {
   pool: undefined,
   lpTokens: '',
-  method: undefined,
+  method: RemoveLiquidityActions.BURN_FOR_BASE,
   description: '',
 };
 
@@ -44,42 +44,43 @@ const RemoveLiquidity = () => {
 
   const [form, setForm] = useState<IRemoveLiquidityForm>(INITIAL_FORM_STATE);
   const { pool, lpTokens, method, description } = form;
-  const burnForBase = method === RemoveLiquidityActions.BURN_FOR_BASE;
+
+  const [burnForBase, setBurnForBase] = useState<boolean>(true);
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
 
   const { removeLiquidity, isRemovingLiq } = useRemoveLiquidity(pool!);
 
-  const handleMaxLpTokens = () => {
-    setForm((f) => ({ ...f, lpTokens: pool?.lpTokenBalance_! }));
-  };
+  const handleMaxLpTokens = () => setForm((f) => ({ ...f, lpTokens: pool?.lpTokenBalance_! }));
 
-  const handleClearAll = () => {
-    setForm(INITIAL_FORM_STATE);
-  };
+  const handleClearAll = () => setForm(INITIAL_FORM_STATE);
 
-  const handleSubmit = () => {
-    setConfirmModalOpen(true);
-  };
+  const handleSubmit = () => setConfirmModalOpen(true);
 
   const handleInputChange = (name: string, value: string) => setForm((f) => ({ ...f, [name]: value }));
 
   // reset chosen pool when chainId changes
-  useEffect(() => {
-    setForm((f) => ({ ...f, pool: undefined }));
-  }, [chainId]);
+  useEffect(() => setForm((f) => ({ ...f, pool: undefined })), [chainId]);
 
-  // use pool address from router query if avaialable
+  // use pool address from router query if available
   useEffect(() => {
     pools && setForm((f) => ({ ...f, pool: pools![address as string] }));
   }, [pools, address]);
 
-  // set add liquidity description to use in useAddLiquidity hook
+  // set remove liquidity description to use in useRemoveLiquidity hook
   useEffect(() => {
     const _description = `Removing ${lpTokens} lp tokens${
       method! === RemoveLiquidityActions.BURN_FOR_BASE ? ` and receiving all base` : ' receiving both base and fyTokens'
     }`;
     setForm((f) => ({ ...f, description: _description }));
   }, [lpTokens, method]);
+
+  // update method in form based on burnForBase toggle
+  useEffect(() => {
+    setForm((f) => ({
+      ...f,
+      method: burnForBase ? RemoveLiquidityActions.BURN_FOR_BASE : RemoveLiquidityActions.BURN,
+    }));
+  }, [pool, burnForBase]);
 
   return (
     <BorderWrap>
@@ -111,20 +112,17 @@ const RemoveLiquidity = () => {
             pool={pool!}
           />
 
-          <Toggle
-            enabled={burnForBase}
-            setEnabled={(f) =>
-              setForm({
-                ...f,
-                method: burnForBase ? RemoveLiquidityActions.BURN : RemoveLiquidityActions.BURN_FOR_BASE,
-              })
-            }
-            label={
-              burnForBase
-                ? `Receive all ${pool?.base.symbol}`
-                : `Receive both ${pool?.base.symbol} and fy${pool?.base.symbol}`
-            }
-          />
+          {pool && (
+            <Toggle
+              enabled={burnForBase}
+              setEnabled={setBurnForBase}
+              label={
+                burnForBase
+                  ? `Receive all ${pool?.base?.symbol}`
+                  : `Receive both ${pool?.base?.symbol} and fy${pool?.base?.symbol}`
+              }
+            />
+          )}
         </Grid>
         <Button action={handleSubmit} disabled={!account || !pool || !lpTokens || isRemovingLiq}>
           {!account ? 'Connect Wallet' : isRemovingLiq ? 'Remove Liquidity Initiated...' : 'Remove Liquidity'}

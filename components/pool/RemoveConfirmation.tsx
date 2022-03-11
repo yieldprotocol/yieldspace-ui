@@ -1,10 +1,9 @@
 import tw from 'tailwind-styled-components';
 import AssetSelect from '../common/AssetSelect';
-import { IAsset, IPool } from '../../lib/protocol/types';
+import { IPool } from '../../lib/protocol/types';
 import Button from '../common/Button';
-import InfoIcon from '../common/InfoIcon';
-import { PlusIcon } from '@heroicons/react/solid';
 import { IRemoveLiquidityForm } from './RemoveLiquidity';
+import useRemoveLiqPreview from '../../hooks/protocol/useRemoveLiqPreview';
 
 const Container = tw.div`relative flex justify-center items-center w-full`;
 const Wrap = tw.div`w-full text-center text-lg align-middle items-center`;
@@ -42,8 +41,8 @@ const ConfirmItem = ({ value, pool }: { value: string; pool: IPool }) => (
 );
 
 const RemoveConfirmation = ({ form, action, disabled, loading }: IRemoveConfirmation) => {
-  const { pool, lpTokens } = form;
-  const output = 'some';
+  const { pool, lpTokens, method } = form;
+  const { baseReceived, fyTokenReceived } = useRemoveLiqPreview(pool!, lpTokens, method!);
 
   return (
     <Container>
@@ -56,14 +55,15 @@ const RemoveConfirmation = ({ form, action, disabled, loading }: IRemoveConfirma
         <InputStyleContainer>
           <DetailsWrap>
             <DetailWrap>
-              <Detail>Expected output</Detail>
-              <Detail>{output} base or base + fyToken</Detail>
+              <Detail>Estimated {pool?.base.symbol} Received</Detail>
+              <Detail>{baseReceived}</Detail>
             </DetailWrap>
-            <div className="w-full h-[1px] bg-gray-700" />
-            <DetailWrap>
-              <DetailGray>Minimum received after slippage</DetailGray>
-              <DetailGray>{output} base or base + fyToken</DetailGray>
-            </DetailWrap>
+            {fyTokenReceived && (
+              <DetailWrap>
+                <Detail>Estimated {pool?.fyToken.symbol} Received</Detail>
+                <Detail>{fyTokenReceived}</Detail>
+              </DetailWrap>
+            )}
           </DetailsWrap>
         </InputStyleContainer>
         <Italic>Output is estimated.</Italic>
