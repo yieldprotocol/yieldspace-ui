@@ -50,16 +50,26 @@ const RemoveLiquidity = () => {
 
   const { removeLiquidity, isRemovingLiq } = useRemoveLiquidity(pool!);
 
-  const handleMaxLpTokens = () => setForm((f) => ({ ...f, lpTokens: pool?.lpTokenBalance_! }));
+  const handleMaxLpTokens = () => {
+    setForm((f) => ({ ...f, lpTokens: pool?.lpTokenBalance_! }));
+  };
 
-  const handleClearAll = () => setForm(INITIAL_FORM_STATE);
+  const handleClearAll = () => {
+    setForm(INITIAL_FORM_STATE);
+  };
 
-  const handleSubmit = () => setConfirmModalOpen(true);
+  const handleSubmit = () => {
+    setConfirmModalOpen(true);
+  };
 
-  const handleInputChange = (name: string, value: string) => setForm((f) => ({ ...f, [name]: value }));
+  const handleInputChange = (name: string, value: string) => {
+    setForm((f) => ({ ...f, [name]: value }));
+  };
 
   // reset chosen pool when chainId changes
-  useEffect(() => setForm((f) => ({ ...f, pool: undefined })), [chainId]);
+  useEffect(() => {
+    setForm((f) => ({ ...f, pool: undefined }));
+  }, [chainId]);
 
   // use pool address from router query if available
   useEffect(() => {

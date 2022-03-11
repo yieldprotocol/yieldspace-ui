@@ -66,8 +66,9 @@ const AddLiquidity = () => {
     setConfirmModalOpen(true);
   };
 
-  const handleInputChange = (name: string, value: string) =>
+  const handleInputChange = (name: string, value: string) => {
     setForm((f) => ({ ...f, [name]: value, fyTokenAmount: value }));
+  };
 
   // reset chosen pool when chainId changes
   useEffect(() => {
