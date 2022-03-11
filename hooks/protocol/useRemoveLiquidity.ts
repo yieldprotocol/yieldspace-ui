@@ -127,9 +127,9 @@ export const useRemoveLiquidity = (pool: IPool) => {
 
       res &&
         toast.promise(res.wait, {
-          pending: `Pending: ${description}`,
-          success: `Success: ${description}`,
-          error: `Failed: ${description}`,
+          pending: `${description}`,
+          success: `${description}`,
+          error: `Could not ${description}`,
         });
     } catch (e) {
       console.log(e);

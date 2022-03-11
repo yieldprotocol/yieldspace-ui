@@ -78,7 +78,7 @@ const RemoveLiquidity = () => {
 
   // set remove liquidity description to use in useRemoveLiquidity hook
   useEffect(() => {
-    const _description = `Removing ${lpTokens} lp tokens${
+    const _description = `Remove ${lpTokens} lp tokens${
       method! === RemoveLiquidityActions.BURN_FOR_BASE ? ` and receiving all base` : ' receiving both base and fyTokens'
     }`;
     setForm((f) => ({ ...f, description: _description }));
