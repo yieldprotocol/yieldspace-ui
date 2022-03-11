@@ -18,12 +18,10 @@ const useRemoveLiqPreview = (
 
   useEffect(() => {
     const getPrevewData = async () => {
-      const timeTillMaturity = getTimeTillMaturity();
       const [cachedBaseReserves, cachedFyTokenReserves] = await contract.getCache();
       const cachedRealReserves = cachedFyTokenReserves.sub(totalSupply);
 
       if (method === RemoveLiquidityActions.BURN_FOR_BASE) {
-        console.log('in burn for base');
         const _baseReceived = burnForBase(
           cachedBaseReserves,
           cachedFyTokenReserves,
@@ -39,13 +37,12 @@ const useRemoveLiqPreview = (
         setFyTokenReceived(undefined);
         return setBaseReceived(baseReceived_);
       } else {
-        console.log('inheree');
         const [_baseReceived, _fyTokenReceived] = burn(cachedBaseReserves, cachedRealReserves, totalSupply, _lpTokens);
 
         const baseReceived_ = ethers.utils.formatUnits(_baseReceived, decimals);
         const fyTokenReceived_ = ethers.utils.formatUnits(_fyTokenReceived, decimals);
         setBaseReceived(baseReceived_);
-        setBaseReceived(fyTokenReceived_);
+        setFyTokenReceived(fyTokenReceived_);
       }
     };
 
