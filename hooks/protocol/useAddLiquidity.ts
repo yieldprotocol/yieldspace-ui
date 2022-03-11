@@ -64,7 +64,7 @@ export const useAddLiquidity = (
 
     const _baseToPoolWithSlippage = BigNumber.from(calculateSlippage(_baseToPool, slippageTolerance.toString()));
 
-    /* if approveMAx, check if signature is still required */
+    /* if approveMax, check if signature is still required */
     const alreadyApproved = (await base.getAllowance(account!, pool.address)).gt(_input);
 
     const _mintWithBase = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction | undefined> => {

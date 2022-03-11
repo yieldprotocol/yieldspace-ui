@@ -6,6 +6,7 @@ import useTimeTillMaturity from '../../hooks/useTimeTillMaturity';
 import InfoIcon from '../common/InfoIcon';
 import { IAddLiquidityForm } from './AddLiquidity';
 import Arrow from '../trade/Arrow';
+import useAddLiquidityPreview from '../../hooks/protocol/useAddLiqPreview';
 
 const Container = tw.div`relative flex justify-center items-center w-full`;
 const Wrap = tw.div`w-full text-center text-lg align-middle items-center`;
@@ -43,7 +44,8 @@ const ConfirmItem = ({ value, asset, pool }: { value: string; asset: IAsset; poo
 );
 
 const AddConfirmation = ({ form, action, disabled, loading }: IAddConfirmation) => {
-  const { pool, baseAmount, fyTokenAmount, useFyToken } = form;
+  const { pool, baseAmount, fyTokenAmount, useFyToken, method } = form;
+  const { lpTokenPreview } = useAddLiquidityPreview(pool!, baseAmount, method!);
   const timeTillMaturity_ = useTimeTillMaturity(pool?.maturity!);
 
   return (
@@ -71,12 +73,7 @@ const AddConfirmation = ({ form, action, disabled, loading }: IAddConfirmation) 
             </DetailWrap>
             <DetailWrap>
               <Detail>LP Tokens to Receive</Detail>
-              <Detail>estimated output</Detail>
-            </DetailWrap>
-            <div className="w-full h-[1px] bg-gray-700" />
-            <DetailWrap>
-              <DetailGray>LP Token Output With Slippage</DetailGray>
-              <DetailGray>some output</DetailGray>
+              <Detail>{lpTokenPreview}</Detail>
             </DetailWrap>
           </DetailsWrap>
         </InputStyleContainer>

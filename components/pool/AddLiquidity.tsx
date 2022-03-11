@@ -81,7 +81,7 @@ const AddLiquidity = () => {
 
   // set add liquidity description to use in useAddLiquidity hook
   useEffect(() => {
-    const _description = `Adding ${baseAmount} ${pool?.base.symbol}${
+    const _description = `Add ${baseAmount} ${pool?.base.symbol}${
       +fyTokenAmount > 0 && useFyToken ? ` and ${fyTokenAmount} ${pool?.fyToken.symbol}` : ''
     }`;
     setForm((f) => ({ ...f, description: _description }));
