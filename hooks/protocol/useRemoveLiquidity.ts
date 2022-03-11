@@ -16,7 +16,7 @@ export const useRemoveLiquidity = (pool: IPool) => {
 
   const { account } = useConnector();
   const { sign } = useSignature();
-  const { ladleContract, forwardPermitAction, batch, transferAction } = useLadle();
+  const { ladleContract, forwardPermitAction, batch, transferAction, burnForBaseAction, burnAction } = useLadle();
 
   const [isRemovingLiq, setIsRemovingLiq] = useState<boolean>(false);
   const [removeSubmitted, setRemoveSubmitted] = useState<boolean>(false);
@@ -49,10 +49,10 @@ export const useRemoveLiquidity = (pool: IPool) => {
 
     const alreadyApproved = (await pool.contract.allowance(account!, ladleContract?.address!)).gt(_input);
 
-    const _burnForBase = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction> => {
+    const _burnForBase = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction | undefined> => {
       const permits = await sign([
         {
-          target: pool.base,
+          target: pool,
           spender: ladleContract?.address!,
           amount: _input,
           ignoreIf: alreadyApproved,
@@ -63,7 +63,38 @@ export const useRemoveLiquidity = (pool: IPool) => {
       const res = await batch(
         [
           forwardPermitAction(
-            base.address,
+            pool.address,
+            ladleContract?.address!,
+            _input,
+            deadline as BigNumberish,
+            v as BigNumberish,
+            r as Buffer,
+            s as Buffer
+          )!,
+          transferAction(pool.address, pool.address, _input)!,
+          burnForBaseAction(pool.contract, account!, minRatio, maxRatio)!,
+        ],
+        overrides
+      );
+
+      return res;
+    };
+
+    const _burn = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction | undefined> => {
+      const permits = await sign([
+        {
+          target: pool,
+          spender: ladleContract?.address!,
+          amount: _input,
+          ignoreIf: alreadyApproved,
+        },
+      ]);
+      const [, , , deadline, v, r, s] = permits[0].args!;
+
+      const res = await batch(
+        [
+          forwardPermitAction(
+            pool.address,
             ladleContract?.address!,
             _input,
             deadline as BigNumberish,
@@ -72,19 +103,11 @@ export const useRemoveLiquidity = (pool: IPool) => {
             s as Buffer
           )!,
           transferAction(base.address, pool.address, _input)!,
-          mintWithBaseAction(pool.contract, account!, account!, _fyTokenToBeMinted, minRatio, maxRatio)!,
+          burnAction(pool.contract, account!, account!, minRatio, maxRatio)!,
         ],
         overrides
       );
 
-      return res;
-    };
-
-    const _burn = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction> => {
-      const [, res] = await Promise.all([
-        poolContract.transfer(pool.address, _inputLessSlippage, overrides),
-        poolContract.burn(account!, account!, minRatio, maxRatio, overrides),
-      ]);
       return res;
     };
 
@@ -94,7 +117,7 @@ export const useRemoveLiquidity = (pool: IPool) => {
     };
 
     try {
-      let res: ethers.ContractTransaction;
+      let res: ethers.ContractTransaction | undefined;
 
       if (method === RemoveLiquidityActions.BURN_FOR_BASE) {
         res = await _burnForBase(overrides);
@@ -102,11 +125,12 @@ export const useRemoveLiquidity = (pool: IPool) => {
         res = await _burn(overrides);
       }
 
-      toast.promise(res.wait, {
-        pending: `Pending: ${description}`,
-        success: `Success: ${description}`,
-        error: `Failed: ${description}`,
-      });
+      res &&
+        toast.promise(res.wait, {
+          pending: `Pending: ${description}`,
+          success: `Success: ${description}`,
+          error: `Failed: ${description}`,
+        });
     } catch (e) {
       console.log(e);
       toast.error('tx failed or rejected');
