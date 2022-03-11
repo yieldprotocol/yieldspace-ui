@@ -70,13 +70,13 @@ const AddConfirmation = ({ form, action, disabled, loading }: IAddConfirmation) 
               </div>
             </DetailWrap>
             <DetailWrap>
-              <Detail>something</Detail>
-              <Detail>something maybe</Detail>
+              <Detail>LP Tokens to Receive</Detail>
+              <Detail>estimated output</Detail>
             </DetailWrap>
             <div className="w-full h-[1px] bg-gray-700" />
             <DetailWrap>
-              <DetailGray>some data</DetailGray>
-              <DetailGray>some other data</DetailGray>
+              <DetailGray>LP Token Output With Slippage</DetailGray>
+              <DetailGray>some output</DetailGray>
             </DetailWrap>
           </DetailsWrap>
         </InputStyleContainer>
