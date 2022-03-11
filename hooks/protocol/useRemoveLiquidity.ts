@@ -102,7 +102,7 @@ export const useRemoveLiquidity = (pool: IPool) => {
             r as Buffer,
             s as Buffer
           )!,
-          transferAction(base.address, pool.address, _input)!,
+          transferAction(pool.address, pool.address, _input)!,
           burnAction(pool.contract, account!, account!, minRatio, maxRatio)!,
         ],
         overrides
