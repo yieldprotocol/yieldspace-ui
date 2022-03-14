@@ -162,7 +162,7 @@ const AddLiquidity = () => {
         >
           {!account ? 'Connect Wallet' : isAddingLiquidity ? 'Add Liquidity Initiated...' : 'Add Liquidity'}
         </Button>
-        {confirmModalOpen && (
+        {confirmModalOpen && pool && (
           <Modal isOpen={confirmModalOpen} setIsOpen={setConfirmModalOpen}>
             <TopRow>
               <Header>Confirm Add Liquidity</Header>
@@ -171,7 +171,7 @@ const AddLiquidity = () => {
             <AddConfirmation
               form={form}
               action={addLiquidity}
-              disabled={isAddingLiquidity}
+              disabled={!account || !pool || !baseAmount || isAddingLiquidity}
               loading={isAddingLiquidity}
             />
           </Modal>
