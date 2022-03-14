@@ -137,7 +137,7 @@ const RemoveLiquidity = () => {
         <Button action={handleSubmit} disabled={!account || !pool || !lpTokens || isRemovingLiq}>
           {!account ? 'Connect Wallet' : isRemovingLiq ? 'Remove Liquidity Initiated...' : 'Remove Liquidity'}
         </Button>
-        {confirmModalOpen && (
+        {confirmModalOpen && pool && (
           <Modal isOpen={confirmModalOpen} setIsOpen={setConfirmModalOpen}>
             <TopRow>
               <Header>Confirm Remove Liquidity</Header>
