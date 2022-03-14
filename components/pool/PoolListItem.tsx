@@ -18,7 +18,7 @@ const PoolListItem: FC<IPoolListItem> = ({ pool }) => (
   <Link href={`/pool/${pool.address}`} passHref>
     <Container>
       <Inner>
-        <Header>{pool.name}</Header>
+        <Header>{pool.displayName}</Header>
         <PoolDataWrap>
           <PoolDataLabel>LP Token Balance:</PoolDataLabel>
           <PoolData>{pool.lpTokenBalance_}</PoolData>

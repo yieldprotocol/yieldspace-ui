@@ -29,7 +29,7 @@ const PoolSelectItem: FC<IPoolSelectItem> = ({ pool, action }) => (
   >
     <Inner>
       <AssetLogo image={pool.base.symbol} />
-      {pool.name}
+      {pool.displayName}
     </Inner>
   </Outer>
 );

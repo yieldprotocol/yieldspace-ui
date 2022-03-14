@@ -2,7 +2,7 @@ import { format } from 'date-fns';
 import { BigNumber, ethers } from 'ethers';
 import { LADLE } from '../../constants';
 import { Pool__factory } from '../../contracts/types';
-import { IAsset, IContractMap, IPoolMap, Provider } from './types';
+import { IAsset, IContractMap, IPool, IPoolMap, IPoolRoot, Provider } from './types';
 import { cleanValue, formatFyTokenSymbol, getSeason, SeasonType } from '../../utils/appUtils';
 import yieldEnv from '../../config/yieldEnv';
 import { CONTRACTS_TO_FETCH } from '../../hooks/protocol/useContracts';
@@ -96,7 +96,7 @@ export const getPools = async (
         getTimeTillMaturity,
         contract: poolContract,
         totalSupply,
-      };
+      } as IPoolRoot;
       return { ...(await pools), [address]: _chargePool(newPool, chainId) };
     }, {});
   } catch (e) {
@@ -105,14 +105,16 @@ export const getPools = async (
 };
 
 /* add on extra/calculated ASYNC series info and contract instances */
-const _chargePool = (_pool: { maturity: number }, _chainId: number) => {
+const _chargePool = (_pool: IPoolRoot, _chainId: number) => {
   const season = getSeason(_pool.maturity);
   const oppSeason = (_season: SeasonType) => getSeason(_pool.maturity + 23670000);
   const [startColor, endColor, textColor]: string[] = seasonColors[_chainId][season];
   const [oppStartColor, oppEndColor, oppTextColor]: string[] = seasonColors[_chainId][oppSeason(season)];
+
   return {
     ..._pool,
-    displayName: format(new Date(_pool.maturity * 1000), 'dd MMM yyyy'),
+    displayName: `${_pool.base.symbol} ${format(new Date(_pool.maturity * 1000), 'MMMM dd yyyy')}`,
+    maturity_: format(new Date(_pool.maturity * 1000), 'MMMM dd yyyy'),
     season,
     startColor,
     endColor,
