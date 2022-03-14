@@ -12,12 +12,13 @@ const useRemoveLiqPreview = (
 ) => {
   const [baseReceived, setBaseReceived] = useState<string>();
   const [fyTokenReceived, setFyTokenReceived] = useState<string>();
-  const { totalSupply, decimals, contract, getTimeTillMaturity, ts, g2 } = pool;
-
-  const _lpTokens = ethers.utils.parseUnits(lpTokens, decimals);
 
   useEffect(() => {
     const getPrevewData = async () => {
+      const { totalSupply, decimals, contract, getTimeTillMaturity, ts, g2 } = pool;
+
+      const _lpTokens = ethers.utils.parseUnits(lpTokens, decimals);
+
       const [cachedBaseReserves, cachedFyTokenReserves] = await contract.getCache();
       const cachedRealReserves = cachedFyTokenReserves.sub(totalSupply);
 
@@ -47,7 +48,7 @@ const useRemoveLiqPreview = (
     };
 
     getPrevewData();
-  }, [_lpTokens, contract, decimals, g2, getTimeTillMaturity, method, totalSupply, ts]);
+  }, [lpTokens, method, pool]);
 
   return { baseReceived, fyTokenReceived };
 };
