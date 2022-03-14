@@ -43,10 +43,6 @@ const PoolSelectModal: FC<IPoolSelectModal> = ({ pools, open, setOpen, action })
 
   return (
     <Modal isOpen={open} setIsOpen={setOpen}>
-      <TopRow>
-        <Header>Select Pool</Header>
-      </TopRow>
-
       {assets && (
         <div className="flex flex-wrap gap-4 my-6 justify-center">
           {assets.map((a) => (
