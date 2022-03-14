@@ -41,14 +41,16 @@ const PoolItem: FC = () => {
     <BorderWrap>
       <Inner>
         <BackButton onClick={() => router.back()} />
-        <Header>{pool.name}</Header>
+        <Header>{pool.displayName}</Header>
         <PoolDataWrap>
           <PoolDataLabel>LP Token Balance:</PoolDataLabel>
           <PoolData>{pool.lpTokenBalance_}</PoolData>
         </PoolDataWrap>
         <PoolDataWrap>
           <PoolDataLabel>LP Token Value:</PoolDataLabel>
-          <PoolData>${cleanValue(basePreview, 2)}</PoolData>
+          <PoolData>
+            {cleanValue(basePreview, 2)} {pool.base.symbol}
+          </PoolData>
         </PoolDataWrap>
         <ButtonWrap>
           <Button action={() => router.push(`/pool/add/${address}`)}>Add Liquidity</Button>

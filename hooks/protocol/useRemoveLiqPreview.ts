@@ -32,7 +32,7 @@ const useRemoveLiqPreview = (
           cachedFyTokenReserves,
           cachedRealReserves,
           _lpTokens,
-          getTimeTillMaturity(),
+          getTimeTillMaturity().toString(),
           ts,
           g2,
           decimals

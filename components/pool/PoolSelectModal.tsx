@@ -2,6 +2,7 @@ import { FC, useEffect, useState } from 'react';
 import tw from 'tailwind-styled-components';
 import { IAsset, IPool, IPoolMap } from '../../lib/protocol/types';
 import AssetSelect from '../common/AssetSelect';
+import CloseButton from '../common/CloseButton';
 import Modal from '../common/Modal';
 import { Header } from '../styles';
 import TopRow from '../styles/TopRow';
@@ -43,11 +44,15 @@ const PoolSelectModal: FC<IPoolSelectModal> = ({ pools, open, setOpen, action })
 
   return (
     <Modal isOpen={open} setIsOpen={setOpen}>
+      <TopRow>
+        <Header>Select a pool</Header>
+        <CloseButton action={() => setOpen(false)} height="1.2rem" width="1.2rem" />
+      </TopRow>
       {assets && (
         <div className="flex flex-wrap gap-4 my-6 justify-center">
           {assets.map((a) => (
             <div
-              className="dark:text-gray-50 hover:cursor-pointer"
+              className="dark:text-gray-50 hover:cursor-pointer hover:opacity-70"
               key={a.address}
               onClick={() => handleFilter(a.symbol)}
             >

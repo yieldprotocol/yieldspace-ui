@@ -2,7 +2,7 @@ import { format } from 'date-fns';
 import { BigNumber, ethers } from 'ethers';
 import { LADLE } from '../../constants';
 import { Pool__factory } from '../../contracts/types';
-import { IAsset, IContractMap, IPool, IPoolMap, IPoolRoot, Provider } from './types';
+import { IAsset, IContractMap, IPoolMap, IPoolRoot, Provider } from './types';
 import { cleanValue, formatFyTokenSymbol, getSeason, SeasonType } from '../../utils/appUtils';
 import yieldEnv from '../../config/yieldEnv';
 import { CONTRACTS_TO_FETCH } from '../../hooks/protocol/useContracts';
@@ -12,6 +12,8 @@ import { FYToken__factory } from '../../contracts/types/factories/FYToken__facto
 import { PoolAddedEvent } from '../../contracts/types/Ladle';
 
 const { seasonColors } = yieldEnv;
+
+const formatMaturity = (maturity: number) => format(new Date(maturity * 1000), 'MMMM dd, yyyy');
 
 /**
  * Gets all pool data
@@ -77,7 +79,7 @@ export const getPools = async (
       const newPool = {
         address,
         name,
-        symbol,
+        symbol: `FY${base.symbol} ${format(new Date(maturity * 1000), 'MMM yyyy')}`,
         version,
         decimals,
         maturity,
@@ -113,8 +115,8 @@ const _chargePool = (_pool: IPoolRoot, _chainId: number) => {
 
   return {
     ..._pool,
-    displayName: `${_pool.base.symbol} ${format(new Date(_pool.maturity * 1000), 'MMMM dd yyyy')}`,
-    maturity_: format(new Date(_pool.maturity * 1000), 'MMMM dd yyyy'),
+    displayName: `${_pool.base.symbol} ${formatMaturity(_pool.maturity)}`,
+    maturity_: formatMaturity(_pool.maturity),
     season,
     startColor,
     endColor,
