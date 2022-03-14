@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
 import { RemoveLiquidityActions } from '../../lib/protocol/liquidity/types';
 import { IPool } from '../../lib/protocol/types';
-import { burn, burnForBase, newPoolState, sellFYToken } from '../../utils/yieldMath';
+import { burn, burnForBase } from '../../utils/yieldMath';
 
 const useRemoveLiqPreview = (
   pool: IPool,
@@ -15,6 +15,10 @@ const useRemoveLiqPreview = (
 
   useEffect(() => {
     const getPrevewData = async () => {
+      if (!pool) {
+        setFyTokenReceived('');
+        return setBaseReceived('');
+      }
       const { totalSupply, decimals, contract, getTimeTillMaturity, ts, g2 } = pool;
 
       const _lpTokens = ethers.utils.parseUnits(lpTokens, decimals);

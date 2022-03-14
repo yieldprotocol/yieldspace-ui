@@ -10,6 +10,9 @@ const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityA
 
   useEffect(() => {
     const getPrevewData = async () => {
+      if (!pool) {
+        return setLpTokenPreview('');
+      }
       const { totalSupply, decimals, contract, getTimeTillMaturity, ts, g1 } = pool;
 
       const _baseAmount = ethers.utils.parseUnits(baseAmount, decimals);

@@ -21,7 +21,11 @@ const PoolItem: FC = () => {
   const { address } = router.query;
 
   const [pool, setPool] = useState<IPool | undefined>();
-  const lpValue = useRemoveLiqPreview(pool!, pool?.lpTokenBalance_, RemoveLiquidityActions.BURN_FOR_BASE);
+  const { baseReceived: basePreview } = useRemoveLiqPreview(
+    pool!,
+    pool?.lpTokenBalance_!,
+    RemoveLiquidityActions.BURN_FOR_BASE
+  );
 
   useEffect(() => {
     if (pools) {
@@ -43,7 +47,7 @@ const PoolItem: FC = () => {
         </PoolDataWrap>
         <PoolDataWrap>
           <PoolDataLabel>LP Token Value:</PoolDataLabel>
-          <PoolData>${lpValue}</PoolData>
+          <PoolData>${basePreview}</PoolData>
         </PoolDataWrap>
         <ButtonWrap>
           <Button action={() => router.push(`/pool/add/${address}`)}>Add Liquidity</Button>
