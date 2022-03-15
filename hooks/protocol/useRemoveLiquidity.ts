@@ -1,3 +1,4 @@
+import { useSWRConfig } from 'swr';
 import { BigNumberish, ethers, PayableOverrides } from 'ethers';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
@@ -10,6 +11,8 @@ import useSignature from '../useSignature';
 import useLadle from './useLadle';
 
 export const useRemoveLiquidity = (pool: IPool) => {
+  const { mutate } = useSWRConfig();
+
   // settings
   const approveMax = false;
   const slippageTolerance = 0.001;
@@ -126,11 +129,17 @@ export const useRemoveLiquidity = (pool: IPool) => {
       }
 
       res &&
-        toast.promise(res.wait, {
-          pending: `${description}`,
-          success: `${description}`,
-          error: `Could not ${description}`,
-        });
+        toast.promise(
+          async () => {
+            await res?.wait();
+            mutate('/pools');
+          },
+          {
+            pending: `${description}`,
+            success: `${description}`,
+            error: `Could not ${description}`,
+          }
+        );
     } catch (e) {
       console.log(e);
       toast.error('tx failed or rejected');
