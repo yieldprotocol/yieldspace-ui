@@ -1,3 +1,4 @@
+import { useSWRConfig } from 'swr';
 import { useState } from 'react';
 import { BigNumber, BigNumberish, ethers, PayableOverrides } from 'ethers';
 import { cleanValue } from '../../utils/appUtils';
@@ -19,6 +20,7 @@ export const useAddLiquidity = (
   // settings
   const slippageTolerance = 0.001;
 
+  const { mutate } = useSWRConfig();
   const { account } = useConnector();
   const { sign } = useSignature();
   const { ladleContract, forwardPermitAction, batch, transferAction, mintWithBaseAction, mintAction } = useLadle();
@@ -166,11 +168,17 @@ export const useAddLiquidity = (
       setAddSubmitted(true);
 
       res &&
-        toast.promise(res.wait, {
-          pending: `${description}`,
-          success: `${description}`,
-          error: `Could not ${description}`,
-        });
+        toast.promise(
+          async () => {
+            await res?.wait();
+            mutate('/pools');
+          },
+          {
+            pending: `${description}`,
+            success: `${description}`,
+            error: `Could not ${description}`,
+          }
+        );
     } catch (e) {
       console.log(e);
       toast.error('tx failed or rejected');

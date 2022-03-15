@@ -20,7 +20,6 @@ export const useTrade = (
   description: string | null = null,
   slippageTolerance: number = 0.05
 ) => {
-  // settings
   const { mutate } = useSWRConfig();
   const { account } = useConnector();
   const { sign } = useSignature();
