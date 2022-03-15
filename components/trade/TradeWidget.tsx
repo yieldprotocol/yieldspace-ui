@@ -16,14 +16,14 @@ import Modal from '../common/Modal';
 import TradeConfirmation from './TradeConfirmation';
 import InputsWrap from '../styles/InputsWrap';
 import CloseButton from '../common/CloseButton';
-import { cleanValue } from '../../utils/appUtils';
+import { calculateSlippage } from '../../utils/yieldMath';
 
 const Inner = tw.div`m-4 text-center`;
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
 const TopRow = tw.div`flex justify-between align-middle text-center items-center`;
 const ClearButton = tw.button`text-sm`;
 
-interface ITradeForm {
+export interface ITradeForm {
   pool: IPool | undefined;
   fromAsset: IAsset | undefined;
   fromAmount: string;
@@ -31,6 +31,7 @@ interface ITradeForm {
   toAmount: string;
   isFyTokenOutput: boolean;
   tradeAction: TradeActions;
+  toAmountLessSlippage: string;
 }
 
 const INITIAL_FORM_STATE: ITradeForm = {
@@ -41,6 +42,7 @@ const INITIAL_FORM_STATE: ITradeForm = {
   toAmount: '',
   isFyTokenOutput: true,
   tradeAction: TradeActions.SELL_BASE,
+  toAmountLessSlippage: '',
 };
 
 const TradeWidget = () => {
@@ -61,8 +63,16 @@ const TradeWidget = () => {
   const [updatingToAmount, setUpdatingToAmount] = useState<boolean>(false);
   const [description, setDescription] = useState('');
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
+  const [slippageTolerance, setSlippageTolerance] = useState<number>(0.05);
 
-  const { trade, isTransacting, tradeSubmitted } = useTrade(pool!, fromAmount, toAmount, tradeAction, description);
+  const { trade, isTransacting, tradeSubmitted, shouldUpdate } = useTrade(
+    pool!,
+    fromAmount,
+    toAmount,
+    tradeAction,
+    description,
+    slippageTolerance
+  );
 
   const handleMaxFrom = () => {
     setUpdatingFromAmount(true);
@@ -213,6 +223,23 @@ const TradeWidget = () => {
     }
   }, [tradeSubmitted]);
 
+  // update the form's from/toAssets whenever the pool changes (i.e. when the user interacts and balances change)
+  useEffect(() => {
+    if (pool) {
+      console.log('pools changed', pools);
+      const _pool = pools[pool.address!];
+      const _fromAsset = isFyTokenOutput ? _pool.base : _pool.fyToken;
+      const _toAsset = isFyTokenOutput ? _pool.fyToken : _pool.base;
+      setForm((f) => ({ ...f, pool: _pool, fromAsset: _fromAsset, toAsset: _toAsset }));
+    }
+  }, [pools, pool, isFyTokenOutput]);
+
+  useEffect(() => {
+    if (toAmount) {
+      setForm((f) => ({ ...f, toAmountLessSlippage: calculateSlippage(toAmount, slippageTolerance.toString(), true) }));
+    }
+  }, [slippageTolerance, toAmount]);
+
   return (
     <BorderWrap>
       <Inner>
@@ -261,21 +288,17 @@ const TradeWidget = () => {
         <Button action={handleSubmit} disabled={!account || !pool || isTransacting} loading={isTransacting}>
           {!account ? 'Connect Wallet' : isTransacting ? 'Trade Initiated...' : 'Trade'}
         </Button>
-        {confirmModalOpen && (
+        {confirmModalOpen && pool && (
           <Modal isOpen={confirmModalOpen} setIsOpen={setConfirmModalOpen}>
             <TopRow>
               <Header>Confirm Trade</Header>
               <CloseButton action={() => setConfirmModalOpen(false)} height="1.2rem" width="1.2rem" />
             </TopRow>
             <TradeConfirmation
-              pool={pool!}
-              fromValue={cleanValue(fromAmount, 2)}
-              fromAsset={fromAsset!}
-              toValue={cleanValue(toAmount, 2)}
-              toAsset={toAsset!}
+              form={form}
               interestRate={interestRatePreview}
               action={trade}
-              disabled={isTransacting}
+              disabled={!account || !pool || isTransacting}
               loading={isTransacting}
             />
           </Modal>

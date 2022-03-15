@@ -1,16 +1,21 @@
-import useSWR, { SWRConfiguration } from 'swr';
+import useSWR from 'swr';
 import { getPools } from '../../lib/protocol';
+import { IPoolMap } from '../../lib/protocol/types';
 import useConnector from '../useConnector';
 import useContracts from './useContracts';
 
 const usePools = () => {
   const { chainId, account, provider } = useConnector();
   const contractMap = useContracts();
+  const { data, error } = useSWR('/pools', () => getPools(provider!, contractMap!, chainId, account), {
+    revalidateOnFocus: false,
+  });
 
-  const options = { revalidateOnFocus: false } as SWRConfiguration;
-  const { data, error } = useSWR([provider, contractMap, chainId, account], getPools, options);
-
-  return { data, loading: !data && !error, error };
+  return {
+    data: data as IPoolMap,
+    loading: !data && !error,
+    error,
+  };
 };
 
 export default usePools;

@@ -1,3 +1,4 @@
+import { useSWRConfig } from 'swr';
 import { useState } from 'react';
 import { BigNumberish, ethers, PayableOverrides } from 'ethers';
 import { cleanValue } from '../../utils/appUtils';
@@ -16,11 +17,11 @@ export const useTrade = (
   fromInput: string,
   toInput: string,
   method: TradeActions = TradeActions.SELL_BASE,
-  description: string | null = null
+  description: string | null = null,
+  slippageTolerance: number = 0.05
 ) => {
   // settings
-  const slippageTolerance = 0.01;
-
+  const { mutate } = useSWRConfig();
   const { account } = useConnector();
   const { sign } = useSignature();
   const { ladleContract, forwardPermitAction, batch, transferAction, sellBaseAction, sellFYTokenAction } = useLadle();
@@ -139,11 +140,17 @@ export const useTrade = (
       setTradeSubmitted(true);
 
       res &&
-        toast.promise(res.wait, {
-          pending: `${description}`,
-          success: `${description}`,
-          error: `Could not ${description}`,
-        });
+        toast.promise(
+          async () => {
+            await res?.wait();
+            mutate('/pools');
+          },
+          {
+            pending: `${description}`,
+            success: `${description}`,
+            error: `Could not ${description}`,
+          }
+        );
     } catch (e) {
       console.log(e);
       toast.error('Transaction failed or rejected');

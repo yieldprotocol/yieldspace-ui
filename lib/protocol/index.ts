@@ -42,7 +42,6 @@ export const getPools = async (
       const poolContract = Pool__factory.connect(address, provider);
       const [
         name,
-        symbol,
         version,
         decimals,
         maturity,
@@ -57,7 +56,6 @@ export const getPools = async (
         totalSupply,
       ] = await Promise.all([
         poolContract.name(),
-        poolContract.symbol(),
         poolContract.version(),
         poolContract.decimals(),
         poolContract.maturity(),

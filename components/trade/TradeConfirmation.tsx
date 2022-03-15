@@ -5,6 +5,7 @@ import { IAsset, IPool } from '../../lib/protocol/types';
 import Button from '../common/Button';
 import useTimeTillMaturity from '../../hooks/useTimeTillMaturity';
 import InfoIcon from '../common/InfoIcon';
+import { ITradeForm } from './TradeWidget';
 
 const Container = tw.div`relative flex justify-center items-center w-full`;
 const Wrap = tw.div`w-full text-center text-lg align-middle items-center`;
@@ -22,11 +23,7 @@ const DetailGray = tw.div`italic text-gray-300 text-sm`;
 const Italic = tw.div`italic text-xs text-gray-300 my-3`;
 
 interface ITradeConfirmation {
-  pool: IPool;
-  fromValue: string;
-  fromAsset: IAsset;
-  toValue: string;
-  toAsset: IAsset;
+  form: ITradeForm;
   interestRate: string;
   action: () => void;
   disabled?: boolean;
@@ -46,27 +43,18 @@ const ConfirmItem = ({ value, asset, pool }: { value: string; asset: IAsset; poo
   </InputStyleContainer>
 );
 
-const TradeConfirmation = ({
-  pool,
-  fromValue,
-  fromAsset,
-  toValue,
-  toAsset,
-  interestRate,
-  action,
-  disabled,
-  loading,
-}: ITradeConfirmation) => {
-  const timeTillMaturity_ = useTimeTillMaturity(pool.maturity);
+const TradeConfirmation = ({ form, interestRate, action, disabled, loading }: ITradeConfirmation) => {
+  const { pool, fromAmount, fromAsset, toAmount, toAsset, toAmountLessSlippage } = form;
+  const timeTillMaturity_ = useTimeTillMaturity(pool?.maturity!);
 
   return (
     <Container>
       <Wrap>
         <InputsOuter>
           <InputsWrap>
-            <ConfirmItem value={fromValue} asset={fromAsset} pool={pool} />
+            <ConfirmItem value={fromAmount} asset={fromAsset!} pool={pool!} />
             <Arrow />
-            <ConfirmItem value={toValue} asset={toAsset} pool={pool} />
+            <ConfirmItem value={toAmount} asset={toAsset!} pool={pool!} />
           </InputsWrap>
         </InputsOuter>
         <InputStyleContainer>
@@ -74,20 +62,20 @@ const TradeConfirmation = ({
             <DetailWrap>
               <Detail>Maturity</Detail>
               <div className="text-sm dark:text-gray-50">
-                <div className="flex justify-end">{pool.displayName}</div>
+                <div className="flex justify-end">{pool?.displayName}</div>
                 <div className="italic text-xs dark:text-gray-300">{timeTillMaturity_} until maturity</div>
               </div>
             </DetailWrap>
             <DetailWrap>
               <Detail>Expected output</Detail>
               <Detail>
-                {toValue} {toAsset.symbol}
+                {toAmount} {toAsset?.symbol}
               </Detail>
             </DetailWrap>
             <div className="w-full h-[1px] bg-gray-700" />
             <DetailWrap>
               <DetailGray>Minimum received after slippage</DetailGray>
-              <DetailGray>{toValue}</DetailGray>
+              <DetailGray>{toAmountLessSlippage}</DetailGray>
             </DetailWrap>
             <DetailWrap>
               <div className="flex">
@@ -99,7 +87,8 @@ const TradeConfirmation = ({
           </DetailsWrap>
         </InputStyleContainer>
         <Italic>
-          Output is estimated. You will receive at least {toValue} in {toAsset.symbol} or the transaction will revert.
+          Output is estimated. You will receive at least {toAmountLessSlippage} in {toAsset?.symbol} or the transaction
+          will revert.
         </Italic>
         <Button action={action} disabled={disabled} loading={loading}>
           {loading ? 'Trade Initiated...' : 'Confirm Trade'}
