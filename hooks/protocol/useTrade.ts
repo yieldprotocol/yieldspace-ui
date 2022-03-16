@@ -11,6 +11,7 @@ import { toast } from 'react-toastify';
 import { TradeActions } from '../../lib/protocol/trade/types';
 import useTradePreview from './useTradePreview';
 import useLadle from './useLadle';
+import useToasty from '../useToasty';
 
 export const useTrade = (
   pool: IPool | undefined,
@@ -21,6 +22,7 @@ export const useTrade = (
   slippageTolerance: number = 0.05
 ) => {
   const { mutate } = useSWRConfig();
+  const { toasty } = useToasty();
   const { account } = useConnector();
   const { sign } = useSignature();
   const { ladleContract, forwardPermitAction, batch, transferAction, sellBaseAction, sellFYTokenAction } = useLadle();
@@ -139,17 +141,10 @@ export const useTrade = (
       setTradeSubmitted(true);
 
       res &&
-        toast.promise(
-          async () => {
-            await res?.wait();
-            mutate('/pools');
-          },
-          {
-            pending: `${description}`,
-            success: `${description}`,
-            error: `Could not ${description}`,
-          }
-        );
+        toasty(async () => {
+          await res?.wait();
+          mutate('/pools');
+        }, description!);
     } catch (e) {
       console.log(e);
       toast.error('Transaction failed or rejected');
