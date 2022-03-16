@@ -24,7 +24,7 @@ const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityA
         cachedRealReserves,
         cachedFyTokenReserves,
         _baseAmount,
-        getTimeTillMaturity(),
+        getTimeTillMaturity().toString(),
         ts,
         g1,
         decimals,
