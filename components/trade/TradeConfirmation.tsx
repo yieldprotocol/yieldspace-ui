@@ -47,6 +47,7 @@ const ConfirmItem = ({ value, asset, pool }: { value: string; asset: IAsset; poo
 const TradeConfirmation = ({ form, interestRate, action, disabled, loading }: ITradeConfirmation) => {
   const { pool, fromAmount, fromAsset, toAmount, toAsset, toAmountLessSlippage } = form;
   const timeTillMaturity_ = useTimeTillMaturity(pool?.maturity!);
+  const fromAmount_ = cleanValue(fromAmount, fromAsset?.digitFormat);
   const toAmount_ = cleanValue(toAmount, toAsset?.digitFormat);
   const toAmountLessSlippage_ = cleanValue(toAmountLessSlippage, toAsset?.digitFormat);
 
@@ -55,7 +56,7 @@ const TradeConfirmation = ({ form, interestRate, action, disabled, loading }: IT
       <Wrap>
         <InputsOuter>
           <InputsWrap>
-            <ConfirmItem value={fromAmount} asset={fromAsset!} pool={pool!} />
+            <ConfirmItem value={fromAmount_} asset={fromAsset!} pool={pool!} />
             <Arrow />
             <ConfirmItem value={toAmount_} asset={toAsset!} pool={pool!} />
           </InputsWrap>
