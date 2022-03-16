@@ -13,7 +13,7 @@ const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityA
       if (!pool) {
         return setLpTokenPreview('');
       }
-      const { totalSupply, decimals, contract, getTimeTillMaturity, ts, g1 } = pool;
+      const { totalSupply, decimals, contract, getTimeTillMaturity, ts, g1, base } = pool;
 
       const _baseAmount = ethers.utils.parseUnits(baseAmount, decimals);
       const [cachedBaseReserves, cachedFyTokenReserves] = await contract.getCache();
@@ -35,7 +35,7 @@ const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityA
         .mul(_fyTokenToBuy.add(method === AddLiquidityActions.MINT_WITH_BASE ? ethers.constants.Zero : _baseAmount)) // use base amount which is equal to the fyToken amount provided to the pool
         .div(cachedRealReserves.sub(_fyTokenToBuy));
       const lpTokenPreview_ = ethers.utils.formatUnits(tokensMinted, decimals);
-      setLpTokenPreview(cleanValue(lpTokenPreview_, 2));
+      setLpTokenPreview(cleanValue(lpTokenPreview_, base.digitFormat));
     };
 
     getPrevewData();

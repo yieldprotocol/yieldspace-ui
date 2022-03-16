@@ -14,9 +14,9 @@ rounded-lg gap-3 align-middle items-center hover:opacity-80
 `;
 
 interface IPoolSelect {
-  pools: IPoolMap | undefined;
   pool: IPool | undefined;
-  setPool: (pool: IPool) => void;
+  pools?: IPoolMap;
+  setPool?: (pool: IPool) => void;
   poolsLoading?: boolean;
 }
 
@@ -26,7 +26,7 @@ const PoolSelect: FC<IPoolSelect> = ({ pools, pool, setPool, poolsLoading }) => 
   return (
     <div className="h-12">
       {pool ? (
-        <PoolSelectItem pool={pool} action={() => setModalOpen(true)} />
+        <PoolSelectItem pool={pool} action={!pools ? undefined : () => setModalOpen(true)} />
       ) : (
         <ButtonOuter
           onClick={() => setModalOpen(true)}
@@ -38,7 +38,7 @@ const PoolSelect: FC<IPoolSelect> = ({ pools, pool, setPool, poolsLoading }) => 
           <ButtonInner>{pools ? 'Select Pool' : poolsLoading ? 'Pools loading...' : 'No Pools Detected'}</ButtonInner>
         </ButtonOuter>
       )}
-      {modalOpen && <PoolSelectModal pools={pools!} open={modalOpen} setOpen={setModalOpen} action={setPool} />}
+      {modalOpen && <PoolSelectModal pools={pools!} open={modalOpen} setOpen={setModalOpen} action={setPool!} />}
     </div>
   );
 };

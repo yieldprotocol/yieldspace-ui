@@ -102,12 +102,7 @@ const RemoveLiquidity = () => {
         </TopRow>
 
         <Grid>
-          <PoolSelect
-            pools={pools}
-            pool={pool}
-            setPool={(p) => setForm((f) => ({ ...f, pool: p }))}
-            poolsLoading={loading}
-          />
+          <PoolSelect pool={pool} />
         </Grid>
 
         <Grid>
