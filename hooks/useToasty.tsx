@@ -1,7 +1,6 @@
 import { toast } from 'react-toastify';
 import tw from 'tailwind-styled-components';
-import { CheckCircleIcon } from '@heroicons/react/solid';
-import { useEffect } from 'react';
+import { CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/solid';
 
 const Body = tw.div`flex gap-3 p-2 items-center align-middle`;
 const Text = tw.div`text-sm`;
@@ -21,6 +20,13 @@ const Success = ({ msg }: { msg: string }) => (
   </Body>
 );
 
+const Error = ({ msg }: { msg: string }) => (
+  <Body>
+    <ExclamationCircleIcon color="#ef4444" height="30px" width="30px" />
+    <Text>{msg}</Text>
+  </Body>
+);
+
 const useToasty = () => {
   const toasty = (promise: () => Promise<void>, msg: string) => {
     toast.promise(promise, {
@@ -33,6 +39,12 @@ const useToasty = () => {
       success: {
         render() {
           return <Success msg={msg} />;
+        },
+        icon: false,
+      },
+      error: {
+        render() {
+          return <Error msg={msg} />;
         },
         icon: false,
       },
