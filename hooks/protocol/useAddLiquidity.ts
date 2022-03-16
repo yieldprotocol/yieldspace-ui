@@ -10,6 +10,8 @@ import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
 import useSignature from '../useSignature';
 import { toast } from 'react-toastify';
 import useLadle from './useLadle';
+import { LadleActions } from '../../lib/tx/operations';
+import { DAI_PERMIT_ASSETS } from '../../config/assets';
 
 export const useAddLiquidity = (
   pool: IPool,
@@ -23,7 +25,15 @@ export const useAddLiquidity = (
   const { mutate } = useSWRConfig();
   const { account } = useConnector();
   const { sign } = useSignature();
-  const { ladleContract, forwardPermitAction, batch, transferAction, mintWithBaseAction, mintAction } = useLadle();
+  const {
+    ladleContract,
+    forwardDaiPermitAction,
+    forwardPermitAction,
+    batch,
+    transferAction,
+    mintWithBaseAction,
+    mintAction,
+  } = useLadle();
 
   const [isAddingLiquidity, setIsAddingLiquidity] = useState<boolean>(false);
   const [addSubmitted, setAddSubmitted] = useState<boolean>(false);
@@ -78,26 +88,31 @@ export const useAddLiquidity = (
           ignoreIf: alreadyApproved,
         },
       ]);
-      const [, , , deadline, v, r, s] = permits[0].args!;
 
-      const res = await batch(
+      if (DAI_PERMIT_ASSETS.includes(pool.base.symbol)) {
+        const [address, spender, nonce, deadline, allowed, v, r, s] = permits[0]
+          .args as LadleActions.Args.FORWARD_DAI_PERMIT;
+
+        return batch(
+          [
+            forwardDaiPermitAction(address, spender, nonce, deadline, allowed, v, r, s)!,
+            transferAction(base.address, pool.address, _input)!,
+            mintWithBaseAction(pool.contract, account!, account!, _fyTokenToBeMinted, minRatio, maxRatio)!,
+          ],
+          overrides
+        );
+      }
+
+      const [token, spender, amount, deadline, v, r, s] = permits[0].args! as LadleActions.Args.FORWARD_PERMIT;
+
+      return batch(
         [
-          forwardPermitAction(
-            base.address,
-            ladleContract?.address!,
-            _input,
-            deadline as BigNumberish,
-            v as BigNumberish,
-            r as Buffer,
-            s as Buffer
-          )!,
+          forwardPermitAction(token, spender, amount, deadline, v, r, s)!,
           transferAction(base.address, pool.address, _input)!,
           mintWithBaseAction(pool.contract, account!, account!, _fyTokenToBeMinted, minRatio, maxRatio)!,
         ],
         overrides
       );
-
-      return res;
     };
 
     const _mint = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction | undefined> => {
@@ -115,37 +130,48 @@ export const useAddLiquidity = (
           ignoreIf: alreadyApproved,
         },
       ]);
-      const [, , , baseDeadline, baseV, baseR, baseS] = permits[0].args!;
-      const [, , , fyDeadline, fyV, fyR, fyS] = permits[1].args!;
 
-      const res = await batch(
+      const [fyAddress, fySpender, fyAmount, fyDeadline, fyV, fyR, fyS] = permits[1]
+        .args! as LadleActions.Args.FORWARD_PERMIT;
+
+      if (DAI_PERMIT_ASSETS.includes(pool.base.symbol)) {
+        const [baseAddress, baseSpender, baseNonce, baseDeadline, baseAllowed, baseV, baseR, baseS] = permits[0]
+          .args! as LadleActions.Args.FORWARD_DAI_PERMIT;
+
+        return batch(
+          [
+            forwardDaiPermitAction(
+              baseAddress,
+              baseSpender,
+              baseNonce,
+              baseDeadline,
+              baseAllowed,
+              baseV,
+              baseR,
+              baseS
+            )!,
+            forwardPermitAction(fyAddress, fySpender, fyAmount, fyDeadline, fyV, fyR, fyS)!,
+            transferAction(baseAddress, pool.address, _input)!,
+            transferAction(fyAddress, pool.address, fyAmount)!,
+            mintAction(pool.contract, account!, account!, minRatio, maxRatio)!,
+          ],
+          overrides
+        );
+      }
+
+      const [baseAddress, baseSpender, baseAmount, baseDeadline, baseV, baseR, baseS] = permits[0]
+        .args! as LadleActions.Args.FORWARD_PERMIT;
+
+      return batch(
         [
-          forwardPermitAction(
-            base.address,
-            ladleContract?.address!,
-            _input,
-            baseDeadline as BigNumberish,
-            baseV as BigNumberish,
-            baseR as Buffer,
-            baseS as Buffer
-          )!,
-          forwardPermitAction(
-            fyToken.address,
-            ladleContract?.address!,
-            _input,
-            fyDeadline as BigNumberish,
-            fyV as BigNumberish,
-            fyR as Buffer,
-            fyS as Buffer
-          )!,
-          transferAction(base.address, pool.address, _input)!,
-          transferAction(fyToken.address, pool.address, _input)!,
+          forwardPermitAction(baseAddress, baseSpender, baseAmount, baseDeadline, baseV, baseR, baseS)!,
+          forwardPermitAction(fyAddress, fySpender, fyAmount, fyDeadline, fyV, fyR, fyS)!,
+          transferAction(baseAddress, pool.address, baseAmount)!,
+          transferAction(fyAddress, pool.address, fyAmount)!,
           mintAction(pool.contract, account!, account!, minRatio, maxRatio)!,
         ],
         overrides
       );
-
-      return res;
     };
 
     /**
