@@ -10,6 +10,7 @@ import * as contractTypes from '../../contracts/types';
 import { ERC20Permit__factory } from '../../contracts/types/factories/ERC20Permit__factory';
 import { FYToken__factory } from '../../contracts/types/factories/FYToken__factory';
 import { PoolAddedEvent } from '../../contracts/types/Ladle';
+import { ASSET_INFO } from '../../config/assets';
 
 const { seasonColors } = yieldEnv;
 
@@ -182,6 +183,7 @@ export const getAsset = async (
     balance_: cleanValue(ethers.utils.formatUnits(balance, decimals), 2),
     contract: isFyToken ? FYTOKEN : ERC20,
     getAllowance: async (acc: string, spender: string) => ERC20.allowance(acc, spender),
+    digitFormat: ASSET_INFO.get(symbol)?.digitFormat || 2,
   };
 };
 

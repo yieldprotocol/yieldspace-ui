@@ -6,6 +6,7 @@ import Button from '../common/Button';
 import useTimeTillMaturity from '../../hooks/useTimeTillMaturity';
 import InfoIcon from '../common/InfoIcon';
 import { ITradeForm } from './TradeWidget';
+import { cleanValue } from '../../utils/appUtils';
 
 const Container = tw.div`relative flex justify-center items-center w-full`;
 const Wrap = tw.div`w-full text-center text-lg align-middle items-center`;
@@ -46,6 +47,8 @@ const ConfirmItem = ({ value, asset, pool }: { value: string; asset: IAsset; poo
 const TradeConfirmation = ({ form, interestRate, action, disabled, loading }: ITradeConfirmation) => {
   const { pool, fromAmount, fromAsset, toAmount, toAsset, toAmountLessSlippage } = form;
   const timeTillMaturity_ = useTimeTillMaturity(pool?.maturity!);
+  const toAmount_ = cleanValue(toAmount, toAsset?.digitFormat);
+  const toAmountLessSlippage_ = cleanValue(toAmountLessSlippage, toAsset?.digitFormat);
 
   return (
     <Container>
@@ -54,7 +57,7 @@ const TradeConfirmation = ({ form, interestRate, action, disabled, loading }: IT
           <InputsWrap>
             <ConfirmItem value={fromAmount} asset={fromAsset!} pool={pool!} />
             <Arrow />
-            <ConfirmItem value={toAmount} asset={toAsset!} pool={pool!} />
+            <ConfirmItem value={toAmount_} asset={toAsset!} pool={pool!} />
           </InputsWrap>
         </InputsOuter>
         <InputStyleContainer>
@@ -69,13 +72,13 @@ const TradeConfirmation = ({ form, interestRate, action, disabled, loading }: IT
             <DetailWrap>
               <Detail>Expected output</Detail>
               <Detail>
-                {toAmount} {toAsset?.symbol}
+                {toAmount_} {toAsset?.symbol}
               </Detail>
             </DetailWrap>
             <div className="w-full h-[1px] bg-gray-700" />
             <DetailWrap>
               <DetailGray>Minimum received after slippage</DetailGray>
-              <DetailGray>{toAmountLessSlippage}</DetailGray>
+              <DetailGray>{toAmountLessSlippage_}</DetailGray>
             </DetailWrap>
             <DetailWrap>
               <div className="flex">
@@ -87,7 +90,7 @@ const TradeConfirmation = ({ form, interestRate, action, disabled, loading }: IT
           </DetailsWrap>
         </InputStyleContainer>
         <Italic>
-          Output is estimated. You will receive at least {toAmountLessSlippage} in {toAsset?.symbol} or the transaction
+          Output is estimated. You will receive at least {toAmountLessSlippage_} in {toAsset?.symbol} or the transaction
           will revert.
         </Italic>
         <Button action={action} disabled={disabled} loading={loading}>

@@ -60,7 +60,7 @@ export interface IAssetConfig {
   digitFormat: number;
 }
 
-export interface IAsset extends ISignable {
+export interface IAsset extends ISignable, IAssetConfig {
   name: string;
   address: string;
   symbol: string;
