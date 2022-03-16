@@ -10,6 +10,27 @@ const useLadle = () => {
   const { signer } = useSignature();
   const ladle = contracts ? (contracts![LADLE]?.connect(signer!) as Ladle) : undefined;
 
+  const forwardDaiPermitAction = (
+    token: string,
+    spender: string,
+    nonce: BigNumberish,
+    deadline: BigNumberish,
+    allowed: boolean,
+    v: BigNumberish,
+    r: Buffer,
+    s: Buffer
+  ): string | undefined =>
+    ladle?.interface.encodeFunctionData(LadleActions.Fn.FORWARD_DAI_PERMIT, [
+      token,
+      spender,
+      nonce,
+      deadline,
+      allowed,
+      v,
+      r,
+      s,
+    ]);
+
   const forwardPermitAction = (
     token: string,
     spender: string,
@@ -104,6 +125,7 @@ const useLadle = () => {
     ]);
 
   return {
+    forwardDaiPermitAction,
     forwardPermitAction,
     batch,
     transferAction,
