@@ -12,6 +12,8 @@ import { TradeActions } from '../../lib/protocol/trade/types';
 import useTradePreview from './useTradePreview';
 import useLadle from './useLadle';
 import useToasty from '../useToasty';
+import { LadleActions } from '../../lib/tx/operations';
+import { DAI, DAI_PERMIT_ASSETS } from '../../config/assets';
 
 export const useTrade = (
   pool: IPool | undefined,
@@ -25,7 +27,15 @@ export const useTrade = (
   const { toasty } = useToasty();
   const { account } = useConnector();
   const { sign } = useSignature();
-  const { ladleContract, forwardPermitAction, batch, transferAction, sellBaseAction, sellFYTokenAction } = useLadle();
+  const {
+    ladleContract,
+    forwardDaiPermitAction,
+    forwardPermitAction,
+    batch,
+    transferAction,
+    sellBaseAction,
+    sellFYTokenAction,
+  } = useLadle();
 
   const decimals = pool?.decimals;
   const cleanFromInput = cleanValue(fromInput, decimals);
@@ -66,26 +76,40 @@ export const useTrade = (
           ignoreIf: alreadyApproved,
         },
       ]);
-      const [, , , deadline, v, r, s] = permits[0].args!;
 
-      const res = await batch(
+      if (DAI_PERMIT_ASSETS.includes(base.symbol)) {
+        const [address, spender, nonce, deadline, allowed, v, r, s] = permits[0]
+          .args as LadleActions.Args.FORWARD_DAI_PERMIT;
+
+        return batch(
+          [
+            forwardDaiPermitAction(
+              address,
+              spender,
+              nonce,
+              deadline as BigNumberish,
+              allowed,
+              v as BigNumberish,
+              r as Buffer,
+              s as Buffer
+            )!,
+            transferAction(base.address, pool.address, _inputToUse)!,
+            sellBaseAction(contract, account!, _outputLessSlippage)!,
+          ],
+          overrides
+        );
+      }
+
+      const [token, spender, amount, deadline, v, r, s] = permits[0].args! as LadleActions.Args.FORWARD_PERMIT;
+
+      return batch(
         [
-          forwardPermitAction(
-            base?.address!,
-            ladleContract?.address!,
-            _inputToUse,
-            deadline as BigNumberish,
-            v as BigNumberish,
-            r as Buffer,
-            s as Buffer
-          )!,
+          forwardPermitAction(token, spender, amount, deadline, v, r, s)!,
           transferAction(base.address, pool.address, _inputToUse)!,
           sellBaseAction(contract, account!, _outputLessSlippage)!,
         ],
         overrides
       );
-
-      return res;
     };
 
     const _sellFYToken = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction | undefined> => {
@@ -99,19 +123,12 @@ export const useTrade = (
           ignoreIf: alreadyApproved,
         },
       ]);
-      const [, , , deadline, v, r, s] = permits[0].args!;
+
+      const [token, spender, amount, deadline, v, r, s] = permits[0].args! as LadleActions.Args.FORWARD_PERMIT;
 
       const res = await batch(
         [
-          forwardPermitAction(
-            fyToken?.address!,
-            ladleContract?.address!,
-            _inputToUse,
-            deadline as BigNumberish,
-            v as BigNumberish,
-            r as Buffer,
-            s as Buffer
-          )!,
+          forwardPermitAction(token, spender, amount, deadline, v, r, s)!,
           transferAction(fyToken.address, account!, _inputToUse)!,
           sellFYTokenAction(contract, account!, _outputLessSlippage)!,
         ],

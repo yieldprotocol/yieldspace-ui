@@ -67,7 +67,7 @@ export namespace LadleActions {
       spender: string,
       nonce: BigNumberish,
       deadline: BigNumberish,
-      approved: boolean,
+      allowed: boolean,
       v: BigNumberish,
       r: Buffer,
       s: Buffer
