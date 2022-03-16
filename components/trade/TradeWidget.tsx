@@ -17,6 +17,7 @@ import TradeConfirmation from './TradeConfirmation';
 import InputsWrap from '../styles/InputsWrap';
 import CloseButton from '../common/CloseButton';
 import { calculateSlippage } from '../../utils/yieldMath';
+import { cleanValue } from '../../utils/appUtils';
 
 const Inner = tw.div`m-4 text-center`;
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
@@ -65,7 +66,7 @@ const TradeWidget = () => {
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
   const [slippageTolerance, setSlippageTolerance] = useState<number>(0.05);
 
-  const { trade, isTransacting, tradeSubmitted, shouldUpdate } = useTrade(
+  const { trade, isTransacting, tradeSubmitted } = useTrade(
     pool!,
     fromAmount,
     toAmount,
@@ -211,7 +212,9 @@ const TradeWidget = () => {
 
   // set trade description to use in useTrade hook
   useEffect(() => {
-    const _description = `Trade ${fromAmount} ${fromAsset?.symbol} to ~${toAmount} ${toAsset?.symbol}`;
+    const _description = `Trade ${fromAmount} ${fromAsset?.symbol} to ~${cleanValue(toAmount, toAsset?.digitFormat)} ${
+      toAsset?.symbol
+    }`;
     setDescription(_description);
   }, [fromAmount, fromAsset, toAmount, toAsset]);
 
