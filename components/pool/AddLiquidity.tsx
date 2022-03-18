@@ -121,7 +121,7 @@ const AddLiquidity = () => {
         <Grid>
           <PoolSelect
             pool={pool}
-            pools={pool ? undefined : pools}
+            pools={address ? undefined : pools}
             setPool={(p: IPool) => setForm((f) => ({ ...f, pool: p }))}
           />
         </Grid>

@@ -26,7 +26,7 @@ const PoolSelect: FC<IPoolSelect> = ({ pools, pool, setPool, poolsLoading }) => 
   return (
     <div className="h-12">
       {pool ? (
-        <PoolSelectItem pool={pool} action={!pools ? undefined : () => setModalOpen(true)} />
+        <PoolSelectItem pool={pool} action={pools ? () => setModalOpen(true) : undefined} />
       ) : (
         <ButtonOuter
           onClick={() => setModalOpen(true)}
