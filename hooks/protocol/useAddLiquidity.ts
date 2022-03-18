@@ -58,7 +58,7 @@ export const useAddLiquidity = (
       cachedRealReserves,
       cachedFyTokenReserves,
       _inputLessSlippage,
-      pool.getTimeTillMaturity(),
+      pool.getTimeTillMaturity().toString(),
       pool.ts,
       pool.g1,
       pool.decimals,
