@@ -17,7 +17,7 @@ const Pools: FC<IPools> = () => {
 
   useEffect(() => {
     if (pools) {
-      const filteredPools = Object.values(pools).filter((p) => p.lpTokenBalance.gt(ethers.constants.Zero));
+      const filteredPools = Object.values(pools as IPools).filter((p) => p.lpTokenBalance.gt(ethers.constants.Zero));
       const sortedPools = filteredPools.sort((a, b) => (a.lpTokenBalance.gte(b.lpTokenBalance) ? 1 : -1));
       setPoolsList(sortedPools);
     }

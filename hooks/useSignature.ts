@@ -6,10 +6,11 @@ import { useApprovalMethod } from './useApprovalMethod';
 import useConnector from './useConnector';
 import useTxProcesses from './useTxProcesses';
 import { ApprovalType, ICallData, ISignData, ITxProcess } from '../lib/tx/types';
-import { MAX_256 } from '../constants';
+import { LADLE, MAX_256 } from '../constants';
 import { ERC20Permit__factory } from '../contracts/types';
 import { DAI_PERMIT_ASSETS, NON_PERMIT_ASSETS } from '../config/assets';
 import { LadleActions } from '../lib/tx/operations';
+import useContracts from './protocol/useContracts';
 
 /* Get ETH value from JOIN_ETHER OPCode, else zero -> N.B. other values sent in with other OPS are ignored for now */
 // const _getCallValue = (calls: ICallData[]): BigNumber => {
@@ -21,6 +22,8 @@ import { LadleActions } from '../lib/tx/operations';
 const useSignature = () => {
   const approveMax = false;
   const { account, provider, chainId } = useConnector();
+  const contracts = useContracts();
+  const ladle = contracts && contracts![LADLE];
 
   const { handleTx, handleSign, addTxProcess } = useTxProcesses();
   const signer = provider?.getSigner(account);
@@ -37,7 +40,6 @@ const useSignature = () => {
    * @returns { Promise<ICallData[]> }
    */
   const sign = async (requestedSignatures: ISignData[]): Promise<ICallData[]> => {
-    console.log('signinggggggggggggggggg');
     const _txProcess = addTxProcess();
     setTxProcess(_txProcess);
 
@@ -46,7 +48,8 @@ const useSignature = () => {
       if (ethers.utils.isAddress(spender)) {
         return spender;
       }
-      return spender;
+
+      return ladle?.address;
     };
 
     /* First, filter out any ignored calls */
@@ -75,10 +78,10 @@ const useSignature = () => {
                   verifyingContract: reqSig.target.address,
                 },
                 account!,
-                _spender
+                _spender!
               ),
             /* This is the function to call if using fallback approvals */
-            () => handleTx(() => tokenContract.approve(_spender, _amount!), _txProcess, true),
+            () => handleTx(() => tokenContract.approve(_spender!, _amount!), _txProcess, true),
             _txProcess,
             approvalMethod
           );
@@ -119,11 +122,11 @@ const useSignature = () => {
                 verifyingContract: reqSig.target.address,
               },
               account!,
-              _spender,
+              _spender!,
               _amount
             ),
           /* this is the function for if using fallback approvals */
-          () => handleTx(() => tokenContract.approve(_spender, _amount!), _txProcess, true),
+          () => handleTx(() => tokenContract.approve(_spender!, _amount!), _txProcess, true),
           _txProcess,
           NON_PERMIT_ASSETS.includes(reqSig.target.symbol) ? ApprovalType.TX : approvalMethod
         );

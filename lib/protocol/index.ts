@@ -2,7 +2,7 @@ import { format } from 'date-fns';
 import { BigNumber, ethers } from 'ethers';
 import { LADLE } from '../../constants';
 import { Pool__factory } from '../../contracts/types';
-import { IAsset, IContractMap, IPoolMap, Provider } from './types';
+import { IAsset, IContractMap, IPoolMap, IPoolRoot, Provider } from './types';
 import { cleanValue, formatFyTokenSymbol, getSeason, SeasonType } from '../../utils/appUtils';
 import yieldEnv from '../../config/yieldEnv';
 import { CONTRACTS_TO_FETCH } from '../../hooks/protocol/useContracts';
@@ -10,8 +10,11 @@ import * as contractTypes from '../../contracts/types';
 import { ERC20Permit__factory } from '../../contracts/types/factories/ERC20Permit__factory';
 import { FYToken__factory } from '../../contracts/types/factories/FYToken__factory';
 import { PoolAddedEvent } from '../../contracts/types/Ladle';
+import { ASSET_INFO } from '../../config/assets';
 
 const { seasonColors } = yieldEnv;
+
+const formatMaturity = (maturity: number) => format(new Date(maturity * 1000), 'MMMM dd, yyyy');
 
 /**
  * Gets all pool data
@@ -40,7 +43,6 @@ export const getPools = async (
       const poolContract = Pool__factory.connect(address, provider);
       const [
         name,
-        symbol,
         version,
         decimals,
         maturity,
@@ -55,7 +57,6 @@ export const getPools = async (
         totalSupply,
       ] = await Promise.all([
         poolContract.name(),
-        poolContract.symbol(),
         poolContract.version(),
         poolContract.decimals(),
         poolContract.maturity(),
@@ -77,7 +78,7 @@ export const getPools = async (
       const newPool = {
         address,
         name,
-        symbol,
+        symbol: `FY${base.symbol} ${format(new Date(maturity * 1000), 'MMM yyyy')}`,
         version,
         decimals,
         maturity,
@@ -96,7 +97,7 @@ export const getPools = async (
         getTimeTillMaturity,
         contract: poolContract,
         totalSupply,
-      };
+      } as IPoolRoot;
       return { ...(await pools), [address]: _chargePool(newPool, chainId) };
     }, {});
   } catch (e) {
@@ -105,14 +106,16 @@ export const getPools = async (
 };
 
 /* add on extra/calculated ASYNC series info and contract instances */
-const _chargePool = (_pool: { maturity: number }, _chainId: number) => {
+const _chargePool = (_pool: IPoolRoot, _chainId: number) => {
   const season = getSeason(_pool.maturity);
   const oppSeason = (_season: SeasonType) => getSeason(_pool.maturity + 23670000);
   const [startColor, endColor, textColor]: string[] = seasonColors[_chainId][season];
   const [oppStartColor, oppEndColor, oppTextColor]: string[] = seasonColors[_chainId][oppSeason(season)];
+
   return {
     ..._pool,
-    displayName: format(new Date(_pool.maturity * 1000), 'dd MMM yyyy'),
+    displayName: `${_pool.base.symbol} ${formatMaturity(_pool.maturity)}`,
+    maturity_: formatMaturity(_pool.maturity),
     season,
     startColor,
     endColor,
@@ -135,7 +138,7 @@ export const getContracts = (provider: Provider, chainId: number): IContractMap 
   return Object.keys(chainAddrs).reduce((contracts: IContractMap, name: string) => {
     if (CONTRACTS_TO_FETCH.includes(name)) {
       try {
-        const contract = contractTypes[`${name}__factory`].connect(chainAddrs[name], provider);
+        const contract: ethers.Contract = contractTypes[`${name}__factory`].connect(chainAddrs[name], provider);
         return { ...contracts, [name]: contract || null };
       } catch (e) {
         console.log(`could not connect directly to contract ${name}`);
@@ -162,7 +165,11 @@ export const getAsset = async (
   const ERC20 = ERC20Permit__factory.connect(tokenAddress, provider);
   const FYTOKEN = FYToken__factory.connect(tokenAddress, provider);
 
-  const [symbol, decimals, name] = await Promise.all([ERC20.symbol(), ERC20.decimals(), ERC20.name()]);
+  const [symbol, decimals, name] = await Promise.all([
+    isFyToken ? FYTOKEN.symbol() : ERC20.symbol(),
+    isFyToken ? FYTOKEN.decimals() : ERC20.decimals(),
+    isFyToken ? FYTOKEN.name() : ERC20.name(),
+  ]);
 
   const balance = account ? await getBalance(provider, tokenAddress, account, isFyToken) : ethers.constants.Zero;
 
@@ -176,6 +183,7 @@ export const getAsset = async (
     balance_: cleanValue(ethers.utils.formatUnits(balance, decimals), 2),
     contract: isFyToken ? FYTOKEN : ERC20,
     getAllowance: async (acc: string, spender: string) => ERC20.allowance(acc, spender),
+    digitFormat: ASSET_INFO.get(symbol)?.digitFormat || 2,
   };
 };
 

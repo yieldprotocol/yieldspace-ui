@@ -11,7 +11,7 @@ import tw from 'tailwind-styled-components';
 import Modal from './common/Modal';
 import metamaskLogo from '../public/logos/metamask.png';
 
-const Inner = tw.div`p-2 space-y-2`;
+const Inner = tw.div`p-2 space-y-2 items-center`;
 const ConnectorButton = tw.button`w-full gap-4 bg-gray-500/25 align-middle px-4 py-3 text-primary-500 rounded-md hover:bg-gray-600/25 flex`;
 const ConnectorButtonText = tw.span`align-middle dark:text-gray-50 text-gray-900`;
 
@@ -44,7 +44,12 @@ function Connection({
     if (error) {
       return `Try again?`;
     } else if (active) {
-      return 'Connected';
+      return (
+        <span className="flex h-full w-full items-center">
+          <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-primary-500 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-primary-500"></span>
+        </span>
+      );
     } else {
       return isActivating ? 'Connecting...' : 'Connect';
     }

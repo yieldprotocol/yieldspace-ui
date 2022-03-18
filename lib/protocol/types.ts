@@ -13,7 +13,20 @@ export interface IPoolMap {
   [address: string]: IPool;
 }
 
-export interface IPool {
+export interface IPool extends IPoolRoot {
+  displayName: string;
+  season: string;
+  startColor: string;
+  endColor: string;
+  color: string;
+  textColor: string;
+  oppStartColor: string;
+  oppEndColor: string;
+  oppTextColor: string;
+  maturity_: string;
+}
+
+export interface IPoolRoot {
   address: string;
   name: string;
   symbol: string;
@@ -27,18 +40,7 @@ export interface IPool {
   base: IAsset;
   fyToken: IAsset;
 
-  displayName: string;
-  season: string;
-  startColor: string;
-  endColor: string;
-  color: string;
-  textColor: string;
-  oppStartColor: string;
-  oppEndColor: string;
-  oppTextColor: string;
   isMature: boolean;
-
-  getTimeTillMaturity: () => string;
 
   lpTokenBalance: BigNumber;
   lpTokenBalance_: string;
@@ -49,6 +51,8 @@ export interface IPool {
   fyTokenReserves_: string;
   totalSupply: BigNumber;
 
+  getTimeTillMaturity: () => number;
+
   contract: Pool;
 }
 
@@ -56,7 +60,7 @@ export interface IAssetConfig {
   digitFormat: number;
 }
 
-export interface IAsset extends ISignable {
+export interface IAsset extends ISignable, IAssetConfig {
   name: string;
   address: string;
   symbol: string;

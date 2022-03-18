@@ -6,6 +6,9 @@ import Button from '../common/Button';
 import { BorderWrap, Header } from '../styles';
 import usePools from '../../hooks/protocol/usePools';
 import BackButton from '../common/BackButton';
+import useRemoveLiqPreview from '../../hooks/protocol/useRemoveLiqPreview';
+import { RemoveLiquidityActions } from '../../lib/protocol/liquidity/types';
+import { cleanValue } from '../../utils/appUtils';
 
 const Inner = tw.div`m-4 text-center`;
 const ButtonWrap = tw.div`flex justify-between gap-10`;
@@ -19,6 +22,11 @@ const PoolItem: FC = () => {
   const { address } = router.query;
 
   const [pool, setPool] = useState<IPool | undefined>();
+  const { baseReceived: basePreview } = useRemoveLiqPreview(
+    pool!,
+    pool?.lpTokenBalance_!,
+    RemoveLiquidityActions.BURN_FOR_BASE
+  );
 
   useEffect(() => {
     if (pools) {
@@ -33,14 +41,16 @@ const PoolItem: FC = () => {
     <BorderWrap>
       <Inner>
         <BackButton onClick={() => router.back()} />
-        <Header>{pool.name}</Header>
+        <Header>{pool.displayName}</Header>
         <PoolDataWrap>
           <PoolDataLabel>LP Token Balance:</PoolDataLabel>
           <PoolData>{pool.lpTokenBalance_}</PoolData>
         </PoolDataWrap>
         <PoolDataWrap>
           <PoolDataLabel>LP Token Value:</PoolDataLabel>
-          <PoolData>$base value</PoolData>
+          <PoolData>
+            {cleanValue(basePreview, 2)} {pool.base.symbol}
+          </PoolData>
         </PoolDataWrap>
         <ButtonWrap>
           <Button action={() => router.push(`/pool/add/${address}`)}>Add Liquidity</Button>

@@ -34,7 +34,7 @@ const useTradePreview = (
           pool.baseReserves,
           pool.fyTokenReserves,
           baseIn,
-          pool?.getTimeTillMaturity(),
+          pool?.getTimeTillMaturity().toString(),
           pool.ts,
           pool.g1,
           pool.decimals
@@ -51,7 +51,7 @@ const useTradePreview = (
           pool.baseReserves,
           pool.fyTokenReserves,
           fyTokenIn,
-          pool?.getTimeTillMaturity(),
+          pool?.getTimeTillMaturity().toString(),
           pool.ts,
           pool.g2,
           pool.decimals
@@ -69,7 +69,7 @@ const useTradePreview = (
           pool.baseReserves,
           pool.fyTokenReserves,
           baseOut,
-          pool?.getTimeTillMaturity(),
+          pool?.getTimeTillMaturity().toString(),
           pool.ts,
           pool.g2,
           pool.decimals
@@ -86,7 +86,7 @@ const useTradePreview = (
           pool.baseReserves,
           pool.fyTokenReserves,
           fyTokenOut,
-          pool?.getTimeTillMaturity(),
+          pool?.getTimeTillMaturity().toString(),
           pool.ts,
           pool.g1,
           pool.decimals
