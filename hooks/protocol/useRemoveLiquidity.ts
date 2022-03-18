@@ -9,6 +9,8 @@ import { burn, calcPoolRatios } from '../../utils/yieldMath';
 import useConnector from '../useConnector';
 import useSignature from '../useSignature';
 import useLadle from './useLadle';
+import { CHAINS, ExtendedChainInformation } from '../../config/chains';
+import useToasty from '../useToasty';
 
 export const useRemoveLiquidity = (pool: IPool) => {
   const { mutate } = useSWRConfig();
@@ -17,7 +19,9 @@ export const useRemoveLiquidity = (pool: IPool) => {
   const approveMax = false;
   const slippageTolerance = 0.001;
 
-  const { account } = useConnector();
+  const { toasty } = useToasty();
+  const { account, chainId } = useConnector();
+  const explorer = (CHAINS[chainId!] as ExtendedChainInformation).blockExplorerUrls![0];
   const { sign } = useSignature();
   const { ladleContract, forwardPermitAction, batch, transferAction, burnForBaseAction, burnAction } = useLadle();
 
@@ -129,16 +133,13 @@ export const useRemoveLiquidity = (pool: IPool) => {
       }
 
       res &&
-        toast.promise(
+        toasty(
           async () => {
             await res?.wait();
             mutate('/pools');
           },
-          {
-            pending: `${description}`,
-            success: `${description}`,
-            error: `Could not ${description}`,
-          }
+          description!,
+          explorer && `${explorer}/tx/${res.hash}`
         );
     } catch (e) {
       console.log(e);

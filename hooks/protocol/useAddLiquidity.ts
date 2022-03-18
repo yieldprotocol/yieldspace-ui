@@ -12,6 +12,8 @@ import { toast } from 'react-toastify';
 import useLadle from './useLadle';
 import { LadleActions } from '../../lib/tx/operations';
 import { DAI_PERMIT_ASSETS } from '../../config/assets';
+import useToasty from '../useToasty';
+import { CHAINS, ExtendedChainInformation } from '../../config/chains';
 
 export const useAddLiquidity = (
   pool: IPool,
@@ -22,8 +24,10 @@ export const useAddLiquidity = (
   // settings
   const slippageTolerance = 0.001;
 
+  const { toasty } = useToasty();
   const { mutate } = useSWRConfig();
-  const { account } = useConnector();
+  const { account, chainId } = useConnector();
+  const explorer = (CHAINS[chainId!] as ExtendedChainInformation).blockExplorerUrls![0];
   const { sign } = useSignature();
   const {
     ladleContract,
@@ -194,16 +198,13 @@ export const useAddLiquidity = (
       setAddSubmitted(true);
 
       res &&
-        toast.promise(
+        toasty(
           async () => {
             await res?.wait();
             mutate('/pools');
           },
-          {
-            pending: `${description}`,
-            success: `${description}`,
-            error: `Could not ${description}`,
-          }
+          description!,
+          explorer && `${explorer}/tx/${res.hash}`
         );
     } catch (e) {
       console.log(e);
