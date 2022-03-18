@@ -22,10 +22,10 @@ type LinkItemProps = {
 
 const InnerContainer = tw.div`flex py-2 px-10 align-middle relative items-center justify-between`;
 const LinksWrap = tw.div`flex space-x-8 items-center`;
-const LinkItem = tw.a<LinkItemProps>`${(p) =>
+const LinkItem = tw.div<LinkItemProps>`${(p) =>
   p.$current
     ? 'text-primary-500'
-    : 'dark:text-gray-100 text-gray-800'} hover:text-primary-500 dark:hover:text-primary-400`;
+    : 'dark:text-gray-100 text-gray-800'} hover:text-primary-500 dark:hover:text-primary-400 no-underline cursor-pointer`;
 
 const Navigation = () => {
   const router = useRouter();
