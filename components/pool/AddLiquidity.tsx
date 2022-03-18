@@ -16,6 +16,7 @@ import AddConfirmation from './AddConfirmation';
 import CloseButton from '../common/CloseButton';
 import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
 import Arrow from '../trade/Arrow';
+import InputsWrap from '../styles/InputsWrap';
 
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
@@ -128,30 +129,30 @@ const AddLiquidity = () => {
 
         <Grid>
           <HeaderSmall>Deposit Amounts</HeaderSmall>
-          <InputWrap
-            name="baseAmount"
-            value={baseAmount}
-            item={pool?.base}
-            balance={pool?.base.balance_!}
-            handleChange={handleInputChange}
-            useMax={handleMaxBase}
-            pool={pool}
-          />
-
-          {useFyToken && <Arrow isPlusIcon={true} />}
-
-          {useFyToken && (
+          <InputsWrap>
             <InputWrap
-              name="fyTokenAmount"
-              value={fyTokenAmount}
-              item={pool?.fyToken}
-              balance={pool?.fyToken.balance_!}
+              name="baseAmount"
+              value={baseAmount}
+              item={pool?.base}
+              balance={pool?.base.balance_!}
               handleChange={handleInputChange}
-              unFocused={true}
-              disabled
+              useMax={handleMaxBase}
               pool={pool}
             />
-          )}
+            {useFyToken && <Arrow isPlusIcon={true} />}
+            {useFyToken && (
+              <InputWrap
+                name="fyTokenAmount"
+                value={fyTokenAmount}
+                item={pool?.fyToken}
+                balance={pool?.fyToken.balance_!}
+                handleChange={handleInputChange}
+                unFocused={true}
+                disabled
+                pool={pool}
+              />
+            )}
+          </InputsWrap>
           <Toggle enabled={useFyToken} setEnabled={setUseFyTokenToggle} label="Use fyToken Balance" />
         </Grid>
         <Button
