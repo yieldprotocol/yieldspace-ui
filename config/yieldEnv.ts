@@ -5,8 +5,8 @@ const yieldEnv = {
       Ladle: '0x6cB18fF2A33e981D1e38A663Ca056c0a5265066A',
     },
     4: {
-      Cauldron: '0xb2cf78ccA863675Ef61a0c696885DED0C833F8f3',
-      Ladle: '0x45f502A7358ec631c7a422270922d7dFA142cb9C',
+      Cauldron: '0x040803C41fE50aDdda170b2d3facF7F1F7FF0855',
+      Ladle: '0xc5A458D816D26f57750940992ae9D85af23B86A7',
     },
     42: {
       Cauldron: '0x82Dfaef826C8c190E9b472896a9a99165Ccee35a',
