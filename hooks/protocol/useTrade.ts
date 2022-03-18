@@ -13,7 +13,8 @@ import useTradePreview from './useTradePreview';
 import useLadle from './useLadle';
 import useToasty from '../useToasty';
 import { LadleActions } from '../../lib/tx/operations';
-import { DAI, DAI_PERMIT_ASSETS } from '../../config/assets';
+import { DAI_PERMIT_ASSETS } from '../../config/assets';
+import { CHAINS, ExtendedChainInformation } from '../../config/chains';
 
 export const useTrade = (
   pool: IPool | undefined,
@@ -25,7 +26,8 @@ export const useTrade = (
 ) => {
   const { mutate } = useSWRConfig();
   const { toasty } = useToasty();
-  const { account } = useConnector();
+  const { account, chainId } = useConnector();
+  const explorer = (CHAINS[chainId!] as ExtendedChainInformation).blockExplorerUrls![0];
   const { sign } = useSignature();
   const {
     ladleContract,
@@ -158,10 +160,14 @@ export const useTrade = (
       setTradeSubmitted(true);
 
       res &&
-        toasty(async () => {
-          await res?.wait();
-          mutate('/pools');
-        }, description!);
+        toasty(
+          async () => {
+            await res?.wait();
+            mutate('/pools');
+          },
+          description!,
+          explorer && `${explorer}/tx/${res.hash}`
+        );
     } catch (e) {
       console.log(e);
       toast.error('Transaction failed or rejected');
