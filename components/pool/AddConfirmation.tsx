@@ -3,7 +3,6 @@ import AssetSelect from '../common/AssetSelect';
 import { IAsset, IPool } from '../../lib/protocol/types';
 import Button from '../common/Button';
 import useTimeTillMaturity from '../../hooks/useTimeTillMaturity';
-import InfoIcon from '../common/InfoIcon';
 import { IAddLiquidityForm } from './AddLiquidity';
 import Arrow from '../trade/Arrow';
 import useAddLiquidityPreview from '../../hooks/protocol/useAddLiqPreview';
@@ -20,7 +19,6 @@ const InputsWrap = tw.div`w-full flex flex-col gap-1 my-5`;
 const DetailsWrap = tw.div`grid w-full p-2 gap-2`;
 const DetailWrap = tw.div`justify-between flex`;
 const Detail = tw.div`text-sm dark:text-gray-50`;
-const DetailGray = tw.div`italic text-gray-300 text-sm`;
 const Italic = tw.div`italic text-xs text-gray-300 my-3`;
 
 interface IAddConfirmation {

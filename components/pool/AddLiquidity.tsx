@@ -45,7 +45,7 @@ const AddLiquidity = () => {
   const router = useRouter();
   const { address } = router.query;
   const { chainId, account } = useConnector();
-  const { data: pools, loading } = usePools();
+  const { data: pools } = usePools();
 
   const [form, setForm] = useState<IAddLiquidityForm>(INITIAL_FORM_STATE);
   const { pool, baseAmount, fyTokenAmount, method, description, useFyToken } = form;

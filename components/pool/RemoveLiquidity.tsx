@@ -40,7 +40,7 @@ const RemoveLiquidity = () => {
   const router = useRouter();
   const { address } = router.query;
   const { chainId, account } = useConnector();
-  const { data: pools, loading } = usePools();
+  const { data: pools } = usePools();
 
   const [form, setForm] = useState<IRemoveLiquidityForm>(INITIAL_FORM_STATE);
   const { pool, lpTokens, method, description } = form;

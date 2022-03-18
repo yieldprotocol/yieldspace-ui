@@ -64,7 +64,7 @@ const TradeWidget = () => {
   const [updatingToAmount, setUpdatingToAmount] = useState<boolean>(false);
   const [description, setDescription] = useState('');
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
-  const [slippageTolerance, setSlippageTolerance] = useState<number>(0.05);
+  const [slippageTolerance] = useState<number>(0.05);
 
   const { trade, isTransacting, tradeSubmitted } = useTrade(
     pool!,
