@@ -86,7 +86,7 @@ const useTradePreview = (
           pool.baseReserves,
           pool.fyTokenReserves,
           fyTokenOut,
-          pool?.getTimeTillMaturity(),
+          pool?.getTimeTillMaturity().toString(),
           pool.ts,
           pool.g1,
           pool.decimals
