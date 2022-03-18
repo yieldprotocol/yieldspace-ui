@@ -12,9 +12,9 @@ function useBalances(
     if (provider && accounts?.length) {
       let stale = false;
 
-      void Promise.all(accounts.map((account) => provider.getBalance(account))).then((balances) => {
+      void Promise.all(accounts.map((account) => provider.getBalance(account))).then((_balances) => {
         if (!stale) {
-          setBalances(balances);
+          setBalances(_balances);
         }
       });
 
