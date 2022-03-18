@@ -1,9 +1,17 @@
 import tw from 'tailwind-styled-components';
-import { ArrowCircleDownIcon, PlusCircleIcon } from '@heroicons/react/solid';
+import { PlusIcon, ArrowDownIcon } from '@heroicons/react/solid';
+
+type ArrowProps = {
+  $hasToggle: boolean;
+};
 
 const Container = tw.div`relative flex justify-center items-center w-full`;
 const Outer = tw.div`flex items-center justify-end relative w-full`;
-const ArrowWrap = tw.div`absolute left-0 right-0 flex items-center justify-center`;
+const IconWrap = tw.div`absolute left-0 right-0 flex items-center justify-center`;
+const IconInner = tw.div<ArrowProps>`${(p) =>
+  p.$hasToggle
+    ? 'hover:cursor-pointer text-primary-500 hover:border-primary-500/30'
+    : ''} rounded-[10px] bg-gray-800 border-2 border-gray-900 p-1 z-10`;
 
 interface IArrow {
   toggleDirection?: () => void;
@@ -13,27 +21,15 @@ interface IArrow {
 const Arrow = ({ toggleDirection, isPlusIcon }: IArrow) => (
   <Container>
     <Outer>
-      <ArrowWrap>
-        {isPlusIcon ? (
-          <PlusCircleIcon
-            className={`justify-self-center text-gray-400 ${
-              toggleDirection && `hover:border hover:border-secondary-500 hover:cursor-pointer`
-            } rounded-full z-10`}
-            height={27}
-            width={27}
-            onClick={toggleDirection}
-          />
-        ) : (
-          <ArrowCircleDownIcon
-            className={`justify-self-center text-gray-400 ${
-              toggleDirection && `hover:border hover:border-secondary-500 hover:cursor-pointer`
-            } rounded-full z-10`}
-            height={27}
-            width={27}
-            onClick={toggleDirection}
-          />
-        )}
-      </ArrowWrap>
+      <IconWrap>
+        <IconInner onClick={toggleDirection} $hasToggle={!!toggleDirection && !isPlusIcon}>
+          {isPlusIcon ? (
+            <PlusIcon className="justify-self-center text-primary-500" height={18} width={18} />
+          ) : (
+            <ArrowDownIcon className="justify-self-center text-primary-500" height={18} width={18} />
+          )}
+        </IconInner>
+      </IconWrap>
     </Outer>
   </Container>
 );
