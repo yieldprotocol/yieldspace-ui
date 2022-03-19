@@ -201,7 +201,7 @@ export const useAddLiquidity = (
         toasty(
           async () => {
             await res?.wait();
-            mutate('/pools');
+            mutate(`/pools/${chainId}/${account}`);
           },
           description!,
           explorer && `${explorer}/tx/${res.hash}`
