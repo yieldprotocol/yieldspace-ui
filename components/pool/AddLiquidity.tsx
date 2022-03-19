@@ -110,6 +110,14 @@ const AddLiquidity = () => {
     setForm((f) => ({ ...f, useFyToken: useFyTokenToggle }));
   }, [useFyTokenToggle]);
 
+  // update the form's pool whenever the pool changes (i.e. when the user interacts and balances change)
+  useEffect(() => {
+    const _pool = pools && pool?.address! in pools ? pools[pool?.address!] : undefined;
+    if (_pool) {
+      setForm((f) => ({ ...f, pool: _pool }));
+    }
+  }, [pools, pool]);
+
   return (
     <BorderWrap>
       <Inner>
