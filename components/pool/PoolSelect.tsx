@@ -5,7 +5,7 @@ import PoolSelectItem from './PoolSelectItem';
 import PoolSelectModal from './PoolSelectModal';
 
 const ButtonInner = tw.div`
-  h-full w-full dark:bg-gray-900/80 bg-gray-100/80 dark:text-gray-50 text-gray-900 rounded-lg
+  h-full w-full dark:bg-gray-900/80 bg-gray-100/50 dark:text-gray-50 text-gray-900 rounded-lg
   flex p-3 gap-3 justify-center
 `;
 
