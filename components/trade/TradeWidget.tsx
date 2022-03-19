@@ -228,7 +228,7 @@ const TradeWidget = () => {
 
   // update the form's from/toAssets whenever the pool changes (i.e. when the user interacts and balances change)
   useEffect(() => {
-    const _pool = pools![pool?.address!];
+    const _pool = pools && pool?.address! in pools ? pools[pool?.address!] : undefined;
     if (_pool) {
       const _fromAsset = isFyTokenOutput ? _pool.base : _pool.fyToken;
       const _toAsset = isFyTokenOutput ? _pool.fyToken : _pool.base;
