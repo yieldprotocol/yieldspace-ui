@@ -12,7 +12,12 @@ import useLadle from './useLadle';
 import { CHAINS, ExtendedChainInformation } from '../../config/chains';
 import useToasty from '../useToasty';
 
-export const useRemoveLiquidity = (pool: IPool) => {
+export const useRemoveLiquidity = (
+  pool: IPool,
+  input: string,
+  method: RemoveLiquidityActions = RemoveLiquidityActions.BURN_FOR_BASE,
+  description: string | null = null
+) => {
   const { mutate } = useSWRConfig();
 
   // settings
@@ -28,11 +33,7 @@ export const useRemoveLiquidity = (pool: IPool) => {
   const [isRemovingLiq, setIsRemovingLiq] = useState<boolean>(false);
   const [removeSubmitted, setRemoveSubmitted] = useState<boolean>(false);
 
-  const removeLiquidity = async (
-    input: string,
-    method: RemoveLiquidityActions = RemoveLiquidityActions.BURN_FOR_BASE,
-    description: string | null = null
-  ) => {
+  const removeLiquidity = async () => {
     if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
     setRemoveSubmitted(false);
     setIsRemovingLiq(true);
@@ -67,7 +68,7 @@ export const useRemoveLiquidity = (pool: IPool) => {
       ]);
       const [, , , deadline, v, r, s] = permits[0].args!;
 
-      const res = await batch(
+      return batch(
         [
           forwardPermitAction(
             pool.address,
@@ -83,8 +84,6 @@ export const useRemoveLiquidity = (pool: IPool) => {
         ],
         overrides
       );
-
-      return res;
     };
 
     const _burn = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction | undefined> => {
@@ -98,7 +97,7 @@ export const useRemoveLiquidity = (pool: IPool) => {
       ]);
       const [, , , deadline, v, r, s] = permits[0].args!;
 
-      const res = await batch(
+      return batch(
         [
           forwardPermitAction(
             pool.address,
@@ -114,8 +113,6 @@ export const useRemoveLiquidity = (pool: IPool) => {
         ],
         overrides
       );
-
-      return res;
     };
 
     // transact
@@ -132,11 +129,14 @@ export const useRemoveLiquidity = (pool: IPool) => {
         res = await _burn(overrides);
       }
 
+      setIsRemovingLiq(false);
+      setRemoveSubmitted(true);
+
       res &&
         toasty(
           async () => {
             await res?.wait();
-            mutate('/pools');
+            mutate(`/pools/${chainId}/${account}`);
           },
           description!,
           explorer && `${explorer}/tx/${res.hash}`
@@ -145,9 +145,9 @@ export const useRemoveLiquidity = (pool: IPool) => {
       console.log(e);
       toast.error('tx failed or rejected');
       setIsRemovingLiq(false);
+      setRemoveSubmitted(false);
     }
-    setIsRemovingLiq(false);
   };
 
-  return { removeLiquidity, isRemovingLiq };
+  return { removeLiquidity, isRemovingLiq, removeSubmitted };
 };
