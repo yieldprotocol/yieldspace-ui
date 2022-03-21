@@ -10,7 +10,7 @@ import * as contractTypes from '../../contracts/types';
 import { ERC20Permit__factory } from '../../contracts/types/factories/ERC20Permit__factory';
 import { FYToken__factory } from '../../contracts/types/factories/FYToken__factory';
 import { PoolAddedEvent } from '../../contracts/types/Ladle';
-import { ASSET_INFO } from '../../config/assets';
+import { ASSET_INFO, ETH_BASED_ASSETS } from '../../config/assets';
 
 const { seasonColors } = yieldEnv;
 
@@ -34,6 +34,7 @@ export const getPools = async (
 ): Promise<IPoolMap | undefined> => {
   const Ladle = contractMap[LADLE];
   if (!Ladle) return undefined;
+  console.log('fetching pools');
   const poolAddedEvents = await Ladle.queryFilter('PoolAdded' as ethers.EventFilter);
   const poolAddresses: string[] = poolAddedEvents.map((e: PoolAddedEvent) => e.args.pool);
 
@@ -89,11 +90,11 @@ export const getPools = async (
         fyToken,
         isMature: maturity > (await provider.getBlock('latest')).timestamp,
         lpTokenBalance,
-        lpTokenBalance_: cleanValue(ethers.utils.formatUnits(lpTokenBalance, decimals), 2),
+        lpTokenBalance_: ethers.utils.formatUnits(lpTokenBalance, decimals),
         baseReserves,
-        baseReserves_: cleanValue(ethers.utils.formatUnits(baseReserves, decimals), 2),
+        baseReserves_: ethers.utils.formatUnits(baseReserves, decimals),
         fyTokenReserves,
-        fyTokenReserves_: cleanValue(ethers.utils.formatUnits(fyTokenReserves, decimals), 2),
+        fyTokenReserves_: ethers.utils.formatUnits(fyTokenReserves, decimals),
         getTimeTillMaturity,
         contract: poolContract,
         totalSupply,
@@ -171,7 +172,13 @@ export const getAsset = async (
     isFyToken ? FYTOKEN.name() : ERC20.name(),
   ]);
 
-  const balance = account ? await getBalance(provider, tokenAddress, account, isFyToken) : ethers.constants.Zero;
+  const balance = account
+    ? await getBalance(provider, tokenAddress, account, isFyToken, ETH_BASED_ASSETS.includes(symbol))
+    : ethers.constants.Zero;
+
+  const contract = isFyToken ? FYTOKEN : ERC20;
+  const getAllowance = async (acc: string, spender: string) =>
+    isFyToken ? FYTOKEN.allowance(acc, spender) : ERC20.allowance(acc, spender);
 
   return {
     address: tokenAddress,
@@ -180,9 +187,9 @@ export const getAsset = async (
     symbol: symbol.includes('FY') ? formatFyTokenSymbol(symbol) : symbol,
     decimals,
     balance,
-    balance_: cleanValue(ethers.utils.formatUnits(balance, decimals), 2),
-    contract: isFyToken ? FYTOKEN : ERC20,
-    getAllowance: async (acc: string, spender: string) => ERC20.allowance(acc, spender),
+    balance_: ethers.utils.formatUnits(balance, decimals),
+    contract,
+    getAllowance,
     digitFormat: ASSET_INFO.get(symbol)?.digitFormat || 2,
   };
 };
@@ -197,8 +204,13 @@ export const getBalance = (
   provider: Provider,
   tokenAddress: string,
   account: string,
-  isFyToken: boolean = false
+  isFyToken: boolean = false,
+  isEthBased: boolean = false
 ): Promise<BigNumber> | BigNumber => {
+  console.log('🦄 ~ file: index.ts ~ line 210 ~ isEthBased', isEthBased);
+  console.log('🦄 ~ file: index.ts ~ line 210 ~ tokenAddress', tokenAddress);
+  if (isEthBased) provider.getBalance(account);
+
   const contract = isFyToken
     ? FYToken__factory.connect(tokenAddress, provider)
     : ERC20Permit__factory.connect(tokenAddress, provider);
