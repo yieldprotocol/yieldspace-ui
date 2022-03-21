@@ -10,7 +10,7 @@ import * as contractTypes from '../../contracts/types';
 import { ERC20Permit__factory } from '../../contracts/types/factories/ERC20Permit__factory';
 import { FYToken__factory } from '../../contracts/types/factories/FYToken__factory';
 import { PoolAddedEvent } from '../../contracts/types/Ladle';
-import { ASSET_INFO, ETH_BASED_ASSETS, WETH } from '../../config/assets';
+import { ASSET_INFO, ETH_BASED_ASSETS } from '../../config/assets';
 
 const { seasonColors } = yieldEnv;
 

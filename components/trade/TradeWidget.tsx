@@ -18,6 +18,7 @@ import InputsWrap from '../styles/InputsWrap';
 import CloseButton from '../common/CloseButton';
 import { calculateSlippage } from '../../utils/yieldMath';
 import { cleanValue } from '../../utils/appUtils';
+import useInputValidation from '../../hooks/useInputValidation';
 
 const Inner = tw.div`m-4 text-center`;
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
@@ -51,14 +52,19 @@ const TradeWidget = () => {
   const { data: pools, loading } = usePools();
 
   const [form, setForm] = useState<ITradeForm>(INITIAL_FORM_STATE);
-  const { fyTokenOutPreview, baseOutPreview, fyTokenInPreview, baseInPreview, interestRatePreview } = useTradePreview(
-    form.pool,
-    form.tradeAction,
-    form.fromAmount,
-    form.toAmount,
-    form.isFyTokenOutput
-  );
+  const {
+    fyTokenOutPreview,
+    baseOutPreview,
+    fyTokenInPreview,
+    baseInPreview,
+    interestRatePreview,
+    maxFyTokenIn,
+    maxBaseIn,
+  } = useTradePreview(form.pool, form.tradeAction, form.fromAmount, form.toAmount, form.isFyTokenOutput);
   const { pool, fromAsset, fromAmount, toAsset, toAmount, tradeAction, isFyTokenOutput } = form;
+
+  const max = isFyTokenOutput ? maxBaseIn : maxFyTokenIn; // max limit to be used in validation
+  const { errorMsg } = useInputValidation(fromAmount, pool!, [0, max], tradeAction);
 
   const [updatingFromAmount, setUpdatingFromAmount] = useState<boolean>(false);
   const [updatingToAmount, setUpdatingToAmount] = useState<boolean>(false);
@@ -287,8 +293,12 @@ const TradeWidget = () => {
             pool={pool}
           />
         </InputsWrap>
-        <Button action={handleSubmit} disabled={!account || !pool || isTransacting} loading={isTransacting}>
-          {!account ? 'Connect Wallet' : isTransacting ? 'Trade Initiated...' : 'Trade'}
+        <Button
+          action={handleSubmit}
+          disabled={!account || !pool || isTransacting || !!errorMsg}
+          loading={isTransacting}
+        >
+          {!account ? 'Connect Wallet' : isTransacting ? 'Trade Initiated...' : errorMsg ? errorMsg : 'Trade'}
         </Button>
         {confirmModalOpen && pool && (
           <Modal isOpen={confirmModalOpen} setIsOpen={setConfirmModalOpen}>
@@ -300,7 +310,7 @@ const TradeWidget = () => {
               form={form}
               interestRate={interestRatePreview}
               action={trade}
-              disabled={!account || !pool || isTransacting}
+              disabled={!account || !pool || isTransacting || !!errorMsg}
               loading={isTransacting}
             />
           </Modal>

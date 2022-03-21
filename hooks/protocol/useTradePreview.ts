@@ -3,7 +3,17 @@ import { useEffect, useState } from 'react';
 import { TradeActions } from '../../lib/protocol/trade/types';
 import { IPool } from '../../lib/protocol/types';
 import { cleanValue } from '../../utils/appUtils';
-import { buyBase, buyFYToken, calculateAPR, sellBase, sellFYToken } from '../../utils/yieldMath';
+import {
+  buyBase,
+  buyFYToken,
+  calculateAPR,
+  maxBaseIn,
+  maxBaseOut,
+  maxFyTokenIn,
+  maxFyTokenOut,
+  sellBase,
+  sellFYToken,
+} from '../../utils/yieldMath';
 
 const useTradePreview = (
   pool: IPool | undefined,
@@ -19,6 +29,9 @@ const useTradePreview = (
   const [baseInPreview, setBaseInPreview] = useState<string>('');
 
   const [interestRatePreview, setInterestRatePreview] = useState<string>('');
+
+  const [maxFyTokenIn_, setMaxFyTokenIn] = useState<string>();
+  const [maxBaseIn_, setMaxBaseIn] = useState<string>();
 
   const validatePreview = (preview: BigNumber) => (preview.lt(ethers.constants.Zero) ? ethers.constants.Zero : preview);
 
@@ -94,10 +107,39 @@ const useTradePreview = (
         setBaseInPreview(ethers.utils.formatUnits(validatePreview(_baseInPreview), pool.decimals));
         setInterestRatePreview(cleanValue(calculateAPR(_baseInPreview, fyTokenOut, pool.maturity)!, 2));
       }
+
+      /* Get maxes */
+      const _maxFyTokenIn = maxFyTokenIn(
+        pool.baseReserves,
+        pool.fyTokenReserves,
+        pool.getTimeTillMaturity().toString(),
+        pool.ts,
+        pool.g2,
+        pool.decimals
+      );
+      setMaxFyTokenIn(cleanValue(ethers.utils.formatUnits(_maxFyTokenIn, pool.decimals), pool.fyToken.digitFormat));
+
+      const _maxBaseIn = maxBaseIn(
+        pool.baseReserves,
+        pool.fyTokenReserves,
+        pool.getTimeTillMaturity().toString(),
+        pool.ts,
+        pool.g1,
+        pool.decimals
+      );
+      setMaxBaseIn(cleanValue(ethers.utils.formatUnits(_maxBaseIn, pool.decimals), pool.base.digitFormat));
     }
   }, [fromInput, isFyTokenOutput, pool, tradeAction, toInput]);
 
-  return { fyTokenOutPreview, baseOutPreview, fyTokenInPreview, baseInPreview, interestRatePreview };
+  return {
+    fyTokenOutPreview,
+    baseOutPreview,
+    fyTokenInPreview,
+    baseInPreview,
+    interestRatePreview,
+    maxFyTokenIn: maxFyTokenIn_,
+    maxBaseIn: maxBaseIn_,
+  };
 };
 
 export default useTradePreview;
