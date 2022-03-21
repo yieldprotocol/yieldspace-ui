@@ -9,6 +9,23 @@ import TopRow from '../styles/TopRow';
 import PoolSelectItem from './PoolSelectItem';
 
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
+const Inner = tw.div`
+  dark:bg-gray-900/90 bg-gray-200/70 dark:text-gray-50 text-gray-900 rounded-lg
+  p-3 gap-3
+`;
+const Outer = tw.button`hover:opacity-80 flex p-[1px] rounded-lg gap-3 align-middle items-center`;
+
+const MaturityItem = ({ maturity, color, action }: { maturity: string; color: string; action: () => void }) => (
+  <Outer
+    style={{
+      background: color,
+    }}
+    key={maturity}
+    onClick={action}
+  >
+    <Inner>{maturity}</Inner>
+  </Outer>
+);
 
 interface IPoolSelectModal {
   pools: IPoolMap;
@@ -17,15 +34,19 @@ interface IPoolSelectModal {
   action: (pool: IPool) => void;
 }
 
+interface IMaturitySelect {
+  maturity: string;
+  color: string;
+}
+
 const PoolSelectModal: FC<IPoolSelectModal> = ({ pools, open, setOpen, action }) => {
   const [poolList, setPoolList] = useState<IPool[]>(Object.values(pools));
+  const [maturities, setMaturities] = useState<IMaturitySelect[]>([]);
   const [assets, setAssets] = useState<IAsset[] | undefined>();
+  const [symbolFilter, setSymbolFilter] = useState<string | undefined>();
+  const [maturityFilter, setMaturityFilter] = useState<string | undefined>();
 
   const _pools = Object.values(pools);
-
-  const handleFilter = (symbol: string) => {
-    setPoolList(_pools.filter((p) => p.base.symbol === symbol));
-  };
 
   useEffect(() => {
     const sorted = Object.values(pools).sort((a, b) => (a.base.symbol < b.base.symbol ? -1 : 1)); // alphabetical underlying base
@@ -40,7 +61,26 @@ const PoolSelectModal: FC<IPoolSelectModal> = ({ pools, open, setOpen, action })
       new Map<string, IAsset>()
     );
     setAssets(Array.from(_baseAssets.values()));
+
+    const _maturities = _pools.reduce(
+      (_m, _pool) =>
+        _m.has(_pool.maturity_) ? _m : _m.set(_pool.maturity_, { maturity: _pool.maturity_, color: _pool.color }),
+      new Map<string, { maturity: string; color: string }>()
+    );
+    setMaturities(Array.from(_maturities.values()));
   }, [_pools]);
+
+  useEffect(() => {
+    const _handleFilter = () => {
+      setPoolList(
+        _pools
+          .filter((p) => (symbolFilter ? p.base.symbol === symbolFilter : true))
+          .filter((p) => (maturityFilter ? p.maturity_ === maturityFilter : true))
+      );
+    };
+
+    _handleFilter();
+  }, [_pools, maturityFilter, symbolFilter]);
 
   return (
     <Modal isOpen={open} setIsOpen={setOpen}>
@@ -49,18 +89,32 @@ const PoolSelectModal: FC<IPoolSelectModal> = ({ pools, open, setOpen, action })
         <CloseButton action={() => setOpen(false)} height="1.2rem" width="1.2rem" />
       </TopRow>
       {assets && (
-        <div className="flex flex-wrap gap-4 my-6 justify-center">
+        <div className="flex flex-wrap gap-4 my-3 justify-center">
           {assets.map((a) => (
             <div
               className="dark:text-gray-50 hover:cursor-pointer hover:opacity-70"
               key={a.address}
-              onClick={() => handleFilter(a.symbol)}
+              onClick={() => setSymbolFilter(a.symbol)}
             >
               <AssetSelect item={a} />
             </div>
           ))}
         </div>
       )}
+      <div className="p-[.25px] dark:bg-gray-700 bg-gray-300 my-3"></div>
+      {maturities && (
+        <div className="flex flex-wrap gap-4 my-3 justify-center">
+          {maturities.map((m) => (
+            <MaturityItem
+              key={m.maturity}
+              maturity={m.maturity}
+              color={m.color}
+              action={() => setMaturityFilter(m.maturity)}
+            />
+          ))}
+        </div>
+      )}
+      <div className="p-[.25px] dark:bg-gray-700 bg-gray-300 my-3"></div>
       <Grid>
         {poolList.map((pool) => (
           <PoolSelectItem
