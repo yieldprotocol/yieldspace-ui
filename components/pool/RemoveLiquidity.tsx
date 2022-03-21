@@ -15,6 +15,7 @@ import Toggle from '../common/Toggle';
 import Modal from '../common/Modal';
 import CloseButton from '../common/CloseButton';
 import RemoveConfirmation from './RemoveConfirmation';
+import useInputValidation from '../../hooks/useInputValidation';
 
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
@@ -48,6 +49,7 @@ const RemoveLiquidity = () => {
   const [burnForBase, setBurnForBase] = useState<boolean>(true);
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
 
+  const { errorMsg } = useInputValidation(lpTokens, pool, [0, lpTokens], method);
   const { removeLiquidity, isRemovingLiq, removeSubmitted } = useRemoveLiquidity(pool!, lpTokens, method, description);
 
   const handleMaxLpTokens = () => {
@@ -145,8 +147,14 @@ const RemoveLiquidity = () => {
             />
           )}
         </Grid>
-        <Button action={handleSubmit} disabled={!account || !pool || !lpTokens || isRemovingLiq}>
-          {!account ? 'Connect Wallet' : isRemovingLiq ? 'Remove Liquidity Initiated...' : 'Remove Liquidity'}
+        <Button action={handleSubmit} disabled={!account || !pool || !lpTokens || isRemovingLiq || !!errorMsg}>
+          {!account
+            ? 'Connect Wallet'
+            : isRemovingLiq
+            ? 'Remove Liquidity Initiated...'
+            : errorMsg
+            ? errorMsg
+            : 'Remove Liquidity'}
         </Button>
         {confirmModalOpen && pool && (
           <Modal isOpen={confirmModalOpen} setIsOpen={setConfirmModalOpen}>

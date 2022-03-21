@@ -30,7 +30,7 @@ const useInputValidation = (
       return setErrorMsg('Enter an amount');
     }
 
-    if (_input === 0) {
+    if (_input <= 0) {
       return setErrorMsg('Amount must be greater than 0');
     }
 
@@ -39,6 +39,7 @@ const useInputValidation = (
     const { base, fyToken } = pool;
     const baseBalance = parseFloat(pool.base.balance_);
     const fyTokenBalance = parseFloat(pool.fyToken.balance_);
+    const lpTokenBalance = parseFloat(pool.lpTokenBalance_);
 
     /* Action specific validation */
     switch (action) {
@@ -51,6 +52,17 @@ const useInputValidation = (
       case TradeActions.BUY_BASE:
         aboveMax && setErrorMsg(`Max tradable ${fyToken.symbol} is ${limits[1]} `);
         fyTokenBalance < _input && setErrorMsg(`Insufficient ${fyToken.symbol} balance`);
+        break;
+      case AddLiquidityActions.MINT_WITH_BASE:
+        baseBalance < _input && setErrorMsg(`Insufficient ${base.symbol} balance`);
+        break;
+      case AddLiquidityActions.MINT:
+        baseBalance < _input && setErrorMsg(`Insufficient ${base.symbol} balance`);
+        fyTokenBalance < _input && setErrorMsg(`Insufficient ${fyToken.symbol} balance`);
+        break;
+      case RemoveLiquidityActions.BURN_FOR_BASE:
+      case RemoveLiquidityActions.BURN:
+        lpTokenBalance < _input && setErrorMsg(`Insufficient LP token balance`);
         break;
       default:
         setErrorMsg(null);

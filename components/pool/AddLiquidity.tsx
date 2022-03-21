@@ -17,6 +17,7 @@ import CloseButton from '../common/CloseButton';
 import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
 import Arrow from '../trade/Arrow';
 import InputsWrap from '../styles/InputsWrap';
+import useInputValidation from '../../hooks/useInputValidation';
 
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
@@ -53,6 +54,7 @@ const AddLiquidity = () => {
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
   const [useFyTokenToggle, setUseFyTokenToggle] = useState<boolean>(false);
 
+  const { errorMsg } = useInputValidation(baseAmount, pool, [], method);
   const { addLiquidity, isAddingLiquidity, addSubmitted } = useAddLiquidity(pool!, baseAmount, method, description);
 
   const handleMaxBase = () => {
@@ -165,10 +167,16 @@ const AddLiquidity = () => {
         </Grid>
         <Button
           action={handleSubmit}
-          disabled={!account || !pool || !baseAmount || isAddingLiquidity}
+          disabled={!account || !pool || !baseAmount || isAddingLiquidity || !!errorMsg}
           loading={isAddingLiquidity}
         >
-          {!account ? 'Connect Wallet' : isAddingLiquidity ? 'Add Liquidity Initiated...' : 'Add Liquidity'}
+          {!account
+            ? 'Connect Wallet'
+            : isAddingLiquidity
+            ? 'Add Liquidity Initiated...'
+            : errorMsg
+            ? errorMsg
+            : 'Add Liquidity'}
         </Button>
         {confirmModalOpen && pool && (
           <Modal isOpen={confirmModalOpen} setIsOpen={setConfirmModalOpen}>

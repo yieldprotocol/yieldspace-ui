@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { FC } from 'react';
 import tw from 'tailwind-styled-components';
 import { IPool } from '../../lib/protocol/types';
+import { cleanValue } from '../../utils/appUtils';
 import { Header } from '../styles';
 
 const Container = tw.button`w-full my-1.5 dark:hover:bg-gray-700/50 hover:bg-gray-400/50 dark:bg-gray-800/80 bg-gray-300 rounded-md shadow-md`;
@@ -21,7 +22,7 @@ const PoolListItem: FC<IPoolListItem> = ({ pool }) => (
         <Header>{pool.displayName}</Header>
         <PoolDataWrap>
           <PoolDataLabel>LP Token Balance:</PoolDataLabel>
-          <PoolData>{pool.lpTokenBalance_}</PoolData>
+          <PoolData>{cleanValue(pool.lpTokenBalance_, 2)}</PoolData>
         </PoolDataWrap>
       </Inner>
     </Container>

@@ -44,7 +44,7 @@ const PoolItem: FC = () => {
         <Header>{pool.displayName}</Header>
         <PoolDataWrap>
           <PoolDataLabel>LP Token Balance:</PoolDataLabel>
-          <PoolData>{pool.lpTokenBalance_}</PoolData>
+          <PoolData>{cleanValue(pool.lpTokenBalance_, 2)}</PoolData>
         </PoolDataWrap>
         <PoolDataWrap>
           <PoolDataLabel>LP Token Value:</PoolDataLabel>
