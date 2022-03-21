@@ -10,7 +10,7 @@ import * as contractTypes from '../../contracts/types';
 import { ERC20Permit__factory } from '../../contracts/types/factories/ERC20Permit__factory';
 import { FYToken__factory } from '../../contracts/types/factories/FYToken__factory';
 import { PoolAddedEvent } from '../../contracts/types/Ladle';
-import { ASSET_INFO, ETH_BASED_ASSETS } from '../../config/assets';
+import { ASSET_INFO, ETH_BASED_ASSETS, WETH } from '../../config/assets';
 
 const { seasonColors } = yieldEnv;
 
@@ -155,6 +155,7 @@ export const getContracts = (provider: Provider, chainId: number): IContractMap 
  * @param tokenAddress
  * @param account can be null if there is no account
  * @param isFyToken optional
+ * @param isEthBased optional: for getting the eth balance
  * @returns
  */
 export const getAsset = async (
@@ -172,13 +173,15 @@ export const getAsset = async (
     isFyToken ? FYTOKEN.name() : ERC20.name(),
   ]);
 
+  const isEthBased = ETH_BASED_ASSETS.includes(symbol);
   const balance = account
-    ? await getBalance(provider, tokenAddress, account, isFyToken, ETH_BASED_ASSETS.includes(symbol))
+    ? await getBalance(provider, tokenAddress, account, isFyToken, isEthBased)
     : ethers.constants.Zero;
 
   const contract = isFyToken ? FYTOKEN : ERC20;
   const getAllowance = async (acc: string, spender: string) =>
     isFyToken ? FYTOKEN.allowance(acc, spender) : ERC20.allowance(acc, spender);
+  const digitFormat = ASSET_INFO.get(symbol)?.digitFormat || 6;
 
   return {
     address: tokenAddress,
@@ -187,7 +190,7 @@ export const getAsset = async (
     symbol: symbol.includes('FY') ? formatFyTokenSymbol(symbol) : symbol,
     decimals,
     balance,
-    balance_: ethers.utils.formatUnits(balance, decimals),
+    balance_: cleanValue(ethers.utils.formatUnits(balance, decimals), digitFormat),
     contract,
     getAllowance,
     digitFormat: ASSET_INFO.get(symbol)?.digitFormat || 2,
@@ -207,9 +210,9 @@ export const getBalance = (
   isFyToken: boolean = false,
   isEthBased: boolean = false
 ): Promise<BigNumber> | BigNumber => {
-  console.log('🦄 ~ file: index.ts ~ line 210 ~ isEthBased', isEthBased);
-  console.log('🦄 ~ file: index.ts ~ line 210 ~ tokenAddress', tokenAddress);
-  if (isEthBased) provider.getBalance(account);
+  if (isEthBased) {
+    return provider.getBalance(account);
+  }
 
   const contract = isFyToken
     ? FYToken__factory.connect(tokenAddress, provider)
