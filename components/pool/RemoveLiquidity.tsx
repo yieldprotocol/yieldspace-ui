@@ -57,7 +57,7 @@ const RemoveLiquidity = () => {
   };
 
   const handleClearAll = () => {
-    setForm(INITIAL_FORM_STATE);
+    address ? setForm((f) => ({ ...f, lpTokens: '' })) : setForm(INITIAL_FORM_STATE);
   };
 
   const handleSubmit = () => {

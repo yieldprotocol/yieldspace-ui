@@ -62,7 +62,7 @@ const AddLiquidity = () => {
   };
 
   const handleClearAll = () => {
-    setForm(INITIAL_FORM_STATE);
+    address ? setForm((f) => ({ ...f, baseAmount: '', fyTokenAmount: '' })) : setForm(INITIAL_FORM_STATE);
   };
 
   const handleSubmit = () => {
