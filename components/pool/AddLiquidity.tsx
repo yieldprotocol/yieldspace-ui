@@ -54,7 +54,7 @@ const AddLiquidity = () => {
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
   const [useFyTokenToggle, setUseFyTokenToggle] = useState<boolean>(false);
 
-  const { errorMsg } = useInputValidation(baseAmount, pool, [], method);
+  const { errorMsg } = useInputValidation(baseAmount, pool, [], method!);
   const { addLiquidity, isAddingLiquidity, addSubmitted } = useAddLiquidity(pool!, baseAmount, method, description);
 
   const handleMaxBase = () => {
