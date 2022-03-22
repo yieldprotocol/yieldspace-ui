@@ -15,7 +15,7 @@ const Input = tw.input`h-full caret-gray-800 dark:caret-gray-50 text-2xl appeara
 const Inner = tw.div`grow-0 w-auto ml-3 text-center text-lg align-middle my-1 items-center`;
 const AssetSelectOuter = tw.div`grow min-w-fit`;
 const AssetSelectWrap = tw.div`flex justify-end p-1`;
-const MaxButton = tw.button`justify-end flex items-center gap-1 my-[1px] text-xs mr-1 dark:text-gray-300 text-gray-700 hover:text-gray-600 dark:hover:text-gray-400`;
+const MaxButton = tw.button`float-right justify-end flex items-center gap-1 my-[1px] text-xs mr-1 dark:text-gray-300 text-gray-700 hover:text-gray-600 dark:hover:text-gray-400`;
 
 interface IInputWrap {
   name: string;

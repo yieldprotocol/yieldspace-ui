@@ -52,7 +52,7 @@ const AddConfirmation = ({ form, action, disabled, loading }: IAddConfirmation) 
       <Wrap>
         <InputsOuter>
           <InputsWrap>
-            <ConfirmItem value={baseAmount} asset={pool?.base!} pool={pool!} />
+            <ConfirmItem value={valueAtDigits(baseAmount, pool?.base.digitFormat!)} asset={pool?.base!} pool={pool!} />
             {useFyToken && (
               <>
                 <Arrow isPlusIcon={true} />
