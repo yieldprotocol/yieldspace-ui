@@ -16,6 +16,8 @@ import AddConfirmation from './AddConfirmation';
 import CloseButton from '../common/CloseButton';
 import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
 import Arrow from '../trade/Arrow';
+import InputsWrap from '../styles/InputsWrap';
+import useInputValidation from '../../hooks/useInputValidation';
 
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
@@ -52,6 +54,7 @@ const AddLiquidity = () => {
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
   const [useFyTokenToggle, setUseFyTokenToggle] = useState<boolean>(false);
 
+  const { errorMsg } = useInputValidation(baseAmount, pool, [], method!);
   const { addLiquidity, isAddingLiquidity, addSubmitted } = useAddLiquidity(pool!, baseAmount, method, description);
 
   const handleMaxBase = () => {
@@ -59,7 +62,7 @@ const AddLiquidity = () => {
   };
 
   const handleClearAll = () => {
-    setForm(INITIAL_FORM_STATE);
+    address ? setForm((f) => ({ ...f, baseAmount: '', fyTokenAmount: '' })) : setForm(INITIAL_FORM_STATE);
   };
 
   const handleSubmit = () => {
@@ -109,6 +112,14 @@ const AddLiquidity = () => {
     setForm((f) => ({ ...f, useFyToken: useFyTokenToggle }));
   }, [useFyTokenToggle]);
 
+  // update the form's pool whenever the pool changes (i.e. when the user interacts and balances change)
+  useEffect(() => {
+    const _pool = pools && pool?.address! in pools ? pools[pool?.address!] : undefined;
+    if (_pool) {
+      setForm((f) => ({ ...f, pool: _pool }));
+    }
+  }, [pools, pool]);
+
   return (
     <BorderWrap>
       <Inner>
@@ -128,38 +139,44 @@ const AddLiquidity = () => {
 
         <Grid>
           <HeaderSmall>Deposit Amounts</HeaderSmall>
-          <InputWrap
-            name="baseAmount"
-            value={baseAmount}
-            item={pool?.base}
-            balance={pool?.base.balance_!}
-            handleChange={handleInputChange}
-            useMax={handleMaxBase}
-            pool={pool}
-          />
-
-          {useFyToken && <Arrow isPlusIcon={true} />}
-
-          {useFyToken && (
+          <InputsWrap>
             <InputWrap
-              name="fyTokenAmount"
-              value={fyTokenAmount}
-              item={pool?.fyToken}
-              balance={pool?.fyToken.balance_!}
+              name="baseAmount"
+              value={baseAmount}
+              item={pool?.base}
+              balance={pool?.base.balance_!}
               handleChange={handleInputChange}
-              unFocused={true}
-              disabled
+              useMax={handleMaxBase}
               pool={pool}
             />
-          )}
+            {useFyToken && <Arrow isPlusIcon={true} />}
+            {useFyToken && (
+              <InputWrap
+                name="fyTokenAmount"
+                value={fyTokenAmount}
+                item={pool?.fyToken}
+                balance={pool?.fyToken.balance_!}
+                handleChange={handleInputChange}
+                unFocused={true}
+                disabled
+                pool={pool}
+              />
+            )}
+          </InputsWrap>
           <Toggle enabled={useFyToken} setEnabled={setUseFyTokenToggle} label="Use fyToken Balance" />
         </Grid>
         <Button
           action={handleSubmit}
-          disabled={!account || !pool || !baseAmount || isAddingLiquidity}
+          disabled={!account || !pool || !baseAmount || isAddingLiquidity || !!errorMsg}
           loading={isAddingLiquidity}
         >
-          {!account ? 'Connect Wallet' : isAddingLiquidity ? 'Add Liquidity Initiated...' : 'Add Liquidity'}
+          {!account
+            ? 'Connect Wallet'
+            : isAddingLiquidity
+            ? 'Add Liquidity Initiated...'
+            : errorMsg
+            ? errorMsg
+            : 'Add Liquidity'}
         </Button>
         {confirmModalOpen && pool && (
           <Modal isOpen={confirmModalOpen} setIsOpen={setConfirmModalOpen}>

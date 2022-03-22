@@ -15,6 +15,7 @@ import Toggle from '../common/Toggle';
 import Modal from '../common/Modal';
 import CloseButton from '../common/CloseButton';
 import RemoveConfirmation from './RemoveConfirmation';
+import useInputValidation from '../../hooks/useInputValidation';
 
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
@@ -48,14 +49,15 @@ const RemoveLiquidity = () => {
   const [burnForBase, setBurnForBase] = useState<boolean>(true);
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
 
-  const { removeLiquidity, isRemovingLiq } = useRemoveLiquidity(pool!);
+  const { errorMsg } = useInputValidation(lpTokens, pool, [0, lpTokens], method);
+  const { removeLiquidity, isRemovingLiq, removeSubmitted } = useRemoveLiquidity(pool!, lpTokens, method, description);
 
   const handleMaxLpTokens = () => {
     setForm((f) => ({ ...f, lpTokens: pool?.lpTokenBalance_! }));
   };
 
   const handleClearAll = () => {
-    setForm(INITIAL_FORM_STATE);
+    address ? setForm((f) => ({ ...f, lpTokens: '' })) : setForm(INITIAL_FORM_STATE);
   };
 
   const handleSubmit = () => {
@@ -78,8 +80,8 @@ const RemoveLiquidity = () => {
 
   // set remove liquidity description to use in useRemoveLiquidity hook
   useEffect(() => {
-    const _description = `Remove ${lpTokens} lp tokens${
-      method! === RemoveLiquidityActions.BURN_FOR_BASE ? ` and receiving all base` : ' receiving both base and fyTokens'
+    const _description = `Remove ${lpTokens} LP tokens${
+      method! === RemoveLiquidityActions.BURN_FOR_BASE ? ` and receive all base` : ' receive both base and fyTokens'
     }`;
     setForm((f) => ({ ...f, description: _description }));
   }, [lpTokens, method]);
@@ -91,6 +93,22 @@ const RemoveLiquidity = () => {
       method: burnForBase ? RemoveLiquidityActions.BURN_FOR_BASE : RemoveLiquidityActions.BURN,
     }));
   }, [pool, burnForBase]);
+
+  // update the form's pool whenever the pool changes (i.e. when the user interacts and balances change)
+  useEffect(() => {
+    const _pool = pools && pool?.address! in pools ? pools[pool?.address!] : undefined;
+    if (_pool) {
+      setForm((f) => ({ ...f, pool: _pool }));
+    }
+  }, [pools, pool]);
+
+  // close modal when the adding liquidity was successfullly submitted (user took all actions to get tx through)
+  useEffect(() => {
+    if (removeSubmitted) {
+      setConfirmModalOpen(false);
+      setForm((f) => ({ ...f, lpTokens: '' }));
+    }
+  }, [removeSubmitted]);
 
   return (
     <BorderWrap>
@@ -129,8 +147,14 @@ const RemoveLiquidity = () => {
             />
           )}
         </Grid>
-        <Button action={handleSubmit} disabled={!account || !pool || !lpTokens || isRemovingLiq}>
-          {!account ? 'Connect Wallet' : isRemovingLiq ? 'Remove Liquidity Initiated...' : 'Remove Liquidity'}
+        <Button action={handleSubmit} disabled={!account || !pool || !lpTokens || isRemovingLiq || !!errorMsg}>
+          {!account
+            ? 'Connect Wallet'
+            : isRemovingLiq
+            ? 'Remove Liquidity Initiated...'
+            : errorMsg
+            ? errorMsg
+            : 'Remove Liquidity'}
         </Button>
         {confirmModalOpen && pool && (
           <Modal isOpen={confirmModalOpen} setIsOpen={setConfirmModalOpen}>
@@ -140,8 +164,8 @@ const RemoveLiquidity = () => {
             </TopRow>
             <RemoveConfirmation
               form={form}
-              action={() => removeLiquidity(lpTokens, method, description)}
-              disabled={isRemovingLiq}
+              action={removeLiquidity}
+              disabled={!account || !pool || !lpTokens || isRemovingLiq}
               loading={isRemovingLiq}
             />
           </Modal>

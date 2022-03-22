@@ -27,7 +27,7 @@ export const useTrade = (
   const { mutate } = useSWRConfig();
   const { toasty } = useToasty();
   const { account, chainId } = useConnector();
-  const explorer = (CHAINS[chainId!] as ExtendedChainInformation).blockExplorerUrls![0];
+  const explorer = (CHAINS[chainId!] as ExtendedChainInformation)?.blockExplorerUrls![0];
   const { sign } = useSignature();
   const {
     ladleContract,
@@ -163,7 +163,7 @@ export const useTrade = (
         toasty(
           async () => {
             await res?.wait();
-            mutate('/pools');
+            mutate(`/pools/${chainId}/${account}`);
           },
           description!,
           explorer && `${explorer}/tx/${res.hash}`

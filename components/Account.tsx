@@ -4,6 +4,7 @@ import Connect from './ConnectModal';
 import Dropdown from './ConnectDropdown';
 import useConnector from '../hooks/useConnector';
 import Chain from './Chain';
+import ETHBalance from './common/ETHBalance';
 
 const ConnectButton = tw.button`bg-primary-500/25 align-middle px-4 py-2 text-primary-500 rounded-md hover:bg-primary-600/25`;
 
@@ -15,8 +16,9 @@ const Account = () => {
       {!account ? (
         <ConnectButton onClick={() => setConnectModalOpen(true)}>Connect Wallet</ConnectButton>
       ) : (
-        <div className="flex gap-5">
+        <div className="flex gap-3">
           <Chain />
+          <ETHBalance />
           <Dropdown setModalOpen={setConnectModalOpen} />
         </div>
       )}

@@ -201,14 +201,14 @@ export const useAddLiquidity = (
         toasty(
           async () => {
             await res?.wait();
-            mutate('/pools');
+            mutate(`/pools/${chainId}/${account}`);
           },
           description!,
           explorer && `${explorer}/tx/${res.hash}`
         );
     } catch (e) {
       console.log(e);
-      toast.error('tx failed or rejected');
+      toast.error('Transaction failed or rejected');
       setIsAddingLiquidity(false);
       setAddSubmitted(false);
     }

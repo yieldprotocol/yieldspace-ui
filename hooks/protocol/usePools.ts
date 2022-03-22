@@ -7,9 +7,14 @@ import useContracts from './useContracts';
 const usePools = () => {
   const { chainId, account, provider } = useConnector();
   const contractMap = useContracts();
-  const { data, error } = useSWR('/pools', () => getPools(provider!, contractMap!, chainId, account), {
-    revalidateOnFocus: false,
-  });
+
+  const { data, error } = useSWR(
+    `/pools/${chainId}/${account}`,
+    () => getPools(provider!, contractMap!, chainId!, account!),
+    {
+      revalidateOnFocus: false,
+    }
+  );
 
   return {
     data: data as IPoolMap,

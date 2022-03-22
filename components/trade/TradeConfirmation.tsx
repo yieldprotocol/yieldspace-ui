@@ -19,9 +19,9 @@ const AssetSelectWrap = tw.div`p-1`;
 const InputsWrap = tw.div`w-full flex flex-col gap-1 my-5`;
 const DetailsWrap = tw.div`grid w-full p-2 gap-2`;
 const DetailWrap = tw.div`justify-between flex`;
-const Detail = tw.div`text-sm dark:text-gray-50`;
-const DetailGray = tw.div`italic text-gray-300 text-sm`;
-const Italic = tw.div`italic text-xs text-gray-300 my-3`;
+const Detail = tw.div`text-sm dark:text-gray-50 text-gray-900`;
+const DetailGray = tw.div`italic dark:text-gray-300 text-gray-600 text-sm`;
+const Italic = tw.div`italic text-xs dark:text-gray-300 text-gray-800 my-3`;
 
 interface ITradeConfirmation {
   form: ITradeForm;
