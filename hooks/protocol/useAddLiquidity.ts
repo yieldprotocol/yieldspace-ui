@@ -39,13 +39,15 @@ export const useAddLiquidity = (
     const { base, fyToken } = pool;
     const cleanInput = cleanValue(input, base.decimals);
     const _input = ethers.utils.parseUnits(cleanInput, base.decimals);
+    const _fyTokenNeeded = ethers.utils.parseUnits(fyTokenNeeded!, fyToken.decimals);
 
     const [cachedBaseReserves, cachedFyTokenReserves] = await pool.contract.getCache();
     const cachedRealReserves = cachedFyTokenReserves.sub(pool.totalSupply);
     const [minRatio, maxRatio] = calcPoolRatios(cachedBaseReserves, cachedRealReserves);
 
     /* if approveMax, check if signature is still required */
-    const alreadyApproved = (await base.getAllowance(account!, pool.address)).gt(_input);
+    const alreadyApprovedBase = (await base.getAllowance(account!, pool.address)).gt(_input);
+    const alreadyApprovedFyToken = (await fyToken.getAllowance(account!, pool.address)).gt(_fyTokenNeeded);
 
     const overrides = {
       gasLimit: 250000,
@@ -69,7 +71,7 @@ export const useAddLiquidity = (
           target: pool.base,
           spender: ladleContract?.address!,
           amount: _input,
-          ignoreIf: alreadyApproved,
+          ignoreIf: alreadyApprovedBase,
         },
       ]);
 
@@ -105,13 +107,13 @@ export const useAddLiquidity = (
           target: pool.base,
           spender: ladleContract?.address!,
           amount: _input,
-          ignoreIf: alreadyApproved,
+          ignoreIf: alreadyApprovedBase,
         },
         {
           target: pool.fyToken,
           spender: ladleContract?.address!,
-          amount: fyTokenNeeded,
-          ignoreIf: alreadyApproved,
+          amount: _fyTokenNeeded,
+          ignoreIf: alreadyApprovedFyToken,
         },
       ]);
 
@@ -148,9 +150,9 @@ export const useAddLiquidity = (
 
       return batch(
         [
+          forwardPermitAction(baseAddress, baseSpender, baseAmount, baseDeadline, baseV, baseR, baseS)!,
           forwardPermitAction(fyAddress, fySpender, fyAmount, fyDeadline, fyV, fyR, fyS)!,
           transferAction(baseAddress, pool.address, baseAmount)!,
-          forwardPermitAction(baseAddress, baseSpender, baseAmount, baseDeadline, baseV, baseR, baseS)!,
           transferAction(fyAddress, pool.address, fyAmount)!,
           mintAction(pool.contract, account!, account!, minRatio, maxRatio)!,
         ],
