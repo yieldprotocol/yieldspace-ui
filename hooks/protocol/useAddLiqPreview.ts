@@ -10,7 +10,7 @@ const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityA
   const [fyTokenNeeded, setFyTokenNeeded] = useState<string>();
 
   useEffect(() => {
-    const getPrevewData = async () => {
+    (async () => {
       if (!pool) {
         return setLpTokenPreview('');
       }
@@ -51,9 +51,7 @@ const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityA
           : mint(cachedBaseReserves, cachedRealReserves, totalSupply, BigNumber.from(_fyTokenNeeded), false);
 
       setLpTokenPreview(ethers.utils.formatUnits(minted, decimals));
-    };
-
-    getPrevewData();
+    })();
   }, [baseAmount, method, pool, slippageTolerance]);
 
   return { lpTokenPreview, fyTokenNeeded };
