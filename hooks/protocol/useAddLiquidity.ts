@@ -1,34 +1,19 @@
-import { useSWRConfig } from 'swr';
-import { useState } from 'react';
-import { BigNumber, BigNumberish, ethers, PayableOverrides } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import { cleanValue } from '../../utils/appUtils';
-
-import { calcPoolRatios, calculateSlippage, fyTokenForMint, mint, splitLiquidity } from '../../utils/yieldMath';
+import { calcPoolRatios, calculateSlippage, fyTokenForMint, splitLiquidity } from '../../utils/yieldMath';
 import { IPool } from '../../lib/protocol/types';
 import useConnector from '../useConnector';
 import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
 import useSignature from '../useSignature';
-import { toast } from 'react-toastify';
 import useLadle from './useLadle';
 import { LadleActions } from '../../lib/tx/operations';
 import { DAI_PERMIT_ASSETS } from '../../config/assets';
-import useToasty from '../useToasty';
-import { CHAINS, ExtendedChainInformation } from '../../config/chains';
+import useTransaction from '../useTransaction';
 
-export const useAddLiquidity = (
-  pool: IPool,
-  input: string,
-  method: AddLiquidityActions = AddLiquidityActions.MINT_WITH_BASE,
-  description: string | null = null
-) => {
-  // settings
-  const slippageTolerance = 0.001;
-
-  const { toasty } = useToasty();
-  const { mutate } = useSWRConfig();
-  const { account, chainId } = useConnector();
-  const explorer = (CHAINS[chainId!] as ExtendedChainInformation).blockExplorerUrls![0];
+export const useAddLiquidity = (pool: IPool, input: string, method: AddLiquidityActions, description: string) => {
+  const { account } = useConnector();
   const { sign } = useSignature();
+  const { transact, isTransacting, txSubmitted } = useTransaction();
   const {
     ladleContract,
     forwardDaiPermitAction,
@@ -39,13 +24,11 @@ export const useAddLiquidity = (
     mintAction,
   } = useLadle();
 
-  const [isAddingLiquidity, setIsAddingLiquidity] = useState<boolean>(false);
-  const [addSubmitted, setAddSubmitted] = useState<boolean>(false);
+  // settings
+  const slippageTolerance = 0.001;
 
   const addLiquidity = async () => {
     if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
-    setAddSubmitted(false);
-    setIsAddingLiquidity(true);
 
     const { base, fyToken } = pool;
     const cleanInput = cleanValue(input, base.decimals);
@@ -83,7 +66,11 @@ export const useAddLiquidity = (
     /* if approveMax, check if signature is still required */
     const alreadyApproved = (await base.getAllowance(account!, pool.address)).gt(_input);
 
-    const _mintWithBase = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction | undefined> => {
+    const overrides = {
+      gasLimit: 250000,
+    };
+
+    const _mintWithBase = async (): Promise<ethers.ContractTransaction | undefined> => {
       const permits = await sign([
         {
           target: pool.base,
@@ -119,7 +106,7 @@ export const useAddLiquidity = (
       );
     };
 
-    const _mint = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction | undefined> => {
+    const _mint = async (): Promise<ethers.ContractTransaction | undefined> => {
       const permits = await sign([
         {
           target: pool.base,
@@ -178,41 +165,8 @@ export const useAddLiquidity = (
       );
     };
 
-    /**
-     * Transact
-     * */
-    const overrides = {
-      gasLimit: 250000,
-    };
-
-    try {
-      let res: ethers.ContractTransaction | undefined;
-
-      if (method === AddLiquidityActions.MINT_WITH_BASE) {
-        res = await _mintWithBase(overrides);
-      } else {
-        res = await _mint(overrides);
-      }
-
-      setIsAddingLiquidity(false);
-      setAddSubmitted(true);
-
-      res &&
-        toasty(
-          async () => {
-            await res?.wait();
-            mutate(`/pools/${chainId}/${account}`);
-          },
-          description!,
-          explorer && `${explorer}/tx/${res.hash}`
-        );
-    } catch (e) {
-      console.log(e);
-      toast.error('Transaction failed or rejected');
-      setIsAddingLiquidity(false);
-      setAddSubmitted(false);
-    }
+    transact(method === AddLiquidityActions.MINT_WITH_BASE ? _mintWithBase : _mint, description);
   };
 
-  return { addLiquidity, isAddingLiquidity, addSubmitted };
+  return { addLiquidity, isAddingLiquidity: isTransacting, addSubmitted: txSubmitted };
 };

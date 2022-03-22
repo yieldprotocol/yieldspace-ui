@@ -29,7 +29,7 @@ export interface IAddLiquidityForm {
   pool: IPool | undefined;
   baseAmount: string;
   fyTokenAmount: string;
-  method: AddLiquidityActions | undefined;
+  method: AddLiquidityActions;
   description: string;
   useFyToken: boolean;
 }
@@ -38,7 +38,7 @@ const INITIAL_FORM_STATE: IAddLiquidityForm = {
   pool: undefined,
   baseAmount: '',
   fyTokenAmount: '',
-  method: undefined,
+  method: AddLiquidityActions.MINT_WITH_BASE,
   description: '',
   useFyToken: false,
 };

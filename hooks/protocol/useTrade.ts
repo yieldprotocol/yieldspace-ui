@@ -1,34 +1,28 @@
-import { useSWRConfig } from 'swr';
-import { useState } from 'react';
-import { BigNumberish, ethers, PayableOverrides } from 'ethers';
+import { ContractTransaction, ethers } from 'ethers';
 import { cleanValue } from '../../utils/appUtils';
 
 import { calculateSlippage } from '../../utils/yieldMath';
 import { IPool } from '../../lib/protocol/types';
 import useConnector from '../useConnector';
 import useSignature from '../useSignature';
-import { toast } from 'react-toastify';
 import { TradeActions } from '../../lib/protocol/trade/types';
 import useTradePreview from './useTradePreview';
 import useLadle from './useLadle';
-import useToasty from '../useToasty';
 import { LadleActions } from '../../lib/tx/operations';
 import { DAI_PERMIT_ASSETS } from '../../config/assets';
-import { CHAINS, ExtendedChainInformation } from '../../config/chains';
+import useTransaction from '../useTransaction';
 
 export const useTrade = (
   pool: IPool | undefined,
   fromInput: string,
   toInput: string,
-  method: TradeActions = TradeActions.SELL_BASE,
-  description: string | null = null,
+  method: TradeActions,
+  description: string,
   slippageTolerance: number = 0.05
 ) => {
-  const { mutate } = useSWRConfig();
-  const { toasty } = useToasty();
-  const { account, chainId } = useConnector();
-  const explorer = (CHAINS[chainId!] as ExtendedChainInformation)?.blockExplorerUrls![0];
+  const { account } = useConnector();
   const { sign } = useSignature();
+  const { transact, isTransacting, txSubmitted } = useTransaction();
   const {
     ladleContract,
     forwardDaiPermitAction,
@@ -54,20 +48,19 @@ export const useTrade = (
     fyTokenOutput
   );
 
-  const [isTransacting, setIsTransacting] = useState<boolean>(false);
-  const [tradeSubmitted, setTradeSubmitted] = useState<boolean>(false);
+  const overrides = {
+    gasLimit: 250000,
+  };
 
   const trade = async () => {
     if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
-    setTradeSubmitted(false);
-    setIsTransacting(true);
 
     const { base, fyToken, contract } = pool;
 
     /* check if signature is still required */
     const alreadyApproved = (await pool.base.getAllowance(account!, pool.address)).gt(_inputToUse);
 
-    const _sellBase = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction | undefined> => {
+    const _sellBase = async (): Promise<ContractTransaction | undefined> => {
       const _fyTokenOutPreview = ethers.utils.parseUnits(fyTokenOutPreview, decimals);
       const _outputLessSlippage = calculateSlippage(_fyTokenOutPreview, slippageTolerance.toString(), true);
       const permits = await sign([
@@ -85,16 +78,7 @@ export const useTrade = (
 
         return batch(
           [
-            forwardDaiPermitAction(
-              address,
-              spender,
-              nonce,
-              deadline as BigNumberish,
-              allowed,
-              v as BigNumberish,
-              r as Buffer,
-              s as Buffer
-            )!,
+            forwardDaiPermitAction(address, spender, nonce, deadline, allowed, v, r, s)!,
             transferAction(base.address, pool.address, _inputToUse)!,
             sellBaseAction(contract, account!, _outputLessSlippage)!,
           ],
@@ -114,7 +98,7 @@ export const useTrade = (
       );
     };
 
-    const _sellFYToken = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction | undefined> => {
+    const _sellFYToken = async (): Promise<ContractTransaction | undefined> => {
       const _baseOutPreview = ethers.utils.parseUnits(baseOutPreview, decimals);
       const _outputLessSlippage = calculateSlippage(_baseOutPreview, slippageTolerance.toString(), true);
       const permits = await sign([
@@ -143,38 +127,9 @@ export const useTrade = (
     /**
      * Transact
      * */
-    const overrides = {
-      gasLimit: 250000,
-    };
 
-    try {
-      let res: ethers.ContractTransaction | undefined;
-
-      if (fyTokenOutput) {
-        res = await _sellBase(overrides);
-      } else {
-        res = await _sellFYToken(overrides);
-      }
-
-      setIsTransacting(false);
-      setTradeSubmitted(true);
-
-      res &&
-        toasty(
-          async () => {
-            await res?.wait();
-            mutate(`/pools/${chainId}/${account}`);
-          },
-          description!,
-          explorer && `${explorer}/tx/${res.hash}`
-        );
-    } catch (e) {
-      console.log(e);
-      toast.error('Transaction failed or rejected');
-      setIsTransacting(false);
-      setTradeSubmitted(false);
-    }
+    transact(method === TradeActions.SELL_BASE ? _sellBase : _sellFYToken, description);
   };
 
-  return { trade, isTransacting, tradeSubmitted };
+  return { trade, isTransacting, tradeSubmitted: txSubmitted };
 };

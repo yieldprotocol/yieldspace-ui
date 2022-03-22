@@ -1,7 +1,4 @@
-import { useSWRConfig } from 'swr';
-import { BigNumberish, ethers, PayableOverrides } from 'ethers';
-import { useState } from 'react';
-import { toast } from 'react-toastify';
+import { BigNumberish, ethers } from 'ethers';
 import { RemoveLiquidityActions } from '../../lib/protocol/liquidity/types';
 import { IPool } from '../../lib/protocol/types';
 import { cleanValue } from '../../utils/appUtils';
@@ -9,34 +6,20 @@ import { burn, calcPoolRatios } from '../../utils/yieldMath';
 import useConnector from '../useConnector';
 import useSignature from '../useSignature';
 import useLadle from './useLadle';
-import { CHAINS, ExtendedChainInformation } from '../../config/chains';
-import useToasty from '../useToasty';
+import useTransaction from '../useTransaction';
 
-export const useRemoveLiquidity = (
-  pool: IPool,
-  input: string,
-  method: RemoveLiquidityActions = RemoveLiquidityActions.BURN_FOR_BASE,
-  description: string | null = null
-) => {
-  const { mutate } = useSWRConfig();
+export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiquidityActions, description: string) => {
+  const { account } = useConnector();
+  const { sign } = useSignature();
+  const { transact, isTransacting, txSubmitted } = useTransaction();
+  const { ladleContract, forwardPermitAction, batch, transferAction, burnForBaseAction, burnAction } = useLadle();
 
   // settings
   const approveMax = false;
   const slippageTolerance = 0.001;
 
-  const { toasty } = useToasty();
-  const { account, chainId } = useConnector();
-  const explorer = (CHAINS[chainId!] as ExtendedChainInformation).blockExplorerUrls![0];
-  const { sign } = useSignature();
-  const { ladleContract, forwardPermitAction, batch, transferAction, burnForBaseAction, burnAction } = useLadle();
-
-  const [isRemovingLiq, setIsRemovingLiq] = useState<boolean>(false);
-  const [removeSubmitted, setRemoveSubmitted] = useState<boolean>(false);
-
   const removeLiquidity = async () => {
     if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
-    setRemoveSubmitted(false);
-    setIsRemovingLiq(true);
 
     const { base, fyToken } = pool;
     const cleanInput = cleanValue(input, base.decimals);
@@ -57,7 +40,11 @@ export const useRemoveLiquidity = (
 
     const alreadyApproved = (await pool.contract.allowance(account!, ladleContract?.address!)).gt(_input);
 
-    const _burnForBase = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction | undefined> => {
+    const overrides = {
+      gasLimit: 250000,
+    };
+
+    const _burnForBase = async (): Promise<ethers.ContractTransaction | undefined> => {
       const permits = await sign([
         {
           target: pool,
@@ -86,7 +73,7 @@ export const useRemoveLiquidity = (
       );
     };
 
-    const _burn = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction | undefined> => {
+    const _burn = async (): Promise<ethers.ContractTransaction | undefined> => {
       const permits = await sign([
         {
           target: pool,
@@ -115,39 +102,8 @@ export const useRemoveLiquidity = (
       );
     };
 
-    // transact
-    const overrides = {
-      gasLimit: 250000,
-    };
-
-    try {
-      let res: ethers.ContractTransaction | undefined;
-
-      if (method === RemoveLiquidityActions.BURN_FOR_BASE) {
-        res = await _burnForBase(overrides);
-      } else {
-        res = await _burn(overrides);
-      }
-
-      setIsRemovingLiq(false);
-      setRemoveSubmitted(true);
-
-      res &&
-        toasty(
-          async () => {
-            await res?.wait();
-            mutate(`/pools/${chainId}/${account}`);
-          },
-          description!,
-          explorer && `${explorer}/tx/${res.hash}`
-        );
-    } catch (e) {
-      console.log(e);
-      toast.error('Transaction failed or rejected');
-      setIsRemovingLiq(false);
-      setRemoveSubmitted(false);
-    }
+    transact(method === RemoveLiquidityActions.BURN_FOR_BASE ? _burnForBase : _burn, description);
   };
 
-  return { removeLiquidity, isRemovingLiq, removeSubmitted };
+  return { removeLiquidity, isRemovingLiq: isTransacting, removeSubmitted: txSubmitted };
 };
