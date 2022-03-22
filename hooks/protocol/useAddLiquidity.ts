@@ -1,6 +1,6 @@
-import { BigNumber, ethers } from 'ethers';
+import { ethers } from 'ethers';
 import { cleanValue } from '../../utils/appUtils';
-import { calcPoolRatios, calculateSlippage, fyTokenForMint, splitLiquidity } from '../../utils/yieldMath';
+import { calcPoolRatios, calculateSlippage, fyTokenForMint } from '../../utils/yieldMath';
 import { IPool } from '../../lib/protocol/types';
 import useConnector from '../useConnector';
 import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
