@@ -76,7 +76,7 @@ const AddConfirmation = ({ form, action, disabled, loading }: IAddConfirmation) 
             </DetailWrap>
             <DetailWrap>
               <Detail>LP Tokens to Receive</Detail>
-              <Detail>{lpTokenPreview}</Detail>
+              <Detail>{valueAtDigits(lpTokenPreview!, 6)}</Detail>
             </DetailWrap>
           </DetailsWrap>
         </InputStyleContainer>

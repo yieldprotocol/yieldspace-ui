@@ -1,7 +1,6 @@
 import tw from 'tailwind-styled-components';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { BorderWrap } from '../../components/styles';
 
 const DynamicPools = dynamic(() => import('../../components/pool/Pools'), { ssr: false });
 
@@ -10,11 +9,12 @@ const Inner = tw.div`m-4 text-center`;
 const Header = tw.div`text-lg justify-items-start align-middle`;
 const Button = tw.button`w-full bg-primary-700/80 align-middle px-4 py-2 text-gray-50 rounded-md hover:bg-primary-800/50`;
 const InnerWrap = tw.div`flex gap-10`;
+const Wrap = tw.div`mx-auto min-w-md p-2 shadow-md rounded-xl dark:bg-gray-900 bg-gray-100 dark:text-gray-50`;
 
 const Pool = () => (
   <Container>
     <InnerWrap>
-      <BorderWrap>
+      <Wrap>
         <Inner>
           <div className="flex justify-between align-middle gap-10 items-center">
             <Header>Your Positions</Header>
@@ -26,7 +26,7 @@ const Pool = () => (
           </div>
         </Inner>
         <DynamicPools />
-      </BorderWrap>
+      </Wrap>
     </InnerWrap>
   </Container>
 );
