@@ -9,8 +9,15 @@ import useLadle from './useLadle';
 import { LadleActions } from '../../lib/tx/operations';
 import { DAI_PERMIT_ASSETS } from '../../config/assets';
 import useTransaction from '../useTransaction';
+import useAddLiqPreview from './useAddLiqPreview';
 
-export const useAddLiquidity = (pool: IPool, input: string, method: AddLiquidityActions, description: string) => {
+export const useAddLiquidity = (
+  pool: IPool,
+  input: string,
+  method: AddLiquidityActions,
+  description: string,
+  slippageTolerance = 0.001
+) => {
   const { account } = useConnector();
   const { sign } = useSignature();
   const { transact, isTransacting, txSubmitted } = useTransaction();
@@ -24,8 +31,7 @@ export const useAddLiquidity = (pool: IPool, input: string, method: AddLiquidity
     mintAction,
   } = useLadle();
 
-  // settings
-  const slippageTolerance = 0.001;
+  const { fyTokenNeeded } = useAddLiqPreview(pool, input, method, slippageTolerance);
 
   const addLiquidity = async () => {
     if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
@@ -33,9 +39,6 @@ export const useAddLiquidity = (pool: IPool, input: string, method: AddLiquidity
     const { base, fyToken } = pool;
     const cleanInput = cleanValue(input, base.decimals);
     const _input = ethers.utils.parseUnits(cleanInput, base.decimals);
-    const _inputLessSlippage = _input;
-
-    // const _inputLessSlippage = calculateSlippage(_input, slippageTolerance.toString(), true);
 
     const [cachedBaseReserves, cachedFyTokenReserves] = await pool.contract.getCache();
     const cachedRealReserves = cachedFyTokenReserves.sub(pool.totalSupply);
@@ -53,7 +56,7 @@ export const useAddLiquidity = (pool: IPool, input: string, method: AddLiquidity
         cachedBaseReserves,
         cachedRealReserves,
         cachedFyTokenReserves,
-        _inputLessSlippage,
+        _input,
         pool.getTimeTillMaturity().toString(),
         pool.ts,
         pool.g1,
@@ -107,7 +110,7 @@ export const useAddLiquidity = (pool: IPool, input: string, method: AddLiquidity
         {
           target: pool.fyToken,
           spender: ladleContract?.address!,
-          amount: _input,
+          amount: fyTokenNeeded,
           ignoreIf: alreadyApproved,
         },
       ]);

@@ -190,10 +190,10 @@ export const getAsset = async (
     symbol: symbol.includes('FY') ? formatFyTokenSymbol(symbol) : symbol,
     decimals,
     balance,
-    balance_: cleanValue(ethers.utils.formatUnits(balance, decimals), digitFormat),
+    balance_: cleanValue(ethers.utils.formatUnits(balance, decimals), decimals),
     contract,
     getAllowance,
-    digitFormat: ASSET_INFO.get(symbol)?.digitFormat || 2,
+    digitFormat,
   };
 };
 

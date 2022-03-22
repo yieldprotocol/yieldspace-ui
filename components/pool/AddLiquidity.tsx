@@ -18,6 +18,7 @@ import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
 import Arrow from '../trade/Arrow';
 import InputsWrap from '../styles/InputsWrap';
 import useInputValidation from '../../hooks/useInputValidation';
+import useAddLiqPreview from '../../hooks/protocol/useAddLiqPreview';
 
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
@@ -53,8 +54,10 @@ const AddLiquidity = () => {
   const { pool, baseAmount, fyTokenAmount, method, description, useFyToken } = form;
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
   const [useFyTokenToggle, setUseFyTokenToggle] = useState<boolean>(false);
+  const [slippageTolerance, setSlippageTolerance] = useState<number>(0.001);
 
   const { errorMsg } = useInputValidation(baseAmount, pool, [], method!);
+  const { fyTokenNeeded } = useAddLiqPreview(pool!, baseAmount, method, slippageTolerance);
   const { addLiquidity, isAddingLiquidity, addSubmitted } = useAddLiquidity(pool!, baseAmount, method, description);
 
   const handleMaxBase = () => {
@@ -119,6 +122,10 @@ const AddLiquidity = () => {
       setForm((f) => ({ ...f, pool: _pool }));
     }
   }, [pools, pool]);
+
+  useEffect(() => {
+    fyTokenNeeded && setForm((f) => ({ ...f, fyTokenAmount: fyTokenNeeded }));
+  }, [fyTokenNeeded]);
 
   return (
     <BorderWrap>

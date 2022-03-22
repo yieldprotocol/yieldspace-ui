@@ -1,5 +1,6 @@
 import tw from 'tailwind-styled-components';
 import { IAsset, IPool } from '../../lib/protocol/types';
+import { valueAtDigits } from '../../utils/appUtils';
 import AssetSelect from '../common/AssetSelect';
 
 type DivProps = {
@@ -13,8 +14,8 @@ const Container = tw.div<DivProps>`${(p) =>
 const Input = tw.input`h-full caret-gray-800 dark:caret-gray-50 text-2xl appearance-none w-full dark:bg-gray-800 bg-gray-300 dark:focus:text-gray-50 focus:text-gray-800 dark:text-gray-300 text-gray-800 py-1 px-4 leading-tight focus:outline-none `;
 const Inner = tw.div`grow-0 w-auto ml-3 text-center text-lg align-middle my-1 items-center`;
 const AssetSelectOuter = tw.div`grow min-w-fit`;
-const AssetSelectWrap = tw.div`p-1`;
-const MaxButton = tw.button`float-right flex items-center gap-1 my-[1px] text-xs mr-2 dark:text-gray-300 text-gray-700 hover:text-gray-600 dark:hover:text-gray-400`;
+const AssetSelectWrap = tw.div`flex justify-end p-1`;
+const MaxButton = tw.button`justify-end flex items-center gap-1 my-[1px] text-xs mr-1 dark:text-gray-300 text-gray-700 hover:text-gray-600 dark:hover:text-gray-400`;
 
 interface IInputWrap {
   name: string;
@@ -49,7 +50,7 @@ const InputWrap = ({ name, value, item, balance, handleChange, disabled, unFocus
       {item && (
         <MaxButton onClick={useMax}>
           <div>Balance:</div>
-          <div>{balance}</div>
+          <div>{valueAtDigits(balance, 6)}</div>
         </MaxButton>
       )}
     </AssetSelectOuter>

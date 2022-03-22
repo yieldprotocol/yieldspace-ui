@@ -4,7 +4,7 @@ import { IPool } from '../../lib/protocol/types';
 import Button from '../common/Button';
 import { IRemoveLiquidityForm } from './RemoveLiquidity';
 import useRemoveLiqPreview from '../../hooks/protocol/useRemoveLiqPreview';
-import { cleanValue } from '../../utils/appUtils';
+import { cleanValue, valueAtDigits } from '../../utils/appUtils';
 
 const Container = tw.div`relative flex justify-center items-center w-full`;
 const Wrap = tw.div`w-full text-center text-lg align-middle items-center`;
@@ -49,7 +49,7 @@ const RemoveConfirmation = ({ form, action, disabled, loading }: IRemoveConfirma
       <Wrap>
         <InputsOuter>
           <InputsWrap>
-            <ConfirmItem value={lpTokens} pool={pool!} />
+            <ConfirmItem value={valueAtDigits(lpTokens, 4)} pool={pool!} />
           </InputsWrap>
         </InputsOuter>
         <InputStyleContainer>

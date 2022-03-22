@@ -6,7 +6,7 @@ import Button from '../common/Button';
 import useTimeTillMaturity from '../../hooks/useTimeTillMaturity';
 import InfoIcon from '../common/InfoIcon';
 import { ITradeForm } from './TradeWidget';
-import { cleanValue } from '../../utils/appUtils';
+import { cleanValue, valueAtDigits } from '../../utils/appUtils';
 
 const Container = tw.div`relative flex justify-center items-center w-full`;
 const Wrap = tw.div`w-full text-center text-lg align-middle items-center`;
@@ -47,8 +47,8 @@ const ConfirmItem = ({ value, asset, pool }: { value: string; asset: IAsset; poo
 const TradeConfirmation = ({ form, interestRate, action, disabled, loading }: ITradeConfirmation) => {
   const { pool, fromAmount, fromAsset, toAmount, toAsset, toAmountLessSlippage } = form;
   const timeTillMaturity_ = useTimeTillMaturity(pool?.maturity!);
-  const fromAmount_ = cleanValue(fromAmount, fromAsset?.digitFormat);
-  const toAmount_ = cleanValue(toAmount, toAsset?.digitFormat);
+  const fromAmount_ = valueAtDigits(fromAmount, fromAsset?.digitFormat!);
+  const toAmount_ = valueAtDigits(toAmount, toAsset?.digitFormat);
   const toAmountLessSlippage_ = cleanValue(toAmountLessSlippage, toAsset?.digitFormat);
 
   return (
