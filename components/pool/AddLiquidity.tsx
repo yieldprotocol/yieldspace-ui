@@ -170,7 +170,13 @@ const AddLiquidity = () => {
               />
             )}
           </InputsWrap>
-          <Toggle enabled={useFyToken} setEnabled={setUseFyTokenToggle} label="Use fyToken Balance" />
+          {+pool?.fyToken?.balance_! > 0 && (
+            <Toggle
+              enabled={useFyToken}
+              setEnabled={setUseFyTokenToggle}
+              label={`Use fy${pool?.base.symbol} Balance`}
+            />
+          )}
         </Grid>
         <Button
           action={handleSubmit}
