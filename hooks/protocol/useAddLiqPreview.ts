@@ -14,6 +14,7 @@ const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityA
         return setLpTokenPreview('');
       }
       const { totalSupply, decimals, contract, getTimeTillMaturity, ts, g1 } = pool;
+      const timeTillMaturity = getTimeTillMaturity().toString();
 
       const _baseAmount = ethers.utils.parseUnits(baseAmount || '0', decimals);
       const [cachedBaseReserves, cachedFyTokenReserves] = await contract.getCache();
@@ -28,7 +29,7 @@ const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityA
         cachedRealReserves,
         cachedFyTokenReserves,
         _baseAmount,
-        getTimeTillMaturity().toString(),
+        timeTillMaturity,
         ts,
         g1,
         decimals,
@@ -42,9 +43,9 @@ const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityA
               cachedFyTokenReserves,
               cachedRealReserves,
               _fyTokenToBuy,
-              getTimeTillMaturity().toString(),
-              pool.ts,
-              pool.g1,
+              timeTillMaturity,
+              ts,
+              g1,
               decimals
             )
           : mint(cachedBaseReserves, cachedRealReserves, totalSupply, BigNumber.from(_fyTokenNeeded), false);

@@ -56,8 +56,8 @@ const AddLiquidity = () => {
   const [useFyTokenToggle, setUseFyTokenToggle] = useState<boolean>(false);
   const [slippageTolerance, setSlippageTolerance] = useState<number>(0.001);
 
-  const { errorMsg } = useInputValidation(baseAmount, pool, [], method!);
   const { fyTokenNeeded } = useAddLiqPreview(pool!, baseAmount, method, slippageTolerance);
+  const { errorMsg } = useInputValidation(baseAmount, pool, [], method!);
   const { addLiquidity, isAddingLiquidity, addSubmitted } = useAddLiquidity(pool!, baseAmount, method, description);
 
   const handleMaxBase = () => {

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { AddLiquidityActions, RemoveLiquidityActions } from '../lib/protocol/liquidity/types';
 import { TradeActions } from '../lib/protocol/trade/types';
 import { IPool } from '../lib/protocol/types';
+import useAddLiqPreview from './protocol/useAddLiqPreview';
 import useConnector from './useConnector';
 
 const useInputValidation = (
@@ -16,6 +17,9 @@ const useInputValidation = (
   const _input = parseFloat(input!);
   const aboveMax = !!limits[1] && _input > parseFloat(limits[1].toString());
   const belowMin = !!limits[0] && _input < parseFloat(limits[0].toString());
+
+  // calculate the fyTokenNeeded for minting with both base and fyToken; only used with MINT
+  const { fyTokenNeeded } = useAddLiqPreview(pool!, input!, AddLiquidityActions.MINT);
 
   useEffect(() => {
     if (!account) {
@@ -58,7 +62,7 @@ const useInputValidation = (
         break;
       case AddLiquidityActions.MINT:
         baseBalance < _input && setErrorMsg(`Insufficient ${base.symbol} balance`);
-        fyTokenBalance < _input && setErrorMsg(`Insufficient ${fyToken.symbol} balance`);
+        fyTokenBalance < +fyTokenNeeded! && setErrorMsg(`Insufficient ${fyToken.symbol} balance`);
         break;
       case RemoveLiquidityActions.BURN_FOR_BASE:
       case RemoveLiquidityActions.BURN:
@@ -68,7 +72,7 @@ const useInputValidation = (
         setErrorMsg(null);
         break;
     }
-  }, [account, pool, input, action, aboveMax, _input, belowMin, limits]);
+  }, [account, pool, input, action, aboveMax, _input, belowMin, limits, fyTokenNeeded]);
 
   return { errorMsg };
 };

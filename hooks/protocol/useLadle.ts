@@ -53,16 +53,16 @@ const useLadle = () => {
   const routeAction = (target: string, calldata: string): string | undefined =>
     ladle?.interface.encodeFunctionData(LadleActions.Fn.ROUTE, [target, calldata]);
 
-  const sellBaseAction = (poolContract: Pool, receiver: string, min: BigNumberish): string | undefined =>
+  const sellBaseAction = (poolContract: Pool, to: string, min: BigNumberish): string | undefined =>
     ladle?.interface.encodeFunctionData(LadleActions.Fn.ROUTE, [
       poolContract.address,
-      poolContract.interface.encodeFunctionData(RoutedActions.Fn.SELL_BASE, [receiver, min]),
+      poolContract.interface.encodeFunctionData(RoutedActions.Fn.SELL_BASE, [to, min]),
     ]);
 
-  const sellFYTokenAction = (poolContract: Pool, receiver: string, min: BigNumberish): string | undefined =>
+  const sellFYTokenAction = (poolContract: Pool, to: string, min: BigNumberish): string | undefined =>
     ladle?.interface.encodeFunctionData(LadleActions.Fn.ROUTE, [
       poolContract.address,
-      poolContract.interface.encodeFunctionData(RoutedActions.Fn.SELL_FYTOKEN, [receiver, min]),
+      poolContract.interface.encodeFunctionData(RoutedActions.Fn.SELL_FYTOKEN, [to, min]),
     ]);
 
   const mintWithBaseAction = (

@@ -8,20 +8,12 @@ import {
   buyFYToken,
   calculateAPR,
   maxBaseIn,
-  maxBaseOut,
   maxFyTokenIn,
-  maxFyTokenOut,
   sellBase,
   sellFYToken,
 } from '../../utils/yieldMath';
 
-const useTradePreview = (
-  pool: IPool | undefined,
-  tradeAction: TradeActions,
-  fromInput: string,
-  toInput: string,
-  isFyTokenOutput: boolean
-) => {
+const useTradePreview = (pool: IPool | undefined, tradeAction: TradeActions, fromInput: string, toInput: string) => {
   const [fyTokenOutPreview, setFyTokenOutPreview] = useState<string>('');
   const [fyTokenInPreview, setFyTokenInPreview] = useState<string>('');
 
@@ -34,6 +26,7 @@ const useTradePreview = (
   const [maxBaseIn_, setMaxBaseIn] = useState<string>();
 
   const validatePreview = (preview: BigNumber) => (preview.lt(ethers.constants.Zero) ? ethers.constants.Zero : preview);
+  const isFyTokenOutput = [TradeActions.SELL_BASE, TradeActions.BUY_FYTOKEN].includes(tradeAction);
 
   useEffect(() => {
     if (pool) {
