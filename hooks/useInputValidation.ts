@@ -3,20 +3,32 @@ import { AddLiquidityActions, RemoveLiquidityActions } from '../lib/protocol/liq
 import { TradeActions } from '../lib/protocol/trade/types';
 import { IPool } from '../lib/protocol/types';
 import useAddLiqPreview from './protocol/useAddLiqPreview';
+import useTradePreview from './protocol/useTradePreview';
 import useConnector from './useConnector';
 
 const useInputValidation = (
   input: string | undefined,
   pool: IPool | undefined,
   limits: (number | string | undefined)[],
-  action: TradeActions | AddLiquidityActions | RemoveLiquidityActions
+  action: TradeActions | AddLiquidityActions | RemoveLiquidityActions,
+  secondaryInput: string | undefined = '' // this is the "to" amount when trading
 ) => {
   const { account } = useConnector();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const _input = parseFloat(input!);
+  const _secondaryInput = parseFloat(secondaryInput!);
+
   const aboveMax = !!limits[1] && _input > parseFloat(limits[1].toString());
   const belowMin = !!limits[0] && _input < parseFloat(limits[0].toString());
+
+  const tradeAction = action === TradeActions.SELL_BASE || action === TradeActions.SELL_FYTOKEN ? action : undefined;
+  const { maxBaseIn, maxBaseOut, maxFyTokenIn, maxFyTokenOut } = useTradePreview(
+    pool,
+    tradeAction!,
+    input!,
+    secondaryInput
+  );
 
   // calculate the fyTokenNeeded for minting with both base and fyToken; only used with MINT
   const { fyTokenNeeded } = useAddLiqPreview(pool!, input!, AddLiquidityActions.MINT);
@@ -51,11 +63,15 @@ const useInputValidation = (
       case TradeActions.BUY_FYTOKEN:
         aboveMax && setErrorMsg(`Max tradable ${base.symbol} is ${limits[1]} `);
         baseBalance < _input && setErrorMsg(`Insufficient ${base.symbol} balance`);
+        +maxBaseIn! < _input && setErrorMsg(`Max tradable ${base.symbol} is ${maxBaseIn}`);
+        +maxFyTokenOut! < _secondaryInput && setErrorMsg(`Max fy${base.symbol} out is ${maxFyTokenOut}`);
         break;
       case TradeActions.SELL_FYTOKEN:
       case TradeActions.BUY_BASE:
         aboveMax && setErrorMsg(`Max tradable ${fyToken.symbol} is ${limits[1]} `);
         fyTokenBalance < _input && setErrorMsg(`Insufficient ${fyToken.symbol} balance`);
+        +maxFyTokenIn! < _input && setErrorMsg(`Max ${base.symbol} in is ${maxFyTokenIn} `);
+        +maxBaseOut! < _secondaryInput && setErrorMsg(`Max ${base.symbol} out is ${maxBaseOut}`);
         break;
       case AddLiquidityActions.MINT_WITH_BASE:
         baseBalance < _input && setErrorMsg(`Insufficient ${base.symbol} balance`);
@@ -72,7 +88,22 @@ const useInputValidation = (
         setErrorMsg(null);
         break;
     }
-  }, [account, pool, input, action, aboveMax, _input, belowMin, limits, fyTokenNeeded]);
+  }, [
+    account,
+    pool,
+    input,
+    action,
+    aboveMax,
+    _input,
+    belowMin,
+    limits,
+    fyTokenNeeded,
+    maxFyTokenIn,
+    maxBaseOut,
+    maxBaseIn,
+    maxFyTokenOut,
+    _secondaryInput,
+  ]);
 
   return { errorMsg };
 };

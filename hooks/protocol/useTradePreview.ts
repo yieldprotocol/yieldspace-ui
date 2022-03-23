@@ -8,12 +8,19 @@ import {
   buyFYToken,
   calculateAPR,
   maxBaseIn,
+  maxBaseOut,
   maxFyTokenIn,
+  maxFyTokenOut,
   sellBase,
   sellFYToken,
 } from '../../utils/yieldMath';
 
-const useTradePreview = (pool: IPool | undefined, tradeAction: TradeActions, fromInput: string, toInput: string) => {
+const useTradePreview = (
+  pool: IPool | undefined,
+  tradeAction: TradeActions | undefined,
+  fromInput: string,
+  toInput: string
+) => {
   const [fyTokenOutPreview, setFyTokenOutPreview] = useState<string>('');
   const [fyTokenInPreview, setFyTokenInPreview] = useState<string>('');
 
@@ -24,103 +31,87 @@ const useTradePreview = (pool: IPool | undefined, tradeAction: TradeActions, fro
 
   const [maxFyTokenIn_, setMaxFyTokenIn] = useState<string>();
   const [maxBaseIn_, setMaxBaseIn] = useState<string>();
+  const [maxFyTokenOut_, setMaxFyTokenOut] = useState<string>();
+  const [maxBaseOut_, setMaxBaseOut] = useState<string>();
 
   const validatePreview = (preview: BigNumber) => (preview.lt(ethers.constants.Zero) ? ethers.constants.Zero : preview);
-  const isFyTokenOutput = [TradeActions.SELL_BASE, TradeActions.BUY_FYTOKEN].includes(tradeAction);
+  const isFyTokenOutput = [TradeActions.SELL_BASE, TradeActions.BUY_FYTOKEN].includes(tradeAction!);
 
   useEffect(() => {
+    if (!tradeAction) return;
+
     if (pool) {
+      const { baseReserves, fyTokenReserves, getTimeTillMaturity, ts, g1, g2, decimals, maturity, base, fyToken } =
+        pool;
+      const timeTillMaturity = getTimeTillMaturity().toString();
+
       // sellBase
       // fyTokenOutForBaseIn
       if (tradeAction === TradeActions.SELL_BASE) {
-        const baseIn_ = fromInput === '' ? '0' : cleanValue(fromInput, pool.decimals);
-        const baseIn = ethers.utils.parseUnits(baseIn_, pool.decimals);
+        const baseIn_ = fromInput === '' ? '0' : cleanValue(fromInput, decimals);
+        const baseIn = ethers.utils.parseUnits(baseIn_, decimals);
 
-        const _fyTokenOutPreview = sellBase(
-          pool.baseReserves,
-          pool.fyTokenReserves,
-          baseIn,
-          pool?.getTimeTillMaturity().toString(),
-          pool.ts,
-          pool.g1,
-          pool.decimals
-        );
-        setFyTokenOutPreview(ethers.utils.formatUnits(validatePreview(_fyTokenOutPreview), pool.decimals));
-        setInterestRatePreview(cleanValue(calculateAPR(baseIn, _fyTokenOutPreview, pool.maturity)!, 2));
+        const _fyTokenOutPreview = sellBase(baseReserves, fyTokenReserves, baseIn, timeTillMaturity, ts, g1, decimals);
+        setFyTokenOutPreview(ethers.utils.formatUnits(validatePreview(_fyTokenOutPreview), decimals));
+        setInterestRatePreview(cleanValue(calculateAPR(baseIn, _fyTokenOutPreview, maturity)!, 2));
       } else if (tradeAction === TradeActions.SELL_FYTOKEN) {
         // sellFyToken
         // baseOutForFYTokenIn
-        const fyTokenIn_ = fromInput === '' ? '0' : cleanValue(fromInput, pool.decimals);
-        const fyTokenIn = ethers.utils.parseUnits(fyTokenIn_, pool.decimals);
+        const fyTokenIn_ = fromInput === '' ? '0' : cleanValue(fromInput, decimals);
+        const fyTokenIn = ethers.utils.parseUnits(fyTokenIn_, decimals);
 
         const _baseOutPreview = sellFYToken(
-          pool.baseReserves,
-          pool.fyTokenReserves,
+          baseReserves,
+          fyTokenReserves,
           fyTokenIn,
-          pool?.getTimeTillMaturity().toString(),
-          pool.ts,
-          pool.g2,
-          pool.decimals
+          timeTillMaturity,
+          ts,
+          g2,
+          decimals
         );
 
-        setBaseOutPreview(ethers.utils.formatUnits(validatePreview(_baseOutPreview), pool.decimals));
-        setInterestRatePreview(cleanValue(calculateAPR(_baseOutPreview, fyTokenIn, pool.maturity)!, 2));
+        setBaseOutPreview(ethers.utils.formatUnits(validatePreview(_baseOutPreview), decimals));
+        setInterestRatePreview(cleanValue(calculateAPR(_baseOutPreview, fyTokenIn, maturity)!, 2));
       } else if (tradeAction === TradeActions.BUY_BASE) {
         // buyBase
         // fyTokenInForBaseOut
-        const baseOut_ = toInput === '' ? '0' : cleanValue(toInput, pool.decimals);
-        const baseOut = ethers.utils.parseUnits(baseOut_, pool.decimals);
+        const baseOut_ = toInput === '' ? '0' : cleanValue(toInput, decimals);
+        const baseOut = ethers.utils.parseUnits(baseOut_, decimals);
 
-        const _fyTokenInPreview = buyBase(
-          pool.baseReserves,
-          pool.fyTokenReserves,
-          baseOut,
-          pool?.getTimeTillMaturity().toString(),
-          pool.ts,
-          pool.g2,
-          pool.decimals
-        );
-        setFyTokenInPreview(ethers.utils.formatUnits(validatePreview(_fyTokenInPreview), pool.decimals));
-        setInterestRatePreview(cleanValue(calculateAPR(baseOut, _fyTokenInPreview, pool.maturity)!, 2));
+        const _fyTokenInPreview = buyBase(baseReserves, fyTokenReserves, baseOut, timeTillMaturity, ts, g2, decimals);
+        setFyTokenInPreview(ethers.utils.formatUnits(validatePreview(_fyTokenInPreview), decimals));
+        setInterestRatePreview(cleanValue(calculateAPR(baseOut, _fyTokenInPreview, maturity)!, 2));
       } else if (tradeAction === TradeActions.BUY_FYTOKEN) {
         // buyFYToken
         // baseInForFYTokenOut
-        const fyTokenOut_ = toInput === '' ? '0' : cleanValue(toInput, pool.decimals);
-        const fyTokenOut = ethers.utils.parseUnits(fyTokenOut_, pool.decimals);
+        const fyTokenOut_ = toInput === '' ? '0' : cleanValue(toInput, decimals);
+        const fyTokenOut = ethers.utils.parseUnits(fyTokenOut_, decimals);
 
         const _baseInPreview = buyFYToken(
-          pool.baseReserves,
-          pool.fyTokenReserves,
+          baseReserves,
+          fyTokenReserves,
           fyTokenOut,
-          pool?.getTimeTillMaturity().toString(),
-          pool.ts,
-          pool.g1,
-          pool.decimals
+          timeTillMaturity,
+          ts,
+          g1,
+          decimals
         );
-        setBaseInPreview(ethers.utils.formatUnits(validatePreview(_baseInPreview), pool.decimals));
-        setInterestRatePreview(cleanValue(calculateAPR(_baseInPreview, fyTokenOut, pool.maturity)!, 2));
+        setBaseInPreview(ethers.utils.formatUnits(validatePreview(_baseInPreview), decimals));
+        setInterestRatePreview(cleanValue(calculateAPR(_baseInPreview, fyTokenOut, maturity)!, 2));
       }
 
       /* Get maxes */
-      const _maxFyTokenIn = maxFyTokenIn(
-        pool.baseReserves,
-        pool.fyTokenReserves,
-        pool.getTimeTillMaturity().toString(),
-        pool.ts,
-        pool.g2,
-        pool.decimals
-      );
-      setMaxFyTokenIn(cleanValue(ethers.utils.formatUnits(_maxFyTokenIn, pool.decimals), pool.fyToken.digitFormat));
+      const _maxFyTokenIn = maxFyTokenIn(baseReserves, fyTokenReserves, timeTillMaturity, ts, g2, decimals);
+      setMaxFyTokenIn(cleanValue(ethers.utils.formatUnits(_maxFyTokenIn, decimals), fyToken.digitFormat));
 
-      const _maxBaseIn = maxBaseIn(
-        pool.baseReserves,
-        pool.fyTokenReserves,
-        pool.getTimeTillMaturity().toString(),
-        pool.ts,
-        pool.g1,
-        pool.decimals
-      );
-      setMaxBaseIn(cleanValue(ethers.utils.formatUnits(_maxBaseIn, pool.decimals), pool.base.digitFormat));
+      const _maxBaseIn = maxBaseIn(baseReserves, fyTokenReserves, timeTillMaturity, ts, g1, decimals);
+      setMaxBaseIn(cleanValue(ethers.utils.formatUnits(_maxBaseIn, decimals), base.digitFormat));
+
+      const _maxFyTokenOut = maxFyTokenOut(baseReserves, fyTokenReserves, timeTillMaturity, ts, g1, decimals);
+      setMaxFyTokenOut(cleanValue(ethers.utils.formatUnits(_maxFyTokenOut, decimals), fyToken.digitFormat));
+
+      const _maxBaseout = maxBaseOut(baseReserves, fyTokenReserves, timeTillMaturity, ts, g2, decimals);
+      setMaxBaseOut(cleanValue(ethers.utils.formatUnits(_maxBaseout, decimals), base.digitFormat));
     }
   }, [fromInput, isFyTokenOutput, pool, tradeAction, toInput]);
 
@@ -132,6 +123,8 @@ const useTradePreview = (pool: IPool | undefined, tradeAction: TradeActions, fro
     interestRatePreview,
     maxFyTokenIn: maxFyTokenIn_,
     maxBaseIn: maxBaseIn_,
+    maxFyTokenOut: maxFyTokenOut_,
+    maxBaseOut: maxBaseOut_,
   };
 };
 

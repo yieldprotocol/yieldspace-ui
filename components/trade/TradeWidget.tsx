@@ -60,11 +60,11 @@ const TradeWidget = () => {
     interestRatePreview,
     maxFyTokenIn,
     maxBaseIn,
-  } = useTradePreview(form.pool, form.tradeAction, form.fromAmount, form.toAmount, form.isFyTokenOutput);
+  } = useTradePreview(form.pool, form.tradeAction, form.fromAmount, form.toAmount);
   const { pool, fromAsset, fromAmount, toAsset, toAmount, tradeAction, isFyTokenOutput } = form;
 
   const max = isFyTokenOutput ? maxBaseIn : maxFyTokenIn; // max limit to be used in validation
-  const { errorMsg } = useInputValidation(fromAmount, pool!, [0, max], tradeAction);
+  const { errorMsg } = useInputValidation(fromAmount, pool!, [0, max], tradeAction, toAmount);
 
   const [updatingFromAmount, setUpdatingFromAmount] = useState<boolean>(false);
   const [updatingToAmount, setUpdatingToAmount] = useState<boolean>(false);
