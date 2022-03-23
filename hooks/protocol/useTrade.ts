@@ -52,8 +52,11 @@ export const useTrade = (
     const _sellBase = async (): Promise<ContractTransaction | undefined> => {
       const baseAlreadyApproved = (await base.getAllowance(account!, poolAddress)).gt(_inputToUse);
 
-      const _fyTokenOutPreview = ethers.utils.parseUnits(fyTokenOutPreview, decimals);
-      const _outputLessSlippage = calculateSlippage(_fyTokenOutPreview, slippageTolerance.toString(), true);
+      const _outputLessSlippage = calculateSlippage(
+        ethers.utils.parseUnits(fyTokenOutPreview, decimals),
+        slippageTolerance.toString(),
+        true
+      );
 
       const permits = await sign([
         {
@@ -93,8 +96,10 @@ export const useTrade = (
     const _sellFYToken = async (): Promise<ContractTransaction | undefined> => {
       const fyTokenAlreadyApproved = (await fyToken.getAllowance(account!, poolAddress)).gt(_inputToUse);
 
-      const _baseOutPreview = ethers.utils.parseUnits(baseOutPreview, decimals);
-      const _outputLessSlippage = calculateSlippage(_baseOutPreview, slippageTolerance.toString(), true);
+      const _outputLessSlippage = ethers.utils.parseUnits(
+        calculateSlippage(baseOutPreview, slippageTolerance.toString(), true),
+        decimals
+      );
 
       const permits = await sign([
         {
@@ -110,7 +115,7 @@ export const useTrade = (
       const res = await batch(
         [
           forwardPermitAction(token, spender, amount, deadline, v, r, s)!,
-          transferAction(fyToken.address, account!, _inputToUse)!,
+          transferAction(fyToken.address, poolAddress, _inputToUse)!,
           sellFYTokenAction(contract, account!, _outputLessSlippage)!,
         ],
         overrides
