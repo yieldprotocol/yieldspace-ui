@@ -124,10 +124,6 @@ export const useTrade = (
       return res;
     };
 
-    /**
-     * Transact
-     * */
-
     transact(method === TradeActions.SELL_BASE ? _sellBase : _sellFYToken, description);
   };
 
