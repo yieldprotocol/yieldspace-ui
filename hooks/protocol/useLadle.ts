@@ -54,17 +54,17 @@ const useLadle = () => {
   const routeAction = (target: string, calldata: string): string | undefined =>
     ladle?.interface.encodeFunctionData(LadleActions.Fn.ROUTE, [target, calldata]);
 
+  const moduleCallAction = (target: string, calldata: string): string | undefined =>
+    ladle?.interface.encodeFunctionData(LadleActions.Fn.MODULE, [target, calldata]);
+
   const sellBaseAction = (poolContract: Pool, to: string, min: BigNumberish): string | undefined =>
-    ladle?.interface.encodeFunctionData(LadleActions.Fn.ROUTE, [
-      poolContract.address,
-      poolContract.interface.encodeFunctionData(RoutedActions.Fn.SELL_BASE, [to, min]),
-    ]);
+    routeAction(poolContract.address, poolContract.interface.encodeFunctionData(RoutedActions.Fn.SELL_BASE, [to, min]));
 
   const sellFYTokenAction = (poolContract: Pool, to: string, min: BigNumberish): string | undefined =>
-    ladle?.interface.encodeFunctionData(LadleActions.Fn.ROUTE, [
+    routeAction(
       poolContract.address,
-      poolContract.interface.encodeFunctionData(RoutedActions.Fn.SELL_FYTOKEN, [to, min]),
-    ]);
+      poolContract.interface.encodeFunctionData(RoutedActions.Fn.SELL_FYTOKEN, [to, min])
+    );
 
   const mintWithBaseAction = (
     poolContract: Pool,
@@ -74,7 +74,7 @@ const useLadle = () => {
     minRatio: BigNumberish,
     maxRatio: BigNumberish
   ): string | undefined =>
-    ladle?.interface.encodeFunctionData(LadleActions.Fn.ROUTE, [
+    routeAction(
       poolContract.address,
       poolContract.interface.encodeFunctionData(RoutedActions.Fn.MINT_WITH_BASE, [
         to,
@@ -82,8 +82,8 @@ const useLadle = () => {
         fyTokenToBuy,
         minRatio,
         maxRatio,
-      ]),
-    ]);
+      ])
+    );
 
   const mintAction = (
     poolContract: Pool,
@@ -92,10 +92,10 @@ const useLadle = () => {
     minRatio: BigNumberish,
     maxRatio: BigNumberish
   ): string | undefined =>
-    ladle?.interface.encodeFunctionData(LadleActions.Fn.ROUTE, [
+    routeAction(
       poolContract.address,
-      poolContract.interface.encodeFunctionData(RoutedActions.Fn.MINT_POOL_TOKENS, [to, remainder, minRatio, maxRatio]),
-    ]);
+      poolContract.interface.encodeFunctionData(RoutedActions.Fn.MINT_POOL_TOKENS, [to, remainder, minRatio, maxRatio])
+    );
 
   const burnForBaseAction = (
     poolContract: Pool,
@@ -103,10 +103,10 @@ const useLadle = () => {
     minRatio: BigNumberish,
     maxRatio: BigNumberish
   ): string | undefined =>
-    ladle?.interface.encodeFunctionData(LadleActions.Fn.ROUTE, [
+    routeAction(
       poolContract.address,
-      poolContract.interface.encodeFunctionData(RoutedActions.Fn.BURN_FOR_BASE, [to, minRatio, maxRatio]),
-    ]);
+      poolContract.interface.encodeFunctionData(RoutedActions.Fn.BURN_FOR_BASE, [to, minRatio, maxRatio])
+    );
 
   const burnAction = (
     poolContract: Pool,
@@ -115,18 +115,15 @@ const useLadle = () => {
     minRatio: BigNumberish,
     maxRatio: BigNumberish
   ): string | undefined =>
-    ladle?.interface.encodeFunctionData(LadleActions.Fn.ROUTE, [
+    routeAction(
       poolContract.address,
       poolContract.interface.encodeFunctionData(RoutedActions.Fn.BURN_POOL_TOKENS, [
         baseTo,
         fyTokenTo,
         minRatio,
         maxRatio,
-      ]),
-    ]);
-
-  const moduleCallAction = (target: string, calldata: string): string | undefined =>
-    ladle?.interface.encodeFunctionData(LadleActions.Fn.MODULE, [target, calldata]);
+      ])
+    );
 
   const wrapETHAction = (poolContract: Pool, etherWithSlippage: BigNumberish): string | undefined =>
     moduleCallAction(
