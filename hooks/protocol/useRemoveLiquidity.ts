@@ -43,11 +43,9 @@ export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiq
         },
       ]);
 
-      const [, , , deadline, v, r, s] = permits[0].args! as LadleActions.Args.FORWARD_PERMIT;
-
       return batch(
         [
-          forwardPermitAction(pool.address, ladleContract?.address!, _input, deadline, v, r, s)!,
+          forwardPermitAction(...(permits[0].args as LadleActions.Args.FORWARD_PERMIT))!,
           transferAction(pool.address, pool.address, _input)!,
           burnForBaseAction(pool.contract, account!, minRatio, maxRatio)!,
         ],
@@ -65,11 +63,9 @@ export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiq
         },
       ]);
 
-      const [, , , deadline, v, r, s] = permits[0].args! as LadleActions.Args.FORWARD_PERMIT;
-
       return batch(
         [
-          forwardPermitAction(pool.address, ladleContract?.address!, _input, deadline, v, r, s)!,
+          forwardPermitAction(...(permits[0].args as LadleActions.Args.FORWARD_PERMIT))!,
           transferAction(pool.address, pool.address, _input)!,
           burnAction(pool.contract, account!, account!, minRatio, maxRatio)!,
         ],
