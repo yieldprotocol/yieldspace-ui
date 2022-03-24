@@ -89,22 +89,22 @@ export const useAddLiquidity = (
       }
 
       // build action array
-      const isEthPool = pool.base.symbol === 'ETH';
+      const isEth = pool.base.symbol === 'ETH';
       const withEthOverrides = { ...overrides, value: _input } as PayableOverrides;
 
       const actions = [
-        isEthPool && wrapETHAction(pool.contract, _input)!,
-        !isEthPool && forwardPermitAction(...(permits[0].args as LadleActions.Args.FORWARD_PERMIT))!,
-        !isEthPool && transferAction(base.address, pool.address, _input)!,
+        isEth && wrapETHAction(pool.contract, _input)!,
+        !isEth && forwardPermitAction(...(permits[0].args as LadleActions.Args.FORWARD_PERMIT))!,
+        !isEth && transferAction(base.address, pool.address, _input)!,
         mintWithBaseAction(
           pool.contract,
           account!,
-          isEthPool ? ladleContract?.address! : account!, // minting with eth needs to be sent to ladle
+          isEth ? ladleContract?.address! : account!, // minting with eth needs to be sent to ladle
           _fyTokenToBeMinted,
           minRatio,
           maxRatio
         )!,
-        isEthPool && exitETHAction(account!),
+        isEth && exitETHAction(account!),
       ].filter(Boolean) as string[];
 
       return batch(actions, withEthOverrides);
