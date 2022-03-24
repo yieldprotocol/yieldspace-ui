@@ -97,7 +97,7 @@ export const useAddLiquidity = (
 
       const actions = [
         isEthPool && wrapETHAction(pool.contract, _input)!,
-        !isEthPool && forwardPermitAction(...(permits[0].args! as LadleActions.Args.FORWARD_PERMIT))!,
+        !isEthPool && forwardPermitAction(...(permits[0].args as LadleActions.Args.FORWARD_PERMIT))!,
         !isEthPool && transferAction(base.address, pool.address, _input)!,
         mintWithBaseAction(
           pool.contract,

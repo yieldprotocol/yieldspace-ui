@@ -185,7 +185,7 @@ export const getAsset = async (
     address: tokenAddress,
     version: symbol === 'USDC' ? '2' : '1',
     name,
-    symbol: symbol_,
+    symbol: isFyToken ? formatFyTokenSymbol(symbol) : symbol_,
     decimals,
     balance,
     balance_: cleanValue(ethers.utils.formatUnits(balance, decimals), decimals),

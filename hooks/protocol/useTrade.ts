@@ -22,7 +22,7 @@ export const useTrade = (
 ) => {
   const { account } = useConnector();
   const { sign } = useSignature();
-  const { transact, handleTransact, isTransacting, txSubmitted } = useTransaction();
+  const { handleTransact, isTransacting, txSubmitted } = useTransaction();
   const {
     ladleContract,
     forwardDaiPermitAction,
@@ -68,12 +68,9 @@ export const useTrade = (
       ]);
 
       if (DAI_PERMIT_ASSETS.includes(base.symbol)) {
-        const [address, spender, nonce, deadline, allowed, v, r, s] = permits[0]
-          .args as LadleActions.Args.FORWARD_DAI_PERMIT;
-
         return batch(
           [
-            forwardDaiPermitAction(address, spender, nonce, deadline, allowed, v, r, s)!,
+            forwardDaiPermitAction(...(permits[0].args as LadleActions.Args.FORWARD_DAI_PERMIT))!,
             transferAction(base.address, poolAddress, _inputToUse)!,
             sellBaseAction(contract, account!, _outputLessSlippage)!,
           ],
@@ -81,11 +78,9 @@ export const useTrade = (
         );
       }
 
-      const [token, spender, amount, deadline, v, r, s] = permits[0].args! as LadleActions.Args.FORWARD_PERMIT;
-
       return batch(
         [
-          forwardPermitAction(token, spender, amount, deadline, v, r, s)!,
+          forwardPermitAction(...(permits[0].args as LadleActions.Args.FORWARD_PERMIT))!,
           transferAction(base.address, poolAddress, _inputToUse)!,
           sellBaseAction(contract, account!, _outputLessSlippage)!,
         ],
@@ -110,11 +105,9 @@ export const useTrade = (
         },
       ]);
 
-      const [token, spender, amount, deadline, v, r, s] = permits[0].args! as LadleActions.Args.FORWARD_PERMIT;
-
       return batch(
         [
-          forwardPermitAction(token, spender, amount, deadline, v, r, s)!,
+          forwardPermitAction(...(permits[0].args as LadleActions.Args.FORWARD_PERMIT))!,
           transferAction(fyToken.address, poolAddress, _inputToUse)!,
           sellFYTokenAction(contract, account!, _outputLessSlippage)!,
         ],
