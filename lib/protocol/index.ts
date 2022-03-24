@@ -10,7 +10,7 @@ import * as contractTypes from '../../contracts/types';
 import { ERC20Permit__factory } from '../../contracts/types/factories/ERC20Permit__factory';
 import { FYToken__factory } from '../../contracts/types/factories/FYToken__factory';
 import { PoolAddedEvent } from '../../contracts/types/Ladle';
-import { ASSET_INFO, ETH_BASED_ASSETS } from '../../config/assets';
+import { ASSET_INFO } from '../../config/assets';
 
 const { seasonColors } = yieldEnv;
 
@@ -173,10 +173,7 @@ export const getAsset = async (
     isFyToken ? FYTOKEN.name() : ERC20.name(),
   ]);
 
-  const isEthBased = ETH_BASED_ASSETS.includes(symbol);
-  const balance = account
-    ? await getBalance(provider, tokenAddress, account, isFyToken, isEthBased)
-    : ethers.constants.Zero;
+  const balance = account ? await getBalance(provider, tokenAddress, account, isFyToken) : ethers.constants.Zero;
 
   const contract = isFyToken ? FYTOKEN : ERC20;
   const getAllowance = async (acc: string, spender: string) =>
@@ -207,13 +204,8 @@ export const getBalance = (
   provider: Provider,
   tokenAddress: string,
   account: string,
-  isFyToken: boolean = false,
-  isEthBased: boolean = false
+  isFyToken: boolean = false
 ): Promise<BigNumber> | BigNumber => {
-  if (isEthBased) {
-    return provider.getBalance(account);
-  }
-
   const contract = isFyToken
     ? FYToken__factory.connect(tokenAddress, provider)
     : ERC20Permit__factory.connect(tokenAddress, provider);
