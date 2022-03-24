@@ -12,7 +12,7 @@ import { LadleActions } from '../../lib/tx/operations';
 export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiquidityActions, description: string) => {
   const { account } = useConnector();
   const { sign } = useSignature();
-  const { transact, isTransacting, txSubmitted } = useTransaction();
+  const { transact, handleTransact, isTransacting, txSubmitted } = useTransaction();
   const { ladleContract, forwardPermitAction, batch, transferAction, burnForBaseAction, burnAction } = useLadle();
 
   const removeLiquidity = async () => {
@@ -77,7 +77,7 @@ export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiq
       );
     };
 
-    transact(method === RemoveLiquidityActions.BURN_FOR_BASE ? _burnForBase : _burn, description);
+    handleTransact(method === RemoveLiquidityActions.BURN_FOR_BASE ? _burnForBase : _burn, description);
   };
 
   return { removeLiquidity, isRemovingLiq: isTransacting, removeSubmitted: txSubmitted };

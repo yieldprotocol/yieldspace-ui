@@ -178,13 +178,14 @@ export const getAsset = async (
   const contract = isFyToken ? FYTOKEN : ERC20;
   const getAllowance = async (acc: string, spender: string) =>
     isFyToken ? FYTOKEN.allowance(acc, spender) : ERC20.allowance(acc, spender);
-  const digitFormat = ASSET_INFO.get(symbol)?.digitFormat || 6;
+  const digitFormat = ASSET_INFO.get(symbol)?.digitFormat || 4;
+  const symbol_ = symbol === 'WETH' ? 'ETH' : symbol;
 
   return {
     address: tokenAddress,
     version: symbol === 'USDC' ? '2' : '1',
     name,
-    symbol: symbol.includes('FY') ? formatFyTokenSymbol(symbol) : symbol,
+    symbol: symbol_,
     decimals,
     balance,
     balance_: cleanValue(ethers.utils.formatUnits(balance, decimals), decimals),

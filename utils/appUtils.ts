@@ -108,4 +108,4 @@ export const getSeason = (dateInSecs: number): SeasonType => {
 export const formatFyTokenSymbol = (name: string) => `${name.slice(0, -4)}`;
 
 export const valueAtDigits = (input: string, digits: number) =>
-  input.length <= digits ? input : `${cleanValue(input, digits)}...`;
+  input && input.length <= digits ? input : `${cleanValue(input, digits)}...`;

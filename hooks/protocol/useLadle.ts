@@ -1,6 +1,6 @@
 import { BigNumberish, ContractTransaction, PayableOverrides } from 'ethers';
-import { LADLE } from '../../constants';
-import { Ladle, Pool } from '../../contracts/types';
+import { LADLE, WRAP_ETH_MODULE } from '../../constants';
+import { Ladle, Pool, WrapEtherModule } from '../../contracts/types';
 import { LadleActions, RoutedActions } from '../../lib/tx/operations';
 import useSignature from '../useSignature';
 import useContracts from './useContracts';
@@ -9,6 +9,7 @@ const useLadle = () => {
   const contracts = useContracts();
   const { signer } = useSignature();
   const ladle = contracts ? (contracts![LADLE]?.connect(signer!) as Ladle) : undefined;
+  const wrapEthModule = contracts ? (contracts![WRAP_ETH_MODULE]?.connect(signer!) as WrapEtherModule) : undefined;
 
   const forwardDaiPermitAction = (
     token: string,
@@ -124,6 +125,18 @@ const useLadle = () => {
       ]),
     ]);
 
+  const moduleCallAction = (target: string, calldata: string): string | undefined =>
+    ladle?.interface.encodeFunctionData(LadleActions.Fn.MODULE, [target, calldata]);
+
+  const wrapETHAction = (poolContract: Pool, etherWithSlippage: BigNumberish): string | undefined =>
+    moduleCallAction(
+      wrapEthModule?.address!,
+      wrapEthModule?.interface.encodeFunctionData(RoutedActions.Fn.WRAP, [poolContract.address, etherWithSlippage])!
+    );
+
+  const exitETHAction = (receiver: string): string | undefined =>
+    ladle?.interface.encodeFunctionData(LadleActions.Fn.EXIT_ETHER, [receiver]);
+
   return {
     forwardDaiPermitAction,
     forwardPermitAction,
@@ -136,6 +149,8 @@ const useLadle = () => {
     mintAction,
     burnForBaseAction,
     burnAction,
+    wrapETHAction,
+    exitETHAction,
     ladleContract: ladle,
   };
 };

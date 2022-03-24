@@ -19,6 +19,7 @@ import Arrow from '../trade/Arrow';
 import InputsWrap from '../styles/InputsWrap';
 import useInputValidation from '../../hooks/useInputValidation';
 import useAddLiqPreview from '../../hooks/protocol/useAddLiqPreview';
+import useETHBalance from '../../hooks/useEthBalance';
 
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
@@ -49,19 +50,25 @@ const AddLiquidity = () => {
   const { address } = router.query;
   const { chainId, account } = useConnector();
   const { data: pools } = usePools();
+  const { balance: ethBalance } = useETHBalance();
 
   const [form, setForm] = useState<IAddLiquidityForm>(INITIAL_FORM_STATE);
   const { pool, baseAmount, fyTokenAmount, method, description, useFyToken } = form;
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
   const [useFyTokenToggle, setUseFyTokenToggle] = useState<boolean>(false);
   const [slippageTolerance, setSlippageTolerance] = useState<number>(0.001);
+  const [useWETH, setUseWETH] = useState<boolean>(false);
 
   const { fyTokenNeeded } = useAddLiqPreview(pool!, baseAmount, method, slippageTolerance);
-  const { errorMsg } = useInputValidation(baseAmount, pool, [], method!);
+  const isEthPool = pool?.base.symbol === 'ETH';
+  const baseIsEth = isEthPool && !useWETH;
+  const { errorMsg } = useInputValidation(baseAmount, pool, [], method!, fyTokenAmount, baseIsEth);
   const { addLiquidity, isAddingLiquidity, addSubmitted } = useAddLiquidity(pool!, baseAmount, method, description);
 
+  const baseBalanceToUse = isEthPool ? (useWETH ? pool?.base.balance_ : ethBalance) : pool?.base.balance_;
+
   const handleMaxBase = () => {
-    setForm((f) => ({ ...f, baseAmount: pool?.base.balance_!, fyTokenAmount: pool?.base.balance_! }));
+    setForm((f) => ({ ...f, baseAmount: baseBalanceToUse! }));
   };
 
   const handleClearAll = () => {
@@ -151,7 +158,7 @@ const AddLiquidity = () => {
               name="baseAmount"
               value={baseAmount}
               item={pool?.base}
-              balance={pool?.base.balance_!}
+              balance={baseBalanceToUse!}
               handleChange={handleInputChange}
               useMax={handleMaxBase}
               pool={pool}
@@ -177,6 +184,9 @@ const AddLiquidity = () => {
               label={`Use fy${pool?.base.symbol} Balance`}
             />
           )}
+          {/* {isEthPool && +pool?.base.balance_ > 0 && (
+            <Toggle enabled={useWETH} setEnabled={setUseWETH} label={`Use ${useWETH ? 'ETH' : 'WETH'} Balance`} />
+          )} */}
         </Grid>
         <Button
           action={handleSubmit}

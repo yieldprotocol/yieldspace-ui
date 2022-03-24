@@ -6,7 +6,7 @@ import useConnector from '../../hooks/useConnector';
 import { IPool } from '../../lib/protocol/types';
 import PoolListItem from './PoolListItem';
 
-const Container = tw.div`p-2`;
+const Container = tw.div`p-2 max-w-lg`;
 
 const Pools = () => {
   const { account } = useConnector();

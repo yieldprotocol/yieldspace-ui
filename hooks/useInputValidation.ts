@@ -5,15 +5,18 @@ import { IPool } from '../lib/protocol/types';
 import useAddLiqPreview from './protocol/useAddLiqPreview';
 import useTradePreview from './protocol/useTradePreview';
 import useConnector from './useConnector';
+import useETHBalance from './useEthBalance';
 
 const useInputValidation = (
   input: string | undefined,
   pool: IPool | undefined,
   limits: (number | string | undefined)[],
   action: TradeActions | AddLiquidityActions | RemoveLiquidityActions,
-  secondaryInput: string | undefined = '' // this is the "to" amount when trading
+  secondaryInput: string = '', // this is the "to" amount when trading
+  isEth = false // if the asset is eth
 ) => {
   const { account } = useConnector();
+  const { balance: ethBalance } = useETHBalance();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const _input = parseFloat(input!);
@@ -53,7 +56,7 @@ const useInputValidation = (
     setErrorMsg(null); // reset
 
     const { base, fyToken } = pool;
-    const baseBalance = parseFloat(pool.base.balance_);
+    const baseBalance = isEth && base.symbol === 'ETH' ? ethBalance! : parseFloat(pool.base.balance_);
     const fyTokenBalance = parseFloat(pool.fyToken.balance_);
     const lpTokenBalance = parseFloat(pool.lpTokenBalance_);
 

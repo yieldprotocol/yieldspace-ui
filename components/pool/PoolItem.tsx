@@ -44,12 +44,12 @@ const PoolItem: FC = () => {
         <Header>{pool.displayName}</Header>
         <PoolDataWrap>
           <PoolDataLabel>LP Token Balance:</PoolDataLabel>
-          <PoolData>{cleanValue(pool.lpTokenBalance_, 2)}</PoolData>
+          <PoolData>{cleanValue(pool.lpTokenBalance_, pool.base.digitFormat)}</PoolData>
         </PoolDataWrap>
         <PoolDataWrap>
           <PoolDataLabel>LP Token Value:</PoolDataLabel>
           <PoolData>
-            {cleanValue(basePreview, 2)} {pool.base.symbol}
+            {cleanValue(basePreview, pool.base.digitFormat)} {pool.base.symbol}
           </PoolData>
         </PoolDataWrap>
         <ButtonWrap>

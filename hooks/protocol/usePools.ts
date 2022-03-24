@@ -16,7 +16,6 @@ const usePools = () => {
     }
   );
 
-  console.log('🦄 ~ file: usePools.ts ~ line 12 ~ usePools ~ data', data);
   return {
     data: data as IPoolMap,
     loading: !data && !error,

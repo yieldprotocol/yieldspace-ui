@@ -1,5 +1,4 @@
 import tw from 'tailwind-styled-components';
-import useConnector from '../../hooks/useConnector';
 import { cleanValue } from '../../utils/appUtils';
 import AssetLogo from './AssetLogo';
 import useETHBalance from '../../hooks/useEthBalance';
@@ -8,8 +7,7 @@ const Container = tw.div`flex gap-1 items-center px-2 dark:bg-gray-700/50 border
 const Inner = tw.div`p-1 text-sm`;
 
 const ETHBalance = () => {
-  const { provider, account } = useConnector();
-  const balance = useETHBalance(provider, account!);
+  const { balance } = useETHBalance();
 
   return (
     <Container>

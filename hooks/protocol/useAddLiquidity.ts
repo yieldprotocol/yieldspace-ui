@@ -1,6 +1,6 @@
-import { ethers } from 'ethers';
+import { ethers, PayableOverrides } from 'ethers';
 import { cleanValue } from '../../utils/appUtils';
-import { calcPoolRatios, calculateSlippage, fyTokenForMint } from '../../utils/yieldMath';
+import { calcPoolRatios, fyTokenForMint } from '../../utils/yieldMath';
 import { IPool } from '../../lib/protocol/types';
 import useConnector from '../useConnector';
 import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
@@ -20,7 +20,7 @@ export const useAddLiquidity = (
 ) => {
   const { account } = useConnector();
   const { sign } = useSignature();
-  const { transact, isTransacting, txSubmitted } = useTransaction();
+  const { handleTransact, isTransacting, txSubmitted } = useTransaction();
   const {
     ladleContract,
     forwardDaiPermitAction,
@@ -29,6 +29,8 @@ export const useAddLiquidity = (
     transferAction,
     mintWithBaseAction,
     mintAction,
+    wrapETHAction,
+    exitETHAction,
   } = useLadle();
 
   const { fyTokenNeeded } = useAddLiqPreview(pool, input, method, slippageTolerance);
@@ -89,16 +91,26 @@ export const useAddLiquidity = (
         );
       }
 
-      const [token, spender, amount, deadline, v, r, s] = permits[0].args! as LadleActions.Args.FORWARD_PERMIT;
+      // build action array
+      const isEthPool = pool.base.symbol === 'ETH';
+      const withEthOverrides = { ...overrides, value: _input } as PayableOverrides;
 
-      return batch(
-        [
-          forwardPermitAction(token, spender, amount, deadline, v, r, s)!,
-          transferAction(base.address, pool.address, _input)!,
-          mintWithBaseAction(pool.contract, account!, account!, _fyTokenToBeMinted, minRatio, maxRatio)!,
-        ],
-        overrides
-      );
+      const actions = [
+        isEthPool && wrapETHAction(pool.contract, _input)!,
+        !isEthPool && forwardPermitAction(...(permits[0].args! as LadleActions.Args.FORWARD_PERMIT))!,
+        !isEthPool && transferAction(base.address, pool.address, _input)!,
+        mintWithBaseAction(
+          pool.contract,
+          account!,
+          isEthPool ? ladleContract?.address! : account!, // minting with eth needs to be sent to ladle
+          _fyTokenToBeMinted,
+          minRatio,
+          maxRatio
+        )!,
+        isEthPool && exitETHAction(account!),
+      ].filter(Boolean) as string[];
+
+      return batch(actions, withEthOverrides);
     };
 
     const _mint = async (): Promise<ethers.ContractTransaction | undefined> => {
@@ -160,7 +172,7 @@ export const useAddLiquidity = (
       );
     };
 
-    transact(method === AddLiquidityActions.MINT_WITH_BASE ? _mintWithBase : _mint, description);
+    handleTransact(method === AddLiquidityActions.MINT_WITH_BASE ? _mintWithBase : _mint, description);
   };
 
   return { addLiquidity, isAddingLiquidity: isTransacting, addSubmitted: txSubmitted };

@@ -4,19 +4,24 @@ import { toast } from 'react-toastify';
 import { useSWRConfig } from 'swr';
 import { CHAINS, ExtendedChainInformation } from '../config/chains';
 import useConnector from './useConnector';
+import useETHBalance from './useEthBalance';
 import useToasty from './useToasty';
 
 const useTransaction = () => {
   const { account, chainId } = useConnector();
   const { mutate } = useSWRConfig();
   const { toasty } = useToasty();
+  const { updateBalance } = useETHBalance();
 
   const explorer = (CHAINS[chainId!] as ExtendedChainInformation)?.blockExplorerUrls![0];
 
   const [isTransacting, setIsTransacting] = useState<boolean>(false);
   const [txSubmitted, setTxSubmitted] = useState<boolean>(false);
 
-  const transact = async (promise: () => Promise<ContractTransaction | undefined> | undefined, description: string) => {
+  const handleTransact = async (
+    promise: () => Promise<ContractTransaction | undefined> | undefined,
+    description: string
+  ) => {
     try {
       setIsTransacting(true);
       setTxSubmitted(false);
@@ -31,6 +36,7 @@ const useTransaction = () => {
           async () => {
             await res?.wait();
             mutate(`/pools/${chainId}/${account}`);
+            mutate(`/ethBalance`); // update eth balance
           },
           description,
           explorer && `${explorer}/tx/${res.hash}`
@@ -45,7 +51,7 @@ const useTransaction = () => {
     }
   };
 
-  return { transact, isTransacting, txSubmitted };
+  return { handleTransact, isTransacting, txSubmitted };
 };
 
 export default useTransaction;

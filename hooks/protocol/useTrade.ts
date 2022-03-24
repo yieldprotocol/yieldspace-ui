@@ -22,7 +22,7 @@ export const useTrade = (
 ) => {
   const { account } = useConnector();
   const { sign } = useSignature();
-  const { transact, isTransacting, txSubmitted } = useTransaction();
+  const { transact, handleTransact, isTransacting, txSubmitted } = useTransaction();
   const {
     ladleContract,
     forwardDaiPermitAction,
@@ -112,7 +112,7 @@ export const useTrade = (
 
       const [token, spender, amount, deadline, v, r, s] = permits[0].args! as LadleActions.Args.FORWARD_PERMIT;
 
-      const res = await batch(
+      return batch(
         [
           forwardPermitAction(token, spender, amount, deadline, v, r, s)!,
           transferAction(fyToken.address, poolAddress, _inputToUse)!,
@@ -120,11 +120,9 @@ export const useTrade = (
         ],
         overrides
       );
-
-      return res;
     };
 
-    transact(method === TradeActions.SELL_BASE ? _sellBase : _sellFYToken, description);
+    handleTransact(method === TradeActions.SELL_BASE ? _sellBase : _sellFYToken, description);
   };
 
   return { trade, isTransacting, tradeSubmitted: txSubmitted };
