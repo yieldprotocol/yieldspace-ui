@@ -13,7 +13,8 @@ export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiq
   const { account } = useConnector();
   const { sign } = useSignature();
   const { handleTransact, isTransacting, txSubmitted } = useTransaction();
-  const { ladleContract, forwardPermitAction, batch, transferAction, burnForBaseAction, burnAction } = useLadle();
+  const { ladleContract, forwardPermitAction, batch, transferAction, burnForBaseAction, burnAction, exitETHAction } =
+    useLadle();
 
   const removeLiquidity = async () => {
     if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
@@ -33,6 +34,8 @@ export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiq
       gasLimit: 250000,
     };
 
+    const isETH = pool.base.symbol === 'ETH';
+
     const _burnForBase = async (): Promise<ethers.ContractTransaction | undefined> => {
       const permits = await sign([
         {
@@ -43,14 +46,14 @@ export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiq
         },
       ]);
 
-      return batch(
-        [
-          forwardPermitAction(...(permits[0].args as LadleActions.Args.FORWARD_PERMIT))!,
-          transferAction(pool.address, pool.address, _input)!,
-          burnForBaseAction(pool.contract, account!, minRatio, maxRatio)!,
-        ],
-        overrides
-      );
+      const actions = [
+        forwardPermitAction(...(permits[0].args as LadleActions.Args.FORWARD_PERMIT)),
+        transferAction(pool.address, pool.address, _input),
+        burnForBaseAction(pool.contract, isETH ? ladleContract?.address! : account!, minRatio, maxRatio),
+        isETH && exitETHAction(account!),
+      ].filter(Boolean) as string[];
+
+      return batch(actions, overrides);
     };
 
     const _burn = async (): Promise<ethers.ContractTransaction | undefined> => {
@@ -63,14 +66,14 @@ export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiq
         },
       ]);
 
-      return batch(
-        [
-          forwardPermitAction(...(permits[0].args as LadleActions.Args.FORWARD_PERMIT))!,
-          transferAction(pool.address, pool.address, _input)!,
-          burnAction(pool.contract, account!, account!, minRatio, maxRatio)!,
-        ],
-        overrides
-      );
+      const actions = [
+        forwardPermitAction(...(permits[0].args as LadleActions.Args.FORWARD_PERMIT))!,
+        transferAction(pool.address, pool.address, _input)!,
+        burnAction(pool.contract, isETH ? ladleContract?.address! : account!, account!, minRatio, maxRatio)!,
+        isETH && exitETHAction(account!),
+      ].filter(Boolean) as string[];
+
+      return batch(actions, overrides);
     };
 
     handleTransact(method === RemoveLiquidityActions.BURN_FOR_BASE ? _burnForBase : _burn, description);
