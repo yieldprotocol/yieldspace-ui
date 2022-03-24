@@ -50,7 +50,7 @@ export const useTrade = (
     const { base, fyToken, contract, address: poolAddress } = pool;
 
     const _sellBase = async (): Promise<ContractTransaction | undefined> => {
-      const baseAlreadyApproved = (await base.getAllowance(account!, poolAddress)).gt(_inputToUse);
+      const baseAlreadyApproved = (await base.getAllowance(account!, ladleContract?.address!)).gt(_inputToUse);
 
       const _outputLessSlippage = calculateSlippage(
         ethers.utils.parseUnits(fyTokenOutPreview, decimals),
@@ -89,7 +89,7 @@ export const useTrade = (
     };
 
     const _sellFYToken = async (): Promise<ContractTransaction | undefined> => {
-      const fyTokenAlreadyApproved = (await fyToken.getAllowance(account!, poolAddress)).gt(_inputToUse);
+      const fyTokenAlreadyApproved = (await fyToken.getAllowance(account!, ladleContract?.address!)).gt(_inputToUse);
 
       const _outputLessSlippage = ethers.utils.parseUnits(
         calculateSlippage(baseOutPreview, slippageTolerance.toString(), true),

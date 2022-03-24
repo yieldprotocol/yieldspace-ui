@@ -48,8 +48,8 @@ export const useAddLiquidity = (
     const [minRatio, maxRatio] = calcPoolRatios(cachedBaseReserves, cachedRealReserves);
 
     /* if approveMax, check if signature is still required */
-    const alreadyApprovedBase = (await base.getAllowance(account!, pool.address)).gt(_input);
-    const alreadyApprovedFyToken = (await fyToken.getAllowance(account!, pool.address)).gt(_fyTokenNeeded);
+    const alreadyApprovedBase = (await base.getAllowance(account!, ladleContract?.address!)).gt(_input);
+    const alreadyApprovedFyToken = (await fyToken.getAllowance(account!, ladleContract?.address!)).gt(_fyTokenNeeded);
 
     const overrides = {
       gasLimit: 250000,
