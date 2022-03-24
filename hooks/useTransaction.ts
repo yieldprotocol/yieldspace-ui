@@ -4,14 +4,12 @@ import { toast } from 'react-toastify';
 import { useSWRConfig } from 'swr';
 import { CHAINS, ExtendedChainInformation } from '../config/chains';
 import useConnector from './useConnector';
-import useETHBalance from './useEthBalance';
 import useToasty from './useToasty';
 
 const useTransaction = () => {
   const { account, chainId } = useConnector();
   const { mutate } = useSWRConfig();
   const { toasty } = useToasty();
-  const { updateBalance } = useETHBalance();
 
   const explorer = (CHAINS[chainId!] as ExtendedChainInformation)?.blockExplorerUrls![0];
 
