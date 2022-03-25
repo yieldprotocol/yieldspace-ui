@@ -1,6 +1,5 @@
-import { ContractTransaction, ethers } from 'ethers';
+import { ethers } from 'ethers';
 import { cleanValue } from '../../utils/appUtils';
-
 import { calculateSlippage } from '../../utils/yieldMath';
 import { IPool } from '../../lib/protocol/types';
 import useConnector from '../useConnector';
@@ -39,7 +38,7 @@ export const useTrade = (
 
     const { base, fyToken, contract, address: poolAddress } = pool;
 
-    const _sellBase = async (): Promise<ContractTransaction | undefined> => {
+    const _sellBase = async () => {
       const baseAlreadyApproved = (await base.getAllowance(account!, ladleContract?.address!)).gte(_inputToUse);
 
       const _outputLessSlippage = calculateSlippage(
@@ -67,7 +66,7 @@ export const useTrade = (
       );
     };
 
-    const _sellFYToken = async (): Promise<ContractTransaction | undefined> => {
+    const _sellFYToken = async () => {
       const fyTokenAlreadyApproved = (await fyToken.getAllowance(account!, ladleContract?.address!)).gte(_inputToUse);
 
       const _outputLessSlippage = ethers.utils.parseUnits(

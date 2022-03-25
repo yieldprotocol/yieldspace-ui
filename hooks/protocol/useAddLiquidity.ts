@@ -6,8 +6,6 @@ import useConnector from '../useConnector';
 import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
 import useSignature from '../useSignature';
 import useLadle from './useLadle';
-import { LadleActions } from '../../lib/tx/operations';
-import { DAI_PERMIT_ASSETS } from '../../config/assets';
 import useTransaction from '../useTransaction';
 import useAddLiqPreview from './useAddLiqPreview';
 
@@ -21,17 +19,8 @@ export const useAddLiquidity = (
   const { account } = useConnector();
   const { sign } = useSignature();
   const { handleTransact, isTransacting, txSubmitted } = useTransaction();
-  const {
-    ladleContract,
-    forwardDaiPermitAction,
-    forwardPermitAction,
-    batch,
-    transferAction,
-    mintWithBaseAction,
-    mintAction,
-    wrapETHAction,
-    exitETHAction,
-  } = useLadle();
+  const { ladleContract, batch, transferAction, mintWithBaseAction, mintAction, wrapETHAction, exitETHAction } =
+    useLadle();
 
   const { fyTokenNeeded } = useAddLiqPreview(pool, input, method, slippageTolerance);
 
@@ -48,8 +37,8 @@ export const useAddLiquidity = (
     const [minRatio, maxRatio] = calcPoolRatios(cachedBaseReserves, cachedRealReserves);
 
     /* if approveMax, check if signature is still required */
-    const alreadyApprovedBase = (await base.getAllowance(account!, ladleContract?.address!)).gt(_input);
-    const alreadyApprovedFyToken = (await fyToken.getAllowance(account!, ladleContract?.address!)).gt(_fyTokenNeeded);
+    const alreadyApprovedBase = (await base.getAllowance(account!, ladleContract?.address!)).gte(_input);
+    const alreadyApprovedFyToken = (await fyToken.getAllowance(account!, ladleContract?.address!)).gte(_fyTokenNeeded);
 
     const overrides = {
       gasLimit: 250000,
@@ -57,9 +46,8 @@ export const useAddLiquidity = (
 
     const isEth = pool.base.symbol === 'ETH';
     const withEthOverrides = { ...overrides, value: isEth ? _input : undefined } as PayableOverrides;
-    const isDai = DAI_PERMIT_ASSETS.includes(base.symbol);
 
-    const _mintWithBase = async (): Promise<ethers.ContractTransaction | undefined> => {
+    const _mintWithBase = async () => {
       const [_fyTokenToBeMinted] = fyTokenForMint(
         cachedBaseReserves,
         cachedRealReserves,
@@ -102,7 +90,7 @@ export const useAddLiquidity = (
       );
     };
 
-    const _mint = async (): Promise<ethers.ContractTransaction | undefined> => {
+    const _mint = async () => {
       const permits = await sign([
         {
           target: base,

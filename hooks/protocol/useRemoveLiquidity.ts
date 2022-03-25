@@ -7,14 +7,12 @@ import useConnector from '../useConnector';
 import useSignature from '../useSignature';
 import useLadle from './useLadle';
 import useTransaction from '../useTransaction';
-import { LadleActions } from '../../lib/tx/operations';
 
 export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiquidityActions, description: string) => {
   const { account } = useConnector();
   const { sign } = useSignature();
   const { handleTransact, isTransacting, txSubmitted } = useTransaction();
-  const { ladleContract, forwardPermitAction, batch, transferAction, burnForBaseAction, burnAction, exitETHAction } =
-    useLadle();
+  const { ladleContract, batch, transferAction, burnForBaseAction, burnAction, exitETHAction } = useLadle();
 
   const removeLiquidity = async () => {
     if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
@@ -36,7 +34,7 @@ export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiq
 
     const isETH = pool.base.symbol === 'ETH';
 
-    const _burnForBase = async (): Promise<ethers.ContractTransaction | undefined> => {
+    const _burnForBase = async () => {
       const permits = await sign([
         {
           target: pool,
@@ -57,7 +55,7 @@ export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiq
       );
     };
 
-    const _burn = async (): Promise<ethers.ContractTransaction | undefined> => {
+    const _burn = async () => {
       const permits = await sign([
         {
           target: pool,
