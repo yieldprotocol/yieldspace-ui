@@ -67,22 +67,11 @@ export const useTrade = (
         },
       ]);
 
-      if (DAI_PERMIT_ASSETS.includes(base.symbol)) {
-        return batch(
-          [
-            forwardDaiPermitAction(...(permits[0].args as LadleActions.Args.FORWARD_DAI_PERMIT))!,
-            transferAction(base.address, poolAddress, _inputToUse)!,
-            sellBaseAction(contract, account!, _outputLessSlippage)!,
-          ],
-          overrides
-        );
-      }
-
       return batch(
         [
-          forwardPermitAction(...(permits[0].args as LadleActions.Args.FORWARD_PERMIT))!,
-          transferAction(base.address, poolAddress, _inputToUse)!,
-          sellBaseAction(contract, account!, _outputLessSlippage)!,
+          ...permits,
+          { action: transferAction(base.address, poolAddress, _inputToUse)! },
+          { action: sellBaseAction(contract, account!, _outputLessSlippage)! },
         ],
         overrides
       );
@@ -107,9 +96,9 @@ export const useTrade = (
 
       return batch(
         [
-          forwardPermitAction(...(permits[0].args as LadleActions.Args.FORWARD_PERMIT))!,
-          transferAction(fyToken.address, poolAddress, _inputToUse)!,
-          sellFYTokenAction(contract, account!, _outputLessSlippage)!,
+          ...permits,
+          { action: transferAction(fyToken.address, poolAddress, _inputToUse)! },
+          { action: sellFYTokenAction(contract, account!, _outputLessSlippage)! },
         ],
         overrides
       );
