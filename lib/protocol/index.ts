@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { BigNumber, ethers } from 'ethers';
-import { LADLE } from '../../constants';
+import { CAULDRON, LADLE } from '../../constants';
 import { Pool__factory } from '../../contracts/types';
 import { IAsset, IContractMap, IPoolMap, IPoolRoot, Provider } from './types';
 import { cleanValue, formatFyTokenSymbol, getSeason, SeasonType } from '../../utils/appUtils';
@@ -11,6 +11,7 @@ import { ERC20Permit__factory } from '../../contracts/types/factories/ERC20Permi
 import { FYToken__factory } from '../../contracts/types/factories/FYToken__factory';
 import { PoolAddedEvent } from '../../contracts/types/Ladle';
 import { ASSET_INFO } from '../../config/assets';
+import { SeriesAddedEvent } from '../../contracts/types/Cauldron';
 
 const { seasonColors } = yieldEnv;
 
@@ -33,10 +34,19 @@ export const getPools = async (
   account: string | undefined = undefined
 ): Promise<IPoolMap | undefined> => {
   const Ladle = contractMap[LADLE];
-  if (!Ladle) return undefined;
+  const Cauldron = contractMap[CAULDRON];
+  if (!Ladle || !Cauldron) return undefined;
+
   console.log('fetching pools');
+
   const poolAddedEvents = await Ladle.queryFilter('PoolAdded' as ethers.EventFilter);
   const poolAddresses: string[] = poolAddedEvents.map((e: PoolAddedEvent) => e.args.pool);
+  const seriesAddedEvents = await Cauldron.queryFilter('SeriesAdded' as ethers.EventFilter);
+  const fyTokenToSeries: Map<string, string> = seriesAddedEvents.reduce(
+    (acc: Map<string, string>, e: SeriesAddedEvent) =>
+      acc.has(e.args.fyToken) ? acc : acc.set(e.args.fyToken, e.args.seriesId),
+    new Map()
+  );
 
   try {
     return poolAddresses.reduce(async (pools: any, x) => {
@@ -75,6 +85,7 @@ export const getPools = async (
       const base = await getAsset(provider, baseAddress, account);
       const fyToken = await getAsset(provider, fyTokenAddress, account, true);
       const getTimeTillMaturity = () => maturity - Math.round(new Date().getTime() / 1000);
+      const seriesId = fyTokenToSeries.get(fyToken.address);
 
       const newPool = {
         address,
@@ -98,6 +109,7 @@ export const getPools = async (
         getTimeTillMaturity,
         contract: poolContract,
         totalSupply,
+        seriesId,
       } as IPoolRoot;
       return { ...(await pools), [address]: _chargePool(newPool, chainId) };
     }, {});
