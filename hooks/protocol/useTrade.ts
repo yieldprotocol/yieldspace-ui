@@ -20,8 +20,16 @@ export const useTrade = (
   const { account } = useConnector();
   const { sign } = useSignature();
   const { handleTransact, isTransacting, txSubmitted } = useTransaction();
-  const { ladleContract, batch, transferAction, sellBaseAction, sellFYTokenAction, wrapETHAction, exitETHAction } =
-    useLadle();
+  const {
+    ladleContract,
+    batch,
+    transferAction,
+    sellBaseAction,
+    sellFYTokenAction,
+    wrapETHAction,
+    exitETHAction,
+    redeemFYToken,
+  } = useLadle();
 
   // input data
   const cleanFromInput = cleanValue(fromInput, pool?.decimals);
@@ -31,7 +39,7 @@ export const useTrade = (
 
   const trade = async () => {
     if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
-    const { base, fyToken, contract: poolContract, address: poolAddress, decimals } = pool;
+    const { base, fyToken, contract: poolContract, address: poolAddress, decimals, isMature } = pool;
     const isEth = base.symbol === 'ETH';
     const overrides = {
       gasLimit: 250000,
@@ -83,20 +91,25 @@ export const useTrade = (
           target: fyToken,
           spender: ladleContract?.address!,
           amount: _inputToUse,
-          ignoreIf: fyTokenAlreadyApproved,
+          ignoreIf: fyTokenAlreadyApproved || isMature,
         },
       ]);
 
       return batch(
         [
           ...permits,
-          { action: transferAction(fyToken.address, poolAddress, _inputToUse)! },
+          { action: transferAction(fyToken.address, poolAddress, _inputToUse)!, ignoreIf: isMature },
           {
             action: sellFYTokenAction(
               poolContract,
               isEth ? ladleContract?.address! : account!, // selling fyETH gets sent to the ladle to be unwrapped from weth to eth
               _outputLessSlippage
             )!,
+            ignoreIf: isMature,
+          },
+          {
+            action: redeemFYToken('dont know', isEth ? ladleContract?.address! : account!, _inputToUse)!,
+            ignoreIf: !isMature,
           },
           { action: exitETHAction(account!)!, ignoreIf: !isEth }, // eth gets sent back to account
         ],
