@@ -54,8 +54,8 @@ const AddLiquidity = () => {
   const { pool, baseAmount, fyTokenAmount, method, useFyToken } = form;
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
   const [useFyTokenToggle, setUseFyTokenToggle] = useState<boolean>(false);
-  const [slippageTolerance, setSlippageTolerance] = useState<number>(0.001);
-  const [useWETH, setUseWETH] = useState<boolean>(false);
+  const [slippageTolerance] = useState<number>(0.001);
+  const [useWETH] = useState<boolean>(false);
 
   const { fyTokenNeeded } = useAddLiqPreview(pool!, baseAmount, method, slippageTolerance);
   const isEthPool = pool?.base.symbol === 'ETH';
