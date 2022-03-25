@@ -79,6 +79,7 @@ const useInputValidation = (
         break;
       case AddLiquidityActions.MINT_WITH_BASE:
         baseBalance < _input && setErrorMsg(`Insufficient ${base.symbol} balance`);
+        isMature && setErrorMsg(`Pool matured: can only remove liquidity`);
         break;
       case AddLiquidityActions.MINT:
         baseBalance < _input && setErrorMsg(`Insufficient ${base.symbol} balance`);

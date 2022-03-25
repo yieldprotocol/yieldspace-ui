@@ -18,11 +18,17 @@ const useLadle = () => {
    * @param overrides optional
    * @returns
    */
-  const batch = (actions: ILadleAction[], overrides?: PayableOverrides): Promise<ContractTransaction | undefined> =>
-    _batch(
+  const batch = (actions: ILadleAction[], overrides?: PayableOverrides): Promise<ContractTransaction | undefined> => {
+    console.log(
+      '🦄 ~ file: useLadle.ts ~ line 22 ~ useLadle ~ actions',
+      actions.filter((a) => !a.ignoreIf).map((a) => a.action)
+    );
+
+    return _batch(
       actions.filter((a) => !a.ignoreIf).map((a) => a.action),
       overrides
     );
+  };
 
   const _batch = async (
     actions: Array<string>,

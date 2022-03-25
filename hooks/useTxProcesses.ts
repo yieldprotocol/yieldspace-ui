@@ -72,9 +72,6 @@ const useTxProcess = () => {
     fallbackFn: () => Promise<any>,
     approvalMethod: ApprovalType
   ) => {
-    /* start a process */
-    console.log('in handle sign');
-
     let _sig: any;
 
     if (approvalMethod === ApprovalType.SIG) {
