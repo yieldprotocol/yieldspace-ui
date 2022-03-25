@@ -70,10 +70,12 @@ const TradeWidget = () => {
 
   const [updatingFromAmount, setUpdatingFromAmount] = useState<boolean>(false);
   const [updatingToAmount, setUpdatingToAmount] = useState<boolean>(false);
-  const [description, setDescription] = useState('');
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
   const [slippageTolerance] = useState<number>(0.05);
 
+  const description = `Trade ${fromAmount} ${fromAsset?.symbol} to ~${cleanValue(toAmount, toAsset?.digitFormat)} ${
+    toAsset?.symbol
+  }`;
   const { trade, isTransacting, tradeSubmitted } = useTrade(
     pool!,
     fromAmount,
@@ -219,14 +221,6 @@ const TradeWidget = () => {
         toAsset: f.pool?.fyToken,
       }));
   }, [form.pool]);
-
-  // set trade description to use in useTrade hook
-  useEffect(() => {
-    const _description = `Trade ${fromAmount} ${fromAsset?.symbol} to ~${cleanValue(toAmount, toAsset?.digitFormat)} ${
-      toAsset?.symbol
-    }`;
-    setDescription(_description);
-  }, [fromAmount, fromAsset, toAmount, toAsset]);
 
   // close modal when the trade was successfullly submitted (user took all actions to get tx through)
   useEffect(() => {
