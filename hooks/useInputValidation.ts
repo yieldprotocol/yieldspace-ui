@@ -55,7 +55,7 @@ const useInputValidation = (
 
     setErrorMsg(null); // reset
 
-    const { base, fyToken } = pool;
+    const { base, fyToken, isMature } = pool;
     const baseBalance = isEth && base.symbol === 'ETH' ? ethBalance! : parseFloat(pool.base.balance_);
     const fyTokenBalance = parseFloat(pool.fyToken.balance_);
     const lpTokenBalance = parseFloat(pool.lpTokenBalance_);
@@ -68,13 +68,14 @@ const useInputValidation = (
         baseBalance < _input && setErrorMsg(`Insufficient ${base.symbol} balance`);
         +maxBaseIn! < _input && setErrorMsg(`Max tradable ${base.symbol} is ${maxBaseIn}`);
         +maxFyTokenOut! < _secondaryInput && setErrorMsg(`Max fy${base.symbol} out is ${maxFyTokenOut}`);
+        isMature && setErrorMsg(`Pool matured: can only redeem fy${base.symbol}`);
         break;
       case TradeActions.SELL_FYTOKEN:
       case TradeActions.BUY_BASE:
         aboveMax && setErrorMsg(`Max tradable ${fyToken.symbol} is ${limits[1]} `);
         fyTokenBalance < _input && setErrorMsg(`Insufficient ${fyToken.symbol} balance`);
-        +maxFyTokenIn! < _input && setErrorMsg(`Max ${base.symbol} in is ${maxFyTokenIn} `);
-        +maxBaseOut! < _secondaryInput && setErrorMsg(`Max ${base.symbol} out is ${maxBaseOut}`);
+        +maxFyTokenIn! < _input && !isMature && setErrorMsg(`Max fy${base.symbol} in is ${maxFyTokenIn} `);
+        +maxBaseOut! < _secondaryInput && !isMature && setErrorMsg(`Max ${base.symbol} out is ${maxBaseOut}`);
         break;
       case AddLiquidityActions.MINT_WITH_BASE:
         baseBalance < _input && setErrorMsg(`Insufficient ${base.symbol} balance`);
@@ -106,6 +107,8 @@ const useInputValidation = (
     maxBaseIn,
     maxFyTokenOut,
     _secondaryInput,
+    isEth,
+    ethBalance,
   ]);
 
   return { errorMsg };

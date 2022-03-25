@@ -88,7 +88,7 @@ export const getPools = async (
         g2,
         base,
         fyToken,
-        isMature: maturity > (await provider.getBlock('latest')).timestamp,
+        isMature: maturity < (await provider.getBlock('latest')).timestamp,
         lpTokenBalance,
         lpTokenBalance_: ethers.utils.formatUnits(lpTokenBalance, decimals),
         baseReserves,
