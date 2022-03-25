@@ -27,23 +27,35 @@ export const useAddLiquidity = (
   const addLiquidity = async () => {
     if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
 
-    const { base, fyToken } = pool;
+    // pool data
+    const {
+      address: poolAddress,
+      contract: poolContract,
+      base,
+      fyToken,
+      ts,
+      g1,
+      decimals,
+      getTimeTillMaturity,
+      totalSupply,
+    } = pool;
+    const timeTillMaturity = getTimeTillMaturity().toString();
+    const [cachedBaseReserves, cachedFyTokenReserves] = await poolContract.getCache();
+    const cachedRealReserves = cachedFyTokenReserves.sub(totalSupply);
+    const [minRatio, maxRatio] = calcPoolRatios(cachedBaseReserves, cachedRealReserves);
+
+    // input data
     const cleanInput = cleanValue(input, base.decimals);
     const _input = ethers.utils.parseUnits(cleanInput, base.decimals);
     const _fyTokenNeeded = ethers.utils.parseUnits(fyTokenNeeded!, fyToken.decimals);
 
-    const [cachedBaseReserves, cachedFyTokenReserves] = await pool.contract.getCache();
-    const cachedRealReserves = cachedFyTokenReserves.sub(pool.totalSupply);
-    const [minRatio, maxRatio] = calcPoolRatios(cachedBaseReserves, cachedRealReserves);
-
-    /* if approveMax, check if signature is still required */
+    // check if signature is still required
     const alreadyApprovedBase = (await base.getAllowance(account!, ladleContract?.address!)).gte(_input);
     const alreadyApprovedFyToken = (await fyToken.getAllowance(account!, ladleContract?.address!)).gte(_fyTokenNeeded);
 
     const overrides = {
       gasLimit: 250000,
     };
-
     const isEth = pool.base.symbol === 'ETH';
     const withEthOverrides = { ...overrides, value: isEth ? _input : undefined } as PayableOverrides;
 
@@ -53,10 +65,10 @@ export const useAddLiquidity = (
         cachedRealReserves,
         cachedFyTokenReserves,
         _input,
-        pool.getTimeTillMaturity().toString(),
-        pool.ts,
-        pool.g1,
-        pool.decimals,
+        timeTillMaturity,
+        ts,
+        g1,
+        decimals,
         slippageTolerance
       );
 
@@ -72,11 +84,11 @@ export const useAddLiquidity = (
       return batch(
         [
           ...permits,
-          { action: wrapETHAction(pool.contract, _input)!, ignoreIf: !isEth },
-          { action: transferAction(base.address, pool.address, _input)!, ignoreIf: isEth },
+          { action: wrapETHAction(poolContract, _input)!, ignoreIf: !isEth },
+          { action: transferAction(base.address, poolAddress, _input)!, ignoreIf: isEth },
           {
             action: mintWithBaseAction(
-              pool.contract,
+              poolContract,
               account!,
               isEth ? ladleContract?.address! : account!, // minting with eth needs to be sent to ladle
               _fyTokenToBeMinted,
@@ -109,12 +121,12 @@ export const useAddLiquidity = (
       return batch(
         [
           ...permits,
-          { action: wrapETHAction(pool.contract, _input)!, ignoreIf: !isEth },
-          { action: transferAction(base.address, pool.address, _input)!, ignoreIf: isEth },
-          { action: transferAction(fyToken.address, pool.address, _fyTokenNeeded)! },
+          { action: wrapETHAction(poolContract, _input)!, ignoreIf: !isEth },
+          { action: transferAction(base.address, poolAddress, _input)!, ignoreIf: isEth },
+          { action: transferAction(fyToken.address, poolAddress, _fyTokenNeeded)! },
           {
             action: mintAction(
-              pool.contract,
+              poolContract,
               isEth ? ladleContract?.address! : account!, // minting with eth needs to be sent to ladle
               account!,
               minRatio,

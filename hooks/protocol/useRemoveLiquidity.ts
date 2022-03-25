@@ -17,7 +17,7 @@ export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiq
   const removeLiquidity = async () => {
     if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
 
-    const { base } = pool;
+    const { base, address: poolAddress, contract: poolContract } = pool;
     const cleanInput = cleanValue(input, base.decimals);
     const _input = ethers.utils.parseUnits(cleanInput, base.decimals);
 
@@ -32,7 +32,7 @@ export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiq
       gasLimit: 250000,
     };
 
-    const isETH = pool.base.symbol === 'ETH';
+    const isETH = base.symbol === 'ETH';
 
     const _burnForBase = async () => {
       const permits = await sign([
@@ -47,8 +47,8 @@ export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiq
       return batch(
         [
           ...permits,
-          { action: transferAction(pool.address, pool.address, _input)! },
-          { action: burnForBaseAction(pool.contract, isETH ? ladleContract?.address! : account!, minRatio, maxRatio)! },
+          { action: transferAction(poolAddress, poolAddress, _input)! },
+          { action: burnForBaseAction(poolContract, isETH ? ladleContract?.address! : account!, minRatio, maxRatio)! },
           { action: exitETHAction(account!)!, ignoreIf: !isETH },
         ],
         overrides
@@ -68,15 +68,9 @@ export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiq
       return batch(
         [
           ...permits,
-          { action: transferAction(pool.address, pool.address, _input)! },
+          { action: transferAction(poolAddress, poolAddress, _input)! },
           {
-            action: burnAction(
-              pool.contract,
-              isETH ? ladleContract?.address! : account!,
-              account!,
-              minRatio,
-              maxRatio
-            )!,
+            action: burnAction(poolContract, isETH ? ladleContract?.address! : account!, account!, minRatio, maxRatio)!,
           },
           { action: exitETHAction(account!)!, ignoreIf: !isETH },
         ],

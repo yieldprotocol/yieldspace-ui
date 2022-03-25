@@ -10,7 +10,7 @@ import useLadle from './useLadle';
 import useTransaction from '../useTransaction';
 
 export const useTrade = (
-  pool: IPool | undefined,
+  pool: IPool,
   fromInput: string,
   toInput: string,
   method: TradeActions,
@@ -22,7 +22,10 @@ export const useTrade = (
   const { handleTransact, isTransacting, txSubmitted } = useTransaction();
   const { ladleContract, batch, transferAction, sellBaseAction, sellFYTokenAction } = useLadle();
 
-  const decimals = pool?.decimals;
+  // pool data
+  const { base, fyToken, contract, address: poolAddress, decimals } = pool;
+
+  // input data
   const cleanFromInput = cleanValue(fromInput, decimals);
   const cleanToInput = cleanValue(toInput, decimals);
   const _inputToUse = ethers.utils.parseUnits(cleanFromInput || '0', decimals);
@@ -35,8 +38,6 @@ export const useTrade = (
 
   const trade = async () => {
     if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
-
-    const { base, fyToken, contract, address: poolAddress } = pool;
 
     const _sellBase = async () => {
       const baseAlreadyApproved = (await base.getAllowance(account!, ladleContract?.address!)).gte(_inputToUse);
