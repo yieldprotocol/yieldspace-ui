@@ -8,8 +8,6 @@ import useSignature from '../useSignature';
 import { TradeActions } from '../../lib/protocol/trade/types';
 import useTradePreview from './useTradePreview';
 import useLadle from './useLadle';
-import { LadleActions } from '../../lib/tx/operations';
-import { DAI_PERMIT_ASSETS } from '../../config/assets';
 import useTransaction from '../useTransaction';
 
 export const useTrade = (
@@ -23,15 +21,7 @@ export const useTrade = (
   const { account } = useConnector();
   const { sign } = useSignature();
   const { handleTransact, isTransacting, txSubmitted } = useTransaction();
-  const {
-    ladleContract,
-    forwardDaiPermitAction,
-    forwardPermitAction,
-    batch,
-    transferAction,
-    sellBaseAction,
-    sellFYTokenAction,
-  } = useLadle();
+  const { ladleContract, batch, transferAction, sellBaseAction, sellFYTokenAction } = useLadle();
 
   const decimals = pool?.decimals;
   const cleanFromInput = cleanValue(fromInput, decimals);
@@ -50,7 +40,7 @@ export const useTrade = (
     const { base, fyToken, contract, address: poolAddress } = pool;
 
     const _sellBase = async (): Promise<ContractTransaction | undefined> => {
-      const baseAlreadyApproved = (await base.getAllowance(account!, ladleContract?.address!)).gt(_inputToUse);
+      const baseAlreadyApproved = (await base.getAllowance(account!, ladleContract?.address!)).gte(_inputToUse);
 
       const _outputLessSlippage = calculateSlippage(
         ethers.utils.parseUnits(fyTokenOutPreview, decimals),
@@ -78,7 +68,7 @@ export const useTrade = (
     };
 
     const _sellFYToken = async (): Promise<ContractTransaction | undefined> => {
-      const fyTokenAlreadyApproved = (await fyToken.getAllowance(account!, ladleContract?.address!)).gt(_inputToUse);
+      const fyTokenAlreadyApproved = (await fyToken.getAllowance(account!, ladleContract?.address!)).gte(_inputToUse);
 
       const _outputLessSlippage = ethers.utils.parseUnits(
         calculateSlippage(baseOutPreview, slippageTolerance.toString(), true),
