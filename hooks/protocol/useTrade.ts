@@ -91,7 +91,14 @@ export const useTrade = (
         [
           ...permits,
           { action: transferAction(fyToken.address, poolAddress, _inputToUse)! },
-          { action: sellFYTokenAction(contract, account!, _outputLessSlippage)! },
+          {
+            action: sellFYTokenAction(
+              poolContract,
+              isEth ? ladleContract?.address! : account!, // selling fyETH gets sent to the ladle to be unwrapped from weth to eth
+              _outputLessSlippage
+            )!,
+          },
+          { action: exitETHAction(account!)!, ignoreIf: !isEth }, // eth gets sent back to account
         ],
         overrides
       );
