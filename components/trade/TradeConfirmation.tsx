@@ -48,8 +48,9 @@ const TradeConfirmation = ({ form, interestRate, action, disabled, loading }: IT
   const { pool, fromAmount, fromAsset, toAmount, toAsset, toAmountLessSlippage } = form;
   const timeTillMaturity_ = useTimeTillMaturity(pool?.maturity!);
   const fromAmount_ = valueAtDigits(fromAmount, fromAsset?.digitFormat!);
-  const toAmount_ = valueAtDigits(toAmount, toAsset?.digitFormat);
+  const toAmount_ = valueAtDigits(toAmount, toAsset?.digitFormat!);
   const toAmountLessSlippage_ = cleanValue(toAmountLessSlippage, toAsset?.digitFormat);
+  const maturityDescription = pool?.isMature ? `Mature` : `${timeTillMaturity_} until maturity`;
 
   return (
     <Container>
@@ -67,7 +68,7 @@ const TradeConfirmation = ({ form, interestRate, action, disabled, loading }: IT
               <Detail>Maturity</Detail>
               <div className="text-sm dark:text-gray-50">
                 <div className="flex justify-end">{pool?.displayName}</div>
-                <div className="italic text-xs dark:text-gray-300">{timeTillMaturity_} until maturity</div>
+                <div className="italic text-xs dark:text-gray-300 float-right">{maturityDescription}</div>
               </div>
             </DetailWrap>
             <DetailWrap>

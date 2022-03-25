@@ -39,7 +39,8 @@ export const useTrade = (
 
   const trade = async () => {
     if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
-    const { base, fyToken, contract: poolContract, address: poolAddress, decimals, isMature } = pool;
+    const { base, fyToken, contract: poolContract, address: poolAddress, decimals, isMature, seriesId } = pool;
+
     const isEth = base.symbol === 'ETH';
     const overrides = {
       gasLimit: 250000,
@@ -108,7 +109,7 @@ export const useTrade = (
             ignoreIf: isMature,
           },
           {
-            action: redeemFYToken('dont know', isEth ? ladleContract?.address! : account!, _inputToUse)!,
+            action: redeemFYToken(seriesId, isEth ? ladleContract?.address! : account!, _inputToUse)!,
             ignoreIf: !isMature,
           },
           { action: exitETHAction(account!)!, ignoreIf: !isEth }, // eth gets sent back to account
