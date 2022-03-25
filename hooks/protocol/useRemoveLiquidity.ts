@@ -28,7 +28,7 @@ export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiq
 
     const [minRatio, maxRatio] = calcPoolRatios(cachedBaseReserves, cachedRealReserves);
 
-    const alreadyApproved = (await pool.contract.allowance(account!, ladleContract?.address!)).gt(_input);
+    const alreadyApproved = (await pool.contract.allowance(account!, ladleContract?.address!)).gte(_input);
 
     const overrides = {
       gasLimit: 250000,
@@ -46,14 +46,15 @@ export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiq
         },
       ]);
 
-      const actions = [
-        forwardPermitAction(...(permits[0].args as LadleActions.Args.FORWARD_PERMIT)),
-        transferAction(pool.address, pool.address, _input),
-        burnForBaseAction(pool.contract, isETH ? ladleContract?.address! : account!, minRatio, maxRatio),
-        isETH && exitETHAction(account!),
-      ].filter(Boolean) as string[];
-
-      return batch(actions, overrides);
+      return batch(
+        [
+          ...permits,
+          { action: transferAction(pool.address, pool.address, _input)! },
+          { action: burnForBaseAction(pool.contract, isETH ? ladleContract?.address! : account!, minRatio, maxRatio)! },
+          { action: exitETHAction(account!)!, ignoreIf: !isETH },
+        ],
+        overrides
+      );
     };
 
     const _burn = async (): Promise<ethers.ContractTransaction | undefined> => {
@@ -66,14 +67,23 @@ export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiq
         },
       ]);
 
-      const actions = [
-        forwardPermitAction(...(permits[0].args as LadleActions.Args.FORWARD_PERMIT))!,
-        transferAction(pool.address, pool.address, _input)!,
-        burnAction(pool.contract, isETH ? ladleContract?.address! : account!, account!, minRatio, maxRatio)!,
-        isETH && exitETHAction(account!),
-      ].filter(Boolean) as string[];
-
-      return batch(actions, overrides);
+      return batch(
+        [
+          ...permits,
+          { action: transferAction(pool.address, pool.address, _input)! },
+          {
+            action: burnAction(
+              pool.contract,
+              isETH ? ladleContract?.address! : account!,
+              account!,
+              minRatio,
+              maxRatio
+            )!,
+          },
+          { action: exitETHAction(account!)!, ignoreIf: !isETH },
+        ],
+        overrides
+      );
     };
 
     handleTransact(method === RemoveLiquidityActions.BURN_FOR_BASE ? _burnForBase : _burn, description);

@@ -18,7 +18,7 @@ const useLadle = () => {
    * @param overrides optional
    * @returns
    */
-  const batch = (actions: ILadleAction[], overrides?: PayableOverrides) =>
+  const batch = (actions: ILadleAction[], overrides?: PayableOverrides): Promise<ContractTransaction | undefined> =>
     _batch(
       actions.filter((a) => !a.ignoreIf).map((a) => a.action),
       overrides
