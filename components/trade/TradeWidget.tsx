@@ -19,7 +19,6 @@ import CloseButton from '../common/CloseButton';
 import { calculateSlippage } from '../../utils/yieldMath';
 import { cleanValue } from '../../utils/appUtils';
 import useInputValidation from '../../hooks/useInputValidation';
-import ETHBalance from '../common/ETHBalance';
 import useETHBalance from '../../hooks/useEthBalance';
 
 const Inner = tw.div`m-4 text-center`;
@@ -85,7 +84,6 @@ const TradeWidget = () => {
   );
 
   const isEthPool = pool?.base.symbol === 'ETH';
-  const baseBalanceToUse = isEthPool ? ethBalance : pool?.base.balance_;
 
   const handleMaxFrom = () => {
     setUpdatingFromAmount(true);
@@ -253,6 +251,17 @@ const TradeWidget = () => {
       setForm((f) => ({ ...f, toAmountLessSlippage: calculateSlippage(toAmount, slippageTolerance.toString(), true) }));
     }
   }, [slippageTolerance, toAmount]);
+
+  // update the applicalbe from/to asset's balance based on if it is eth
+  useEffect(() => {
+    if (ethBalance && isEthPool) {
+      if (isFyTokenOutput) {
+        setForm((f) => ({ ...f, fromAsset: { ...f.fromAsset!, balance_: ethBalance } }));
+      } else {
+        setForm((f) => ({ ...f, toAsset: { ...f.toAsset!, balance_: ethBalance } }));
+      }
+    }
+  }, [ethBalance, isEthPool, isFyTokenOutput, pool?.base.balance_]);
 
   return (
     <BorderWrap>
