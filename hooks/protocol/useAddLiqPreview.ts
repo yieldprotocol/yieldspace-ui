@@ -1,47 +1,60 @@
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import { useEffect, useState } from 'react';
 import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
 import { IPool } from '../../lib/protocol/types';
-import { cleanValue } from '../../utils/appUtils';
-import { fyTokenForMint } from '../../utils/yieldMath';
+import { fyTokenForMint, mint, mintWithBase, splitLiquidity } from '../../utils/yieldMath';
 
 const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityActions, slippageTolerance = 0.001) => {
   const [lpTokenPreview, setLpTokenPreview] = useState<string>();
+  const [fyTokenNeeded, setFyTokenNeeded] = useState<string>();
 
   useEffect(() => {
-    const getPrevewData = async () => {
+    (async () => {
       if (!pool) {
         return setLpTokenPreview('');
       }
-      const { totalSupply, decimals, contract, getTimeTillMaturity, ts, g1, base } = pool;
+      const { totalSupply, decimals, contract, getTimeTillMaturity, ts, g1 } = pool;
+      const timeTillMaturity = getTimeTillMaturity().toString();
 
-      const _baseAmount = ethers.utils.parseUnits(baseAmount, decimals);
+      const _baseAmount = ethers.utils.parseUnits(baseAmount || '0', decimals);
       const [cachedBaseReserves, cachedFyTokenReserves] = await contract.getCache();
       const cachedRealReserves = cachedFyTokenReserves.sub(totalSupply);
+
+      // if minting with both base and fyToken, calculate how much fyToken is needed
+      const [, _fyTokenNeeded] = splitLiquidity(cachedBaseReserves, cachedRealReserves, _baseAmount);
+      setFyTokenNeeded(ethers.utils.formatUnits(_fyTokenNeeded, decimals));
 
       const [_fyTokenToBuy] = fyTokenForMint(
         cachedBaseReserves,
         cachedRealReserves,
         cachedFyTokenReserves,
         _baseAmount,
-        getTimeTillMaturity().toString(),
+        timeTillMaturity,
         ts,
         g1,
         decimals,
         slippageTolerance
       );
 
-      const tokensMinted = totalSupply
-        .mul(_fyTokenToBuy.add(method === AddLiquidityActions.MINT_WITH_BASE ? ethers.constants.Zero : _baseAmount)) // use base amount which is equal to the fyToken amount provided to the pool
-        .div(cachedRealReserves.sub(_fyTokenToBuy));
-      const lpTokenPreview_ = ethers.utils.formatUnits(tokensMinted, decimals);
-      setLpTokenPreview(cleanValue(lpTokenPreview_, base.digitFormat));
-    };
+      const [minted] =
+        method === AddLiquidityActions.MINT_WITH_BASE
+          ? mintWithBase(
+              cachedBaseReserves,
+              cachedFyTokenReserves,
+              cachedRealReserves,
+              _fyTokenToBuy,
+              timeTillMaturity,
+              ts,
+              g1,
+              decimals
+            )
+          : mint(cachedBaseReserves, cachedRealReserves, totalSupply, BigNumber.from(_fyTokenNeeded), false);
 
-    getPrevewData();
+      setLpTokenPreview(ethers.utils.formatUnits(minted, decimals));
+    })();
   }, [baseAmount, method, pool, slippageTolerance]);
 
-  return { lpTokenPreview };
+  return { lpTokenPreview, fyTokenNeeded };
 };
 
 export default useAddLiqPreview;

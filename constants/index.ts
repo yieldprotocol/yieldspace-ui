@@ -3,6 +3,7 @@ import { BigNumber, ethers } from 'ethers';
 // contract names
 export const CAULDRON = 'Cauldron';
 export const LADLE = 'Ladle';
+export const WRAP_ETH_MODULE = 'WrapEtherModule';
 
 /* util constants */
 export const MAX_256 = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';

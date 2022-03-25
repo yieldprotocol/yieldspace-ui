@@ -85,6 +85,7 @@ export enum SeasonType {
   SUMMER = 'SUMMER',
   FALL = 'FALL',
 }
+
 export const getSeason = (dateInSecs: number): SeasonType => {
   const month: number = getMonth(new Date(dateInSecs * 1000));
   const seasons = [
@@ -105,3 +106,6 @@ export const getSeason = (dateInSecs: number): SeasonType => {
 };
 
 export const formatFyTokenSymbol = (name: string) => `${name.slice(0, -4)}`;
+
+export const valueAtDigits = (input: string, digits: number) =>
+  input && input.length <= digits ? input : `${cleanValue(input, digits)}...`;

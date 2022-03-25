@@ -1,180 +1,131 @@
-import { useSWRConfig } from 'swr';
-import { useState } from 'react';
-import { BigNumberish, ethers, PayableOverrides } from 'ethers';
+import { ethers, PayableOverrides } from 'ethers';
 import { cleanValue } from '../../utils/appUtils';
-
 import { calculateSlippage } from '../../utils/yieldMath';
 import { IPool } from '../../lib/protocol/types';
 import useConnector from '../useConnector';
 import useSignature from '../useSignature';
-import { toast } from 'react-toastify';
 import { TradeActions } from '../../lib/protocol/trade/types';
 import useTradePreview from './useTradePreview';
 import useLadle from './useLadle';
-import useToasty from '../useToasty';
-import { LadleActions } from '../../lib/tx/operations';
-import { DAI_PERMIT_ASSETS } from '../../config/assets';
-import { CHAINS, ExtendedChainInformation } from '../../config/chains';
+import useTransaction from '../useTransaction';
 
 export const useTrade = (
-  pool: IPool | undefined,
+  pool: IPool,
   fromInput: string,
   toInput: string,
-  method: TradeActions = TradeActions.SELL_BASE,
-  description: string | null = null,
+  method: TradeActions,
+  description: string,
   slippageTolerance: number = 0.05
 ) => {
-  const { mutate } = useSWRConfig();
-  const { toasty } = useToasty();
-  const { account, chainId } = useConnector();
-  const explorer = (CHAINS[chainId!] as ExtendedChainInformation)?.blockExplorerUrls![0];
+  const { account } = useConnector();
   const { sign } = useSignature();
+  const { handleTransact, isTransacting, txSubmitted } = useTransaction();
   const {
     ladleContract,
-    forwardDaiPermitAction,
-    forwardPermitAction,
     batch,
     transferAction,
     sellBaseAction,
     sellFYTokenAction,
+    wrapETHAction,
+    exitETHAction,
+    redeemFYToken,
   } = useLadle();
 
-  const decimals = pool?.decimals;
-  const cleanFromInput = cleanValue(fromInput, decimals);
-  const cleanToInput = cleanValue(toInput, decimals);
-  const _inputToUse = ethers.utils.parseUnits(cleanFromInput || '0', decimals);
-
-  const fyTokenOutput = [TradeActions.SELL_BASE, TradeActions.BUY_FYTOKEN].includes(method);
-
-  const { fyTokenOutPreview, baseOutPreview } = useTradePreview(
-    pool,
-    method,
-    cleanFromInput,
-    cleanToInput,
-    fyTokenOutput
-  );
-
-  const [isTransacting, setIsTransacting] = useState<boolean>(false);
-  const [tradeSubmitted, setTradeSubmitted] = useState<boolean>(false);
+  // input data
+  const cleanFromInput = cleanValue(fromInput, pool?.decimals);
+  const cleanToInput = cleanValue(toInput, pool?.decimals);
+  const _inputToUse = ethers.utils.parseUnits(cleanFromInput || '0', pool?.decimals);
+  const { fyTokenOutPreview, baseOutPreview } = useTradePreview(pool, method, cleanFromInput, cleanToInput);
 
   const trade = async () => {
     if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
-    setTradeSubmitted(false);
-    setIsTransacting(true);
+    const { base, fyToken, contract: poolContract, address: poolAddress, decimals, isMature, seriesId } = pool;
 
-    const { base, fyToken, contract } = pool;
-
-    /* check if signature is still required */
-    const alreadyApproved = (await pool.base.getAllowance(account!, pool.address)).gt(_inputToUse);
-
-    const _sellBase = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction | undefined> => {
-      const _fyTokenOutPreview = ethers.utils.parseUnits(fyTokenOutPreview, decimals);
-      const _outputLessSlippage = calculateSlippage(_fyTokenOutPreview, slippageTolerance.toString(), true);
-      const permits = await sign([
-        {
-          target: pool.base,
-          spender: ladleContract?.address!,
-          amount: _inputToUse,
-          ignoreIf: alreadyApproved,
-        },
-      ]);
-
-      if (DAI_PERMIT_ASSETS.includes(base.symbol)) {
-        const [address, spender, nonce, deadline, allowed, v, r, s] = permits[0]
-          .args as LadleActions.Args.FORWARD_DAI_PERMIT;
-
-        return batch(
-          [
-            forwardDaiPermitAction(
-              address,
-              spender,
-              nonce,
-              deadline as BigNumberish,
-              allowed,
-              v as BigNumberish,
-              r as Buffer,
-              s as Buffer
-            )!,
-            transferAction(base.address, pool.address, _inputToUse)!,
-            sellBaseAction(contract, account!, _outputLessSlippage)!,
-          ],
-          overrides
-        );
-      }
-
-      const [token, spender, amount, deadline, v, r, s] = permits[0].args! as LadleActions.Args.FORWARD_PERMIT;
-
-      return batch(
-        [
-          forwardPermitAction(token, spender, amount, deadline, v, r, s)!,
-          transferAction(base.address, pool.address, _inputToUse)!,
-          sellBaseAction(contract, account!, _outputLessSlippage)!,
-        ],
-        overrides
-      );
-    };
-
-    const _sellFYToken = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction | undefined> => {
-      const _baseOutPreview = ethers.utils.parseUnits(baseOutPreview, decimals);
-      const _outputLessSlippage = calculateSlippage(_baseOutPreview, slippageTolerance.toString(), true);
-      const permits = await sign([
-        {
-          target: pool.fyToken,
-          spender: ladleContract?.address!,
-          amount: _inputToUse,
-          ignoreIf: alreadyApproved,
-        },
-      ]);
-
-      const [token, spender, amount, deadline, v, r, s] = permits[0].args! as LadleActions.Args.FORWARD_PERMIT;
-
-      const res = await batch(
-        [
-          forwardPermitAction(token, spender, amount, deadline, v, r, s)!,
-          transferAction(fyToken.address, account!, _inputToUse)!,
-          sellFYTokenAction(contract, account!, _outputLessSlippage)!,
-        ],
-        overrides
-      );
-
-      return res;
-    };
-
-    /**
-     * Transact
-     * */
+    const isEth = base.symbol === 'ETH';
     const overrides = {
       gasLimit: 250000,
     };
+    const withEthOverrides = { ...overrides, value: isEth ? _inputToUse : undefined } as PayableOverrides;
 
-    try {
-      let res: ethers.ContractTransaction | undefined;
+    const _sellBase = async () => {
+      const baseAlreadyApproved = (await base.getAllowance(account!, ladleContract?.address!)).gte(_inputToUse);
 
-      if (fyTokenOutput) {
-        res = await _sellBase(overrides);
-      } else {
-        res = await _sellFYToken(overrides);
-      }
+      const _outputLessSlippage = calculateSlippage(
+        ethers.utils.parseUnits(fyTokenOutPreview, decimals),
+        slippageTolerance.toString(),
+        true
+      );
 
-      setIsTransacting(false);
-      setTradeSubmitted(true);
+      const permits = await sign([
+        {
+          target: base,
+          spender: ladleContract?.address!,
+          amount: _inputToUse,
+          ignoreIf: baseAlreadyApproved,
+        },
+      ]);
 
-      res &&
-        toasty(
-          async () => {
-            await res?.wait();
-            mutate(`/pools/${chainId}/${account}`);
+      return batch(
+        [
+          ...permits,
+          { action: wrapETHAction(poolContract, _inputToUse)!, ignoreIf: !isEth },
+          { action: transferAction(base.address, poolAddress, _inputToUse)!, ignoreIf: isEth },
+          {
+            action: sellBaseAction(poolContract, account!, _outputLessSlippage)!,
           },
-          description!,
-          explorer && `${explorer}/tx/${res.hash}`
-        );
-    } catch (e) {
-      console.log(e);
-      toast.error('Transaction failed or rejected');
-      setIsTransacting(false);
-      setTradeSubmitted(false);
-    }
+          { action: exitETHAction(account!)!, ignoreIf: !isEth }, // leftover eth gets sent back to account
+        ],
+        withEthOverrides
+      );
+    };
+
+    const _sellFYToken = async () => {
+      const fyTokenAlreadyApproved = (await fyToken.getAllowance(account!, ladleContract?.address!)).gte(_inputToUse);
+
+      const _outputLessSlippage = ethers.utils.parseUnits(
+        calculateSlippage(baseOutPreview, slippageTolerance.toString(), true),
+        decimals
+      );
+
+      const permits = await sign([
+        {
+          target: fyToken,
+          spender: ladleContract?.address!,
+          amount: _inputToUse,
+          ignoreIf: fyTokenAlreadyApproved,
+        },
+      ]);
+
+      return batch(
+        [
+          ...permits,
+          {
+            action: transferAction(
+              fyToken.address,
+              isMature ? fyToken.address : poolAddress, // select destination based on maturity
+              _inputToUse
+            )!,
+          },
+          {
+            action: sellFYTokenAction(
+              poolContract,
+              isEth ? ladleContract?.address! : account!, // selling fyETH gets sent to the ladle to be unwrapped from weth to eth
+              _outputLessSlippage
+            )!,
+            ignoreIf: isMature,
+          },
+          {
+            action: redeemFYToken(seriesId, isEth ? ladleContract?.address! : account!, _inputToUse)!,
+            ignoreIf: !isMature,
+          },
+          { action: exitETHAction(account!)!, ignoreIf: !isEth }, // eth gets sent back to account
+        ],
+        overrides
+      );
+    };
+
+    handleTransact(method === TradeActions.SELL_BASE ? _sellBase : _sellFYToken, description);
   };
 
-  return { trade, isTransacting, tradeSubmitted };
+  return { trade, isTransacting, tradeSubmitted: txSubmitted };
 };

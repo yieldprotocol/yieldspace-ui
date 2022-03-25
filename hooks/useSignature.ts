@@ -1,35 +1,21 @@
-import { useState } from 'react';
 import { ethers } from 'ethers';
 import { signDaiPermit, signERC2612Permit } from 'eth-permit';
-
 import { useApprovalMethod } from './useApprovalMethod';
 import useConnector from './useConnector';
 import useTxProcesses from './useTxProcesses';
-import { ApprovalType, ICallData, ISignData, ITxProcess } from '../lib/tx/types';
-import { LADLE, MAX_256 } from '../constants';
+import { ApprovalType, ILadleAction, ISignData } from '../lib/tx/types';
+import { MAX_256 } from '../constants';
 import { ERC20Permit__factory } from '../contracts/types';
 import { DAI_PERMIT_ASSETS, NON_PERMIT_ASSETS } from '../config/assets';
 import { LadleActions } from '../lib/tx/operations';
-import useContracts from './protocol/useContracts';
+import useLadle from './protocol/useLadle';
 
-/* Get ETH value from JOIN_ETHER OPCode, else zero -> N.B. other values sent in with other OPS are ignored for now */
-// const _getCallValue = (calls: ICallData[]): BigNumber => {
-//   const joinEtherCall = calls.find((call) => call.operation === LadleActions.Fn.JOIN_ETHER);
-//   return joinEtherCall ? BigNumber.from(joinEtherCall?.overrides?.value) : ethers.constants.Zero;
-// };
-
-/* Generic hook for chain transactions */
 const useSignature = () => {
-  const approveMax = false;
-  const { account, provider, chainId } = useConnector();
-  const contracts = useContracts();
-  const ladle = contracts && contracts![LADLE];
-
-  const { handleTx, handleSign, addTxProcess } = useTxProcesses();
-  const signer = provider?.getSigner(account);
+  const { account, provider, chainId, signer } = useConnector();
+  const { ladleContract: ladle, forwardDaiPermitAction, forwardPermitAction } = useLadle();
+  const { handleTx, handleSign } = useTxProcesses();
   const approvalMethod = useApprovalMethod();
-
-  const [txProcess, setTxProcess] = useState<ITxProcess | undefined>();
+  const approveMax = false;
 
   /**
    * SIGNING
@@ -37,12 +23,9 @@ const useSignature = () => {
    * 2. Sends off the approval tx, on completion of all txs, returns an empty array.
    * @param { ISignData[] } requestedSignatures
    *
-   * @returns { Promise<ICallData[]> }
+   * @returns { ILadleAction[]> } // encoded string representation of the permit action used by the ladle
    */
-  const sign = async (requestedSignatures: ISignData[]): Promise<ICallData[]> => {
-    const _txProcess = addTxProcess();
-    setTxProcess(_txProcess);
-
+  const sign = async (requestedSignatures: ISignData[]): Promise<ILadleAction[]> => {
     /* Get the spender if not provided, defaults to ladle */
     const getSpender = (spender: string) => {
       if (ethers.utils.isAddress(spender)) {
@@ -81,8 +64,7 @@ const useSignature = () => {
                 _spender!
               ),
             /* This is the function to call if using fallback approvals */
-            () => handleTx(() => tokenContract.approve(_spender!, _amount!), _txProcess, true),
-            _txProcess,
+            () => handleTx(() => tokenContract.approve(_spender!, _amount!), true),
             approvalMethod
           );
 
@@ -98,8 +80,7 @@ const useSignature = () => {
           ] as LadleActions.Args.FORWARD_DAI_PERMIT;
 
           return {
-            operation: LadleActions.Fn.FORWARD_DAI_PERMIT,
-            args,
+            action: forwardDaiPermitAction(...args)!,
             ignoreIf: !(v && r && s), // set ignore flag if signature returned is null (ie. fallbackTx was used)
           };
         }
@@ -126,8 +107,7 @@ const useSignature = () => {
               _amount
             ),
           /* this is the function for if using fallback approvals */
-          () => handleTx(() => tokenContract.approve(_spender!, _amount!), _txProcess, true),
-          _txProcess,
+          () => handleTx(() => tokenContract.approve(_spender!, _amount!), true),
           NON_PERMIT_ASSETS.includes(reqSig.target.symbol) ? ApprovalType.TX : approvalMethod
         );
 
@@ -142,8 +122,7 @@ const useSignature = () => {
         ] as LadleActions.Args.FORWARD_PERMIT;
 
         return {
-          operation: LadleActions.Fn.FORWARD_PERMIT,
-          args,
+          action: forwardPermitAction(...args)!,
           ignoreIf: !(v && r && s), // set ignore flag if signature returned is null (ie. fallbackTx was used)
         };
       })
@@ -153,7 +132,7 @@ const useSignature = () => {
     return signedList.filter((x) => !x.ignoreIf);
   };
 
-  return { sign, signer, txProcess };
+  return { sign };
 };
 
 export default useSignature;

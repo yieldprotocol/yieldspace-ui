@@ -54,6 +54,7 @@ export interface IPoolRoot {
   getTimeTillMaturity: () => number;
 
   contract: Pool;
+  seriesId: string;
 }
 
 export interface IAssetConfig {

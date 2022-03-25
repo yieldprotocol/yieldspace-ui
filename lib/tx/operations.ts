@@ -26,8 +26,9 @@ export namespace LadleActions {
     TRANSFER = 'transfer',
     ROUTE = 'route',
     REDEEM = 'redeem',
-    MODULE = 'module',
+    MODULE = 'moduleCall',
   }
+
   export namespace Args {
     export type BUILD = [seriesId_bytes6: string, ilkId_bytes6: string, salt_bytes8: string];
     export type ROLL = [vaultId: string, newSeriesId: string, loan: BigNumberish, max: BigNumberish];
@@ -50,7 +51,6 @@ export namespace LadleActions {
     export type EXIT_ETHER = [to: string];
     export type TRANSFER = [token: string, receiver: string, wad: BigNumberish];
 
-    export type ROUTE = [seriesId: string, encodedpoolCall: string];
     export type REDEEM = [seriesId: string, to: string, wad: BigNumberish];
 
     export type FORWARD_PERMIT = [
@@ -67,13 +67,14 @@ export namespace LadleActions {
       spender: string,
       nonce: BigNumberish,
       deadline: BigNumberish,
-      allowed: boolean,
+      approved: boolean,
       v: BigNumberish,
       r: Buffer,
       s: Buffer
     ];
 
-    export type MODULE = [];
+    export type ROUTE = [targetAddress: string, encodedCall: string];
+    export type MODULE = [targetAddress: string, encodedCall: string];
   }
 }
 
@@ -86,6 +87,9 @@ export namespace RoutedActions {
     BURN_POOL_TOKENS = 'burn',
     MINT_WITH_BASE = 'mintWithBase',
     BURN_FOR_BASE = 'burnForBase',
+
+    WRAP = 'wrap',
+    UNWRAP = 'unwrap',
   }
 
   export namespace Args {
@@ -102,6 +106,19 @@ export namespace RoutedActions {
       minRatio: BigNumberish,
       maxRatio: BigNumberish
     ];
+
     export type BURN_FOR_BASE = [receiver: string, minRatio: BigNumberish, maxRatio: BigNumberish];
+
+    export type WRAP = [receiver: string];
+    export type UNWRAP = [receiver: string];
+  }
+}
+
+export namespace ModuleActions {
+  export enum Fn {
+    WRAP_ETHER_MODULE = 'wrap',
+  }
+  export namespace Args {
+    export type WRAP_ETHER_MODULE = [receiver: string, amount: BigNumberish];
   }
 }

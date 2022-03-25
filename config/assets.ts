@@ -13,8 +13,8 @@ export const NON_PERMIT_ASSETS = ['ETH', 'WETH', WETH];
 export const IGNORE_BASE_ASSETS = ['ETH', 'WETH', WETH];
 
 export const ASSET_INFO = new Map<string, IAssetConfig>();
-ASSET_INFO.set('DAI', { digitFormat: 2 });
-ASSET_INFO.set('USDC', { digitFormat: 2 });
+ASSET_INFO.set('DAI', { digitFormat: 4 });
+ASSET_INFO.set('USDC', { digitFormat: 4 });
 ASSET_INFO.set('WETH', {
-  digitFormat: 6,
+  digitFormat: 4,
 });

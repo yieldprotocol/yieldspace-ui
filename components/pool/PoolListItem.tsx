@@ -22,7 +22,7 @@ const PoolListItem: FC<IPoolListItem> = ({ pool }) => (
         <Header>{pool.displayName}</Header>
         <PoolDataWrap>
           <PoolDataLabel>LP Token Balance:</PoolDataLabel>
-          <PoolData>{cleanValue(pool.lpTokenBalance_, 2)}</PoolData>
+          <PoolData>{cleanValue(pool.lpTokenBalance_, pool.base.digitFormat)}</PoolData>
         </PoolDataWrap>
       </Inner>
     </Container>

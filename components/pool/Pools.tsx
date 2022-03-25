@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import tw from 'tailwind-styled-components';
 import usePools from '../../hooks/protocol/usePools';
@@ -6,19 +6,17 @@ import useConnector from '../../hooks/useConnector';
 import { IPool } from '../../lib/protocol/types';
 import PoolListItem from './PoolListItem';
 
-const Container = tw.div`p-2`;
+const Container = tw.div`p-2 max-w-lg`;
 
-interface IPools {}
-
-const Pools: FC<IPools> = () => {
+const Pools = () => {
   const { account } = useConnector();
   const { data: pools, loading } = usePools();
   const [poolsList, setPoolsList] = useState<IPool[]>([]);
 
   useEffect(() => {
     if (pools) {
-      const filteredPools = Object.values(pools as IPools).filter((p) => p.lpTokenBalance.gt(ethers.constants.Zero));
-      const sortedPools = filteredPools.sort((a, b) => (a.lpTokenBalance.gte(b.lpTokenBalance) ? 1 : -1));
+      const filteredPools = Object.values(pools).filter((p) => p.lpTokenBalance.gt(ethers.constants.Zero));
+      const sortedPools = filteredPools.sort((a, b) => (a.lpTokenBalance.lte(b.lpTokenBalance) ? 1 : -1));
       setPoolsList(sortedPools);
     }
   }, [pools]);

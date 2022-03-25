@@ -27,14 +27,12 @@ export interface IRemoveLiquidityForm {
   pool: IPool | undefined;
   lpTokens: string;
   method: RemoveLiquidityActions;
-  description: string;
 }
 
 const INITIAL_FORM_STATE: IRemoveLiquidityForm = {
   pool: undefined,
   lpTokens: '',
   method: RemoveLiquidityActions.BURN_FOR_BASE,
-  description: '',
 };
 
 const RemoveLiquidity = () => {
@@ -44,12 +42,17 @@ const RemoveLiquidity = () => {
   const { data: pools } = usePools();
 
   const [form, setForm] = useState<IRemoveLiquidityForm>(INITIAL_FORM_STATE);
-  const { pool, lpTokens, method, description } = form;
+  const { pool, lpTokens, method } = form;
 
   const [burnForBase, setBurnForBase] = useState<boolean>(true);
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
 
   const { errorMsg } = useInputValidation(lpTokens, pool, [0, lpTokens], method);
+  const description = `Remove ${lpTokens} LP tokens${
+    method! === RemoveLiquidityActions.BURN_FOR_BASE
+      ? ` and receive all ${pool?.base.symbol}`
+      : ` receive both ${pool?.base.symbol} and ${pool?.fyToken.symbol}`
+  }`;
   const { removeLiquidity, isRemovingLiq, removeSubmitted } = useRemoveLiquidity(pool!, lpTokens, method, description);
 
   const handleMaxLpTokens = () => {
@@ -77,14 +80,6 @@ const RemoveLiquidity = () => {
   useEffect(() => {
     pools && setForm((f) => ({ ...f, pool: pools![address as string] }));
   }, [pools, address]);
-
-  // set remove liquidity description to use in useRemoveLiquidity hook
-  useEffect(() => {
-    const _description = `Remove ${lpTokens} LP tokens${
-      method! === RemoveLiquidityActions.BURN_FOR_BASE ? ` and receive all base` : ' receive both base and fyTokens'
-    }`;
-    setForm((f) => ({ ...f, description: _description }));
-  }, [lpTokens, method]);
 
   // update method in form based on burnForBase toggle
   useEffect(() => {
@@ -135,7 +130,7 @@ const RemoveLiquidity = () => {
             pool={pool!}
           />
 
-          {pool && (
+          {pool && !pool.isMature && (
             <Toggle
               enabled={burnForBase}
               setEnabled={setBurnForBase}

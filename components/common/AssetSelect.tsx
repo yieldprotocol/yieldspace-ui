@@ -3,7 +3,7 @@ import { IAsset, IPool } from '../../lib/protocol/types';
 import AssetLogo from './AssetLogo';
 import FyTokenLogo from './FyTokenLogo';
 
-const Container = tw.div`p-2 dark:bg-gray-600 bg-gray-400/50 rounded-lg`;
+const Container = tw.div`w-fit py-2 px-3 dark:bg-gray-600 bg-gray-400/50 rounded-lg`;
 
 interface IItemSelect {
   item: IAsset | IPool | undefined;

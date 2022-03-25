@@ -19,6 +19,7 @@ import CloseButton from '../common/CloseButton';
 import { calculateSlippage } from '../../utils/yieldMath';
 import { cleanValue } from '../../utils/appUtils';
 import useInputValidation from '../../hooks/useInputValidation';
+import useETHBalance from '../../hooks/useEthBalance';
 
 const Inner = tw.div`m-4 text-center`;
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
@@ -50,6 +51,7 @@ const INITIAL_FORM_STATE: ITradeForm = {
 const TradeWidget = () => {
   const { chainId, account } = useConnector();
   const { data: pools, loading } = usePools();
+  const { balance: ethBalance } = useETHBalance();
 
   const [form, setForm] = useState<ITradeForm>(INITIAL_FORM_STATE);
   const {
@@ -60,18 +62,20 @@ const TradeWidget = () => {
     interestRatePreview,
     maxFyTokenIn,
     maxBaseIn,
-  } = useTradePreview(form.pool, form.tradeAction, form.fromAmount, form.toAmount, form.isFyTokenOutput);
+  } = useTradePreview(form.pool, form.tradeAction, form.fromAmount, form.toAmount);
   const { pool, fromAsset, fromAmount, toAsset, toAmount, tradeAction, isFyTokenOutput } = form;
 
   const max = isFyTokenOutput ? maxBaseIn : maxFyTokenIn; // max limit to be used in validation
-  const { errorMsg } = useInputValidation(fromAmount, pool!, [0, max], tradeAction);
+  const { errorMsg } = useInputValidation(fromAmount, pool!, [0, max], tradeAction, toAmount);
 
   const [updatingFromAmount, setUpdatingFromAmount] = useState<boolean>(false);
   const [updatingToAmount, setUpdatingToAmount] = useState<boolean>(false);
-  const [description, setDescription] = useState('');
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
   const [slippageTolerance] = useState<number>(0.05);
 
+  const description = `Trade ${fromAmount} ${fromAsset?.symbol} to ~${cleanValue(toAmount, toAsset?.digitFormat)} ${
+    toAsset?.symbol
+  }`;
   const { trade, isTransacting, tradeSubmitted } = useTrade(
     pool!,
     fromAmount,
@@ -80,6 +84,8 @@ const TradeWidget = () => {
     description,
     slippageTolerance
   );
+
+  const isEthPool = pool?.base.symbol === 'ETH';
 
   const handleMaxFrom = () => {
     setUpdatingFromAmount(true);
@@ -216,14 +222,6 @@ const TradeWidget = () => {
       }));
   }, [form.pool]);
 
-  // set trade description to use in useTrade hook
-  useEffect(() => {
-    const _description = `Trade ${fromAmount} ${fromAsset?.symbol} to ~${cleanValue(toAmount, toAsset?.digitFormat)} ${
-      toAsset?.symbol
-    }`;
-    setDescription(_description);
-  }, [fromAmount, fromAsset, toAmount, toAsset]);
-
   // close modal when the trade was successfullly submitted (user took all actions to get tx through)
   useEffect(() => {
     if (tradeSubmitted) {
@@ -247,6 +245,17 @@ const TradeWidget = () => {
       setForm((f) => ({ ...f, toAmountLessSlippage: calculateSlippage(toAmount, slippageTolerance.toString(), true) }));
     }
   }, [slippageTolerance, toAmount]);
+
+  // update the applicalbe from/to asset's balance based on if it is eth
+  useEffect(() => {
+    if (ethBalance && isEthPool) {
+      if (isFyTokenOutput) {
+        setForm((f) => ({ ...f, fromAsset: { ...f.fromAsset!, balance_: ethBalance } }));
+      } else {
+        setForm((f) => ({ ...f, toAsset: { ...f.toAsset!, balance_: ethBalance } }));
+      }
+    }
+  }, [ethBalance, isEthPool, isFyTokenOutput, pool?.base.balance_]);
 
   return (
     <BorderWrap>

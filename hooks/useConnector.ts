@@ -16,8 +16,9 @@ const useConnector = () => {
   const account = usePriorityAccount();
   const provider = usePriorityProvider();
   const ensName = usePriorityENSName(provider);
+  const signer = provider?.getSigner(account);
 
-  return { connector, chainId, account, provider, ensName };
+  return { connector, chainId, account, provider, ensName, signer };
 };
 
 export default useConnector;

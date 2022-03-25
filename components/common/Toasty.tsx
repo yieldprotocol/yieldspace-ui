@@ -9,7 +9,7 @@ const Toasty = () => {
   return (
     <ToastContainer
       toastClassName={() =>
-        'bg-gray-300 dark:bg-gray-900 text-gray-800 dark:text-gray-50 relative flex p-2 min-h-10 rounded-md justify-between overflow-hidden cursor-pointer'
+        'bg-gray-300 dark:bg-gray-900 text-gray-800 dark:text-gray-50 relative flex p-3 min-h-10 rounded-md justify-between overflow-hidden cursor-pointer'
       }
       position="bottom-right"
       pauseOnHover

@@ -6,6 +6,7 @@ import useTimeTillMaturity from '../../hooks/useTimeTillMaturity';
 import { IAddLiquidityForm } from './AddLiquidity';
 import Arrow from '../trade/Arrow';
 import useAddLiquidityPreview from '../../hooks/protocol/useAddLiqPreview';
+import { valueAtDigits } from '../../utils/appUtils';
 
 const Container = tw.div`relative flex justify-center items-center w-full`;
 const Wrap = tw.div`w-full text-center text-lg align-middle items-center`;
@@ -51,11 +52,15 @@ const AddConfirmation = ({ form, action, disabled, loading }: IAddConfirmation) 
       <Wrap>
         <InputsOuter>
           <InputsWrap>
-            <ConfirmItem value={baseAmount} asset={pool?.base!} pool={pool!} />
+            <ConfirmItem value={valueAtDigits(baseAmount, pool?.base.digitFormat!)} asset={pool?.base!} pool={pool!} />
             {useFyToken && (
               <>
                 <Arrow isPlusIcon={true} />
-                <ConfirmItem value={fyTokenAmount} asset={pool?.fyToken!} pool={pool!} />
+                <ConfirmItem
+                  value={valueAtDigits(fyTokenAmount, pool?.fyToken.digitFormat!)}
+                  asset={pool?.fyToken!}
+                  pool={pool!}
+                />
               </>
             )}
           </InputsWrap>
@@ -71,7 +76,7 @@ const AddConfirmation = ({ form, action, disabled, loading }: IAddConfirmation) 
             </DetailWrap>
             <DetailWrap>
               <Detail>LP Tokens to Receive</Detail>
-              <Detail>{lpTokenPreview}</Detail>
+              <Detail>{lpTokenPreview && valueAtDigits(lpTokenPreview, 6)}</Detail>
             </DetailWrap>
           </DetailsWrap>
         </InputStyleContainer>

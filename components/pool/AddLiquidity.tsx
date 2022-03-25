@@ -18,6 +18,8 @@ import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
 import Arrow from '../trade/Arrow';
 import InputsWrap from '../styles/InputsWrap';
 import useInputValidation from '../../hooks/useInputValidation';
+import useAddLiqPreview from '../../hooks/protocol/useAddLiqPreview';
+import useETHBalance from '../../hooks/useEthBalance';
 
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
@@ -29,8 +31,7 @@ export interface IAddLiquidityForm {
   pool: IPool | undefined;
   baseAmount: string;
   fyTokenAmount: string;
-  method: AddLiquidityActions | undefined;
-  description: string;
+  method: AddLiquidityActions;
   useFyToken: boolean;
 }
 
@@ -38,8 +39,7 @@ const INITIAL_FORM_STATE: IAddLiquidityForm = {
   pool: undefined,
   baseAmount: '',
   fyTokenAmount: '',
-  method: undefined,
-  description: '',
+  method: AddLiquidityActions.MINT_WITH_BASE,
   useFyToken: false,
 };
 
@@ -48,17 +48,29 @@ const AddLiquidity = () => {
   const { address } = router.query;
   const { chainId, account } = useConnector();
   const { data: pools } = usePools();
+  const { balance: ethBalance } = useETHBalance();
 
   const [form, setForm] = useState<IAddLiquidityForm>(INITIAL_FORM_STATE);
-  const { pool, baseAmount, fyTokenAmount, method, description, useFyToken } = form;
+  const { pool, baseAmount, fyTokenAmount, method, useFyToken } = form;
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
   const [useFyTokenToggle, setUseFyTokenToggle] = useState<boolean>(false);
+  const [slippageTolerance] = useState<number>(0.001);
+  const [useWETH] = useState<boolean>(false);
 
-  const { errorMsg } = useInputValidation(baseAmount, pool, [], method!);
+  const { fyTokenNeeded } = useAddLiqPreview(pool!, baseAmount, method, slippageTolerance);
+  const isEthPool = pool?.base.symbol === 'ETH';
+  const baseIsEth = isEthPool && !useWETH;
+  const { errorMsg } = useInputValidation(baseAmount, pool, [], method!, fyTokenAmount, baseIsEth);
+
+  const description = `Add ${baseAmount} ${pool?.base.symbol}${
+    +fyTokenAmount > 0 && useFyToken ? ` and ${fyTokenAmount} ${pool?.fyToken.symbol}` : ''
+  } as liquidity`;
   const { addLiquidity, isAddingLiquidity, addSubmitted } = useAddLiquidity(pool!, baseAmount, method, description);
 
+  const baseBalanceToUse = isEthPool ? (useWETH ? pool?.base.balance_ : ethBalance) : pool?.base.balance_;
+
   const handleMaxBase = () => {
-    setForm((f) => ({ ...f, baseAmount: pool?.base.balance_!, fyTokenAmount: pool?.base.balance_! }));
+    setForm((f) => ({ ...f, baseAmount: baseBalanceToUse! }));
   };
 
   const handleClearAll = () => {
@@ -82,14 +94,6 @@ const AddLiquidity = () => {
   useEffect(() => {
     pools && setForm((f) => ({ ...f, pool: pools![address as string] }));
   }, [pools, address]);
-
-  // set add liquidity description to use in useAddLiquidity hook
-  useEffect(() => {
-    const _description = `Add ${baseAmount} ${pool?.base.symbol}${
-      +fyTokenAmount > 0 && useFyToken ? ` and ${fyTokenAmount} ${pool?.fyToken.symbol}` : ''
-    }`;
-    setForm((f) => ({ ...f, description: _description }));
-  }, [pool?.base.symbol, baseAmount, useFyToken, fyTokenAmount, pool?.fyToken.symbol]);
 
   // set add liquidity method when useFyTokenBalance changes
   useEffect(() => {
@@ -120,6 +124,10 @@ const AddLiquidity = () => {
     }
   }, [pools, pool]);
 
+  useEffect(() => {
+    fyTokenNeeded && setForm((f) => ({ ...f, fyTokenAmount: fyTokenNeeded }));
+  }, [fyTokenNeeded]);
+
   return (
     <BorderWrap>
       <Inner>
@@ -144,7 +152,7 @@ const AddLiquidity = () => {
               name="baseAmount"
               value={baseAmount}
               item={pool?.base}
-              balance={pool?.base.balance_!}
+              balance={baseBalanceToUse!}
               handleChange={handleInputChange}
               useMax={handleMaxBase}
               pool={pool}
@@ -163,7 +171,16 @@ const AddLiquidity = () => {
               />
             )}
           </InputsWrap>
-          <Toggle enabled={useFyToken} setEnabled={setUseFyTokenToggle} label="Use fyToken Balance" />
+          {+pool?.fyToken?.balance_! > 0 && (
+            <Toggle
+              enabled={useFyToken}
+              setEnabled={setUseFyTokenToggle}
+              label={`Use fy${pool?.base.symbol} Balance`}
+            />
+          )}
+          {/* {isEthPool && +pool?.base.balance_ > 0 && (
+            <Toggle enabled={useWETH} setEnabled={setUseWETH} label={`Use ${useWETH ? 'ETH' : 'WETH'} Balance`} />
+          )} */}
         </Grid>
         <Button
           action={handleSubmit}

@@ -1,153 +1,82 @@
-import { useSWRConfig } from 'swr';
-import { BigNumberish, ethers, PayableOverrides } from 'ethers';
-import { useState } from 'react';
-import { toast } from 'react-toastify';
+import { ethers } from 'ethers';
 import { RemoveLiquidityActions } from '../../lib/protocol/liquidity/types';
 import { IPool } from '../../lib/protocol/types';
 import { cleanValue } from '../../utils/appUtils';
-import { burn, calcPoolRatios } from '../../utils/yieldMath';
+import { calcPoolRatios } from '../../utils/yieldMath';
 import useConnector from '../useConnector';
 import useSignature from '../useSignature';
 import useLadle from './useLadle';
-import { CHAINS, ExtendedChainInformation } from '../../config/chains';
-import useToasty from '../useToasty';
+import useTransaction from '../useTransaction';
 
-export const useRemoveLiquidity = (
-  pool: IPool,
-  input: string,
-  method: RemoveLiquidityActions = RemoveLiquidityActions.BURN_FOR_BASE,
-  description: string | null = null
-) => {
-  const { mutate } = useSWRConfig();
-
-  // settings
-  const approveMax = false;
-  const slippageTolerance = 0.001;
-
-  const { toasty } = useToasty();
-  const { account, chainId } = useConnector();
-  const explorer = (CHAINS[chainId!] as ExtendedChainInformation).blockExplorerUrls![0];
+export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiquidityActions, description: string) => {
+  const { account } = useConnector();
   const { sign } = useSignature();
-  const { ladleContract, forwardPermitAction, batch, transferAction, burnForBaseAction, burnAction } = useLadle();
-
-  const [isRemovingLiq, setIsRemovingLiq] = useState<boolean>(false);
-  const [removeSubmitted, setRemoveSubmitted] = useState<boolean>(false);
+  const { handleTransact, isTransacting, txSubmitted } = useTransaction();
+  const { ladleContract, batch, transferAction, burnForBaseAction, burnAction, exitETHAction, redeemFYToken } =
+    useLadle();
 
   const removeLiquidity = async () => {
     if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
-    setRemoveSubmitted(false);
-    setIsRemovingLiq(true);
 
-    const { base, fyToken } = pool;
+    const { base, address: poolAddress, contract: poolContract, isMature, seriesId, fyToken } = pool;
     const cleanInput = cleanValue(input, base.decimals);
     const _input = ethers.utils.parseUnits(cleanInput, base.decimals);
-    const _inputLessSlippage = _input;
 
     const [cachedBaseReserves, cachedFyTokenReserves] = await pool.contract.getCache();
     const cachedRealReserves = cachedFyTokenReserves.sub(pool.totalSupply);
 
-    const [_baseTokenReceived, _fyTokenReceived] = burn(
-      pool.baseReserves,
-      cachedRealReserves,
-      pool.totalSupply,
-      _inputLessSlippage
-    );
-
     const [minRatio, maxRatio] = calcPoolRatios(cachedBaseReserves, cachedRealReserves);
 
-    const alreadyApproved = (await pool.contract.allowance(account!, ladleContract?.address!)).gt(_input);
+    const alreadyApproved = (await pool.contract.allowance(account!, ladleContract?.address!)).gte(_input);
 
-    const _burnForBase = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction | undefined> => {
-      const permits = await sign([
-        {
-          target: pool,
-          spender: ladleContract?.address!,
-          amount: _input,
-          ignoreIf: alreadyApproved,
-        },
-      ]);
-      const [, , , deadline, v, r, s] = permits[0].args!;
-
-      return batch(
-        [
-          forwardPermitAction(
-            pool.address,
-            ladleContract?.address!,
-            _input,
-            deadline as BigNumberish,
-            v as BigNumberish,
-            r as Buffer,
-            s as Buffer
-          )!,
-          transferAction(pool.address, pool.address, _input)!,
-          burnForBaseAction(pool.contract, account!, minRatio, maxRatio)!,
-        ],
-        overrides
-      );
-    };
-
-    const _burn = async (overrides: PayableOverrides): Promise<ethers.ContractTransaction | undefined> => {
-      const permits = await sign([
-        {
-          target: pool,
-          spender: ladleContract?.address!,
-          amount: _input,
-          ignoreIf: alreadyApproved,
-        },
-      ]);
-      const [, , , deadline, v, r, s] = permits[0].args!;
-
-      return batch(
-        [
-          forwardPermitAction(
-            pool.address,
-            ladleContract?.address!,
-            _input,
-            deadline as BigNumberish,
-            v as BigNumberish,
-            r as Buffer,
-            s as Buffer
-          )!,
-          transferAction(pool.address, pool.address, _input)!,
-          burnAction(pool.contract, account!, account!, minRatio, maxRatio)!,
-        ],
-        overrides
-      );
-    };
-
-    // transact
     const overrides = {
       gasLimit: 250000,
     };
 
-    try {
-      let res: ethers.ContractTransaction | undefined;
+    const isETH = base.symbol === 'ETH';
+    const toAddress = isETH ? ladleContract?.address! : account!;
 
-      if (method === RemoveLiquidityActions.BURN_FOR_BASE) {
-        res = await _burnForBase(overrides);
-      } else {
-        res = await _burn(overrides);
-      }
+    const _remove = async () => {
+      const permits = await sign([
+        {
+          target: pool,
+          spender: ladleContract?.address!,
+          amount: _input,
+          ignoreIf: alreadyApproved,
+        },
+      ]);
 
-      setIsRemovingLiq(false);
-      setRemoveSubmitted(true);
-
-      res &&
-        toasty(
-          async () => {
-            await res?.wait();
-            mutate(`/pools/${chainId}/${account}`);
+      // handles both burnForBase and burn actions, before and after maturity
+      return batch(
+        [
+          ...permits,
+          { action: transferAction(poolAddress, poolAddress, _input)! },
+          {
+            action: burnForBaseAction(poolContract, toAddress, minRatio, maxRatio)!,
+            ignoreIf: method !== RemoveLiquidityActions.BURN_FOR_BASE || isMature,
           },
-          description!,
-          explorer && `${explorer}/tx/${res.hash}`
-        );
-    } catch (e) {
-      console.log(e);
-      toast.error('Transaction failed or rejected');
-      setIsRemovingLiq(false);
-      setRemoveSubmitted(false);
-    }
+          {
+            action: burnAction(
+              poolContract,
+              toAddress,
+              isMature ? fyToken.address : account!, // after maturity, use the fyToken address as the destination to redeem
+              minRatio,
+              maxRatio
+            )!,
+            ignoreIf: method === RemoveLiquidityActions.BURN_FOR_BASE && !isMature,
+          },
+          {
+            action: redeemFYToken(seriesId, toAddress, '0')!,
+            ignoreIf: !isMature,
+          },
+          { action: exitETHAction(account!)!, ignoreIf: !isETH },
+        ],
+        overrides
+      );
+    };
+
+    handleTransact(_remove, description);
   };
 
-  return { removeLiquidity, isRemovingLiq, removeSubmitted };
+  return { removeLiquidity, isRemovingLiq: isTransacting, removeSubmitted: txSubmitted };
 };

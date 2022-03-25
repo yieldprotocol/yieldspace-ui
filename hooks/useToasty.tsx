@@ -1,9 +1,8 @@
 import { toast } from 'react-toastify';
 import tw from 'tailwind-styled-components';
 import { CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/solid';
-import { useEffect } from 'react';
 
-const Body = tw.div`flex gap-3 p-1 items-center align-middle`;
+const Body = tw.div`flex gap-3 items-center align-middle`;
 const Text = tw.div` text-sm`;
 const Spinner = tw.div`spinner-border animate-spin h-5 w-5 border-5 rounded-full border-primary-200 border-t-secondary-400`;
 const A = tw.a`dark:hover:underline dark:decoration-gray-50`;
