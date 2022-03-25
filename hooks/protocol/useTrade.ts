@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { ethers, PayableOverrides } from 'ethers';
 import { cleanValue } from '../../utils/appUtils';
 import { calculateSlippage } from '../../utils/yieldMath';
 import { IPool } from '../../lib/protocol/types';
@@ -20,7 +20,8 @@ export const useTrade = (
   const { account } = useConnector();
   const { sign } = useSignature();
   const { handleTransact, isTransacting, txSubmitted } = useTransaction();
-  const { ladleContract, batch, transferAction, sellBaseAction, sellFYTokenAction } = useLadle();
+  const { ladleContract, batch, transferAction, sellBaseAction, sellFYTokenAction, wrapETHAction, exitETHAction } =
+    useLadle();
 
   // input data
   const cleanFromInput = cleanValue(fromInput, pool?.decimals);
@@ -30,11 +31,12 @@ export const useTrade = (
 
   const trade = async () => {
     if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
-    const { base, fyToken, contract, address: poolAddress, decimals } = pool;
-
+    const { base, fyToken, contract: poolContract, address: poolAddress, decimals } = pool;
+    const isEth = base.symbol === 'ETH';
     const overrides = {
       gasLimit: 250000,
     };
+    const withEthOverrides = { ...overrides, value: isEth ? _inputToUse : undefined } as PayableOverrides;
 
     const _sellBase = async () => {
       const baseAlreadyApproved = (await base.getAllowance(account!, ladleContract?.address!)).gte(_inputToUse);
@@ -57,10 +59,14 @@ export const useTrade = (
       return batch(
         [
           ...permits,
-          { action: transferAction(base.address, poolAddress, _inputToUse)! },
-          { action: sellBaseAction(contract, account!, _outputLessSlippage)! },
+          { action: wrapETHAction(poolContract, _inputToUse)!, ignoreIf: !isEth },
+          { action: transferAction(base.address, poolAddress, _inputToUse)!, ignoreIf: isEth },
+          {
+            action: sellBaseAction(poolContract, account!, _outputLessSlippage)!,
+          },
+          { action: exitETHAction(account!)!, ignoreIf: !isEth }, // leftover eth gets sent back to account
         ],
-        overrides
+        withEthOverrides
       );
     };
 
