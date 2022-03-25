@@ -92,14 +92,20 @@ export const useTrade = (
           target: fyToken,
           spender: ladleContract?.address!,
           amount: _inputToUse,
-          ignoreIf: fyTokenAlreadyApproved || isMature,
+          ignoreIf: fyTokenAlreadyApproved,
         },
       ]);
 
       return batch(
         [
           ...permits,
-          { action: transferAction(fyToken.address, poolAddress, _inputToUse)!, ignoreIf: isMature },
+          {
+            action: transferAction(
+              fyToken.address,
+              isMature ? fyToken.address : poolAddress, // select destination based on maturity
+              _inputToUse
+            )!,
+          },
           {
             action: sellFYTokenAction(
               poolContract,

@@ -147,8 +147,8 @@ const useLadle = () => {
   const exitETHAction = (receiver: string): string | undefined =>
     ladle?.interface.encodeFunctionData(LadleActions.Fn.EXIT_ETHER, [receiver]);
 
-  const redeemFYToken = (seriesId: string, receiver: string, amount: BigNumberish): string | undefined =>
-    ladle?.interface.encodeFunctionData(LadleActions.Fn.REDEEM, [seriesId, receiver, amount]);
+  const redeemFYToken = (seriesId: string, receiver: string, wad: BigNumberish): string | undefined =>
+    ladle?.interface.encodeFunctionData(LadleActions.Fn.REDEEM, [seriesId, receiver, wad]);
 
   return {
     forwardDaiPermitAction,
