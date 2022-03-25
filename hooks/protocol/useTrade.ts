@@ -22,22 +22,19 @@ export const useTrade = (
   const { handleTransact, isTransacting, txSubmitted } = useTransaction();
   const { ladleContract, batch, transferAction, sellBaseAction, sellFYTokenAction } = useLadle();
 
-  // pool data
-  const { base, fyToken, contract, address: poolAddress, decimals } = pool;
-
   // input data
-  const cleanFromInput = cleanValue(fromInput, decimals);
-  const cleanToInput = cleanValue(toInput, decimals);
-  const _inputToUse = ethers.utils.parseUnits(cleanFromInput || '0', decimals);
-
+  const cleanFromInput = cleanValue(fromInput, pool?.decimals);
+  const cleanToInput = cleanValue(toInput, pool?.decimals);
+  const _inputToUse = ethers.utils.parseUnits(cleanFromInput || '0', pool?.decimals);
   const { fyTokenOutPreview, baseOutPreview } = useTradePreview(pool, method, cleanFromInput, cleanToInput);
-
-  const overrides = {
-    gasLimit: 250000,
-  };
 
   const trade = async () => {
     if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
+    const { base, fyToken, contract, address: poolAddress, decimals } = pool;
+
+    const overrides = {
+      gasLimit: 250000,
+    };
 
     const _sellBase = async () => {
       const baseAlreadyApproved = (await base.getAllowance(account!, ladleContract?.address!)).gte(_inputToUse);

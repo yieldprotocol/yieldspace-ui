@@ -19,6 +19,8 @@ import CloseButton from '../common/CloseButton';
 import { calculateSlippage } from '../../utils/yieldMath';
 import { cleanValue } from '../../utils/appUtils';
 import useInputValidation from '../../hooks/useInputValidation';
+import ETHBalance from '../common/ETHBalance';
+import useETHBalance from '../../hooks/useEthBalance';
 
 const Inner = tw.div`m-4 text-center`;
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
@@ -50,6 +52,7 @@ const INITIAL_FORM_STATE: ITradeForm = {
 const TradeWidget = () => {
   const { chainId, account } = useConnector();
   const { data: pools, loading } = usePools();
+  const { balance: ethBalance } = useETHBalance();
 
   const [form, setForm] = useState<ITradeForm>(INITIAL_FORM_STATE);
   const {
@@ -80,6 +83,9 @@ const TradeWidget = () => {
     description,
     slippageTolerance
   );
+
+  const isEthPool = pool?.base.symbol === 'ETH';
+  const baseBalanceToUse = isEthPool ? ethBalance : pool?.base.balance_;
 
   const handleMaxFrom = () => {
     setUpdatingFromAmount(true);
