@@ -34,7 +34,7 @@ const useTransaction = () => {
           async () => {
             await res?.wait();
             mutate(`/pools/${chainId}/${account}`);
-            mutate(`/ethBalance`); // update eth balance
+            mutate(`/ethBalance/${chainId}/${account}`); // update eth balance
           },
           description,
           explorer && `${explorer}/tx/${res.hash}`

@@ -49,7 +49,6 @@ export const useAddLiquidity = (
 
     /* if approveMax, check if signature is still required */
     const alreadyApprovedBase = (await base.getAllowance(account!, ladleContract?.address!)).gt(_input);
-    console.log('🦄 ~ file: useAddLiquidity.ts ~ line 52 ~ addLiquidity ~ alreadyApprovedBase =', alreadyApprovedBase);
     const alreadyApprovedFyToken = (await fyToken.getAllowance(account!, ladleContract?.address!)).gt(_fyTokenNeeded);
 
     const overrides = {
@@ -58,6 +57,7 @@ export const useAddLiquidity = (
 
     const isEth = pool.base.symbol === 'ETH';
     const withEthOverrides = { ...overrides, value: isEth ? _input : undefined } as PayableOverrides;
+    const isDai = DAI_PERMIT_ASSETS.includes(base.symbol);
 
     const _mintWithBase = async (): Promise<ethers.ContractTransaction | undefined> => {
       const [_fyTokenToBeMinted] = fyTokenForMint(
@@ -82,23 +82,22 @@ export const useAddLiquidity = (
       ]);
 
       const actions = [
-        isEth && wrapETHAction(pool.contract, _input)!,
-        DAI_PERMIT_ASSETS.includes(base.symbol) &&
-          permits[0] &&
-          forwardDaiPermitAction(...(permits[0].args! as LadleActions.Args.FORWARD_DAI_PERMIT))!,
-        !isEth && permits[0] && forwardPermitAction(...(permits[0].args as LadleActions.Args.FORWARD_PERMIT))!,
-        !isEth && transferAction(base.address, pool.address, _input)!,
-        mintWithBaseAction(
-          pool.contract,
-          account!,
-          isEth ? ladleContract?.address! : account!, // minting with eth needs to be sent to ladle
-          _fyTokenToBeMinted,
-          minRatio,
-          maxRatio
-        )!,
-        isEth && exitETHAction(account!), // leftover eth gets sent back to account
-      ].filter(Boolean) as string[];
-
+        ...permits,
+        { action: wrapETHAction(pool.contract, _input)!, ignoreIf: !isEth },
+        { action: transferAction(base.address, pool.address, _input)!, ignoreIf: isEth },
+        {
+          action: mintWithBaseAction(
+            pool.contract,
+            account!,
+            isEth ? ladleContract?.address! : account!, // minting with eth needs to be sent to ladle
+            _fyTokenToBeMinted,
+            minRatio,
+            maxRatio
+          )!,
+        },
+        { action: exitETHAction(account!)!, ignoreIf: !isEth }, // leftover eth gets sent back to account
+      ];
+      console.log('🦄 ~ file: useAddLiquidity.ts ~ line 100 ~ const_mintWithBase= ~ actions', actions);
       return batch(actions, withEthOverrides);
     };
 
@@ -118,23 +117,15 @@ export const useAddLiquidity = (
         },
       ]);
 
-      if (DAI_PERMIT_ASSETS.includes(base.symbol)) {
-        return batch(
-          [
-            forwardDaiPermitAction(...(permits[0].args as LadleActions.Args.FORWARD_DAI_PERMIT))!,
-            forwardPermitAction(...(permits[1].args as LadleActions.Args.FORWARD_PERMIT))!,
-            transferAction(base.address, pool.address, _input)!,
-            transferAction(fyToken.address, pool.address, _fyTokenNeeded)!,
-            mintAction(pool.contract, account!, account!, minRatio, maxRatio)!,
-          ],
-          overrides
-        );
-      }
-
       const actions = [
         isEth && wrapETHAction(pool.contract, _input)!,
-        !isEth && forwardPermitAction(...(permits[0].args as LadleActions.Args.FORWARD_PERMIT))!,
-        forwardPermitAction(...(permits[1].args as LadleActions.Args.FORWARD_PERMIT))!,
+        isDai && permits[0] && forwardDaiPermitAction(...(permits[0].args as LadleActions.Args.FORWARD_DAI_PERMIT))!,
+        !isEth &&
+          !isDai &&
+          permits[0] &&
+          forwardPermitAction(...(permits[0].args as LadleActions.Args.FORWARD_PERMIT))!,
+        !isEth && permits[1] && forwardPermitAction(...(permits[1].args as LadleActions.Args.FORWARD_PERMIT))!,
+        isEth && permits[0] && forwardPermitAction(...(permits[0].args as LadleActions.Args.FORWARD_PERMIT))!, // use the first permit, which will be fyEth if using eth as base
         !isEth && transferAction(base.address, pool.address, _input)!,
         transferAction(fyToken.address, pool.address, _fyTokenNeeded)!,
         mintAction(
@@ -146,6 +137,7 @@ export const useAddLiquidity = (
         )!,
         isEth && exitETHAction(account!), // leftover eth gets sent back to account
       ].filter(Boolean) as string[];
+      console.log('🦄 ~ file: useAddLiquidity.ts ~ line 121 ~ const_mint= ~ actions ', actions);
 
       return batch(actions, withEthOverrides);
     };

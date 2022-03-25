@@ -1,6 +1,11 @@
 import { TransactionReceipt } from '@ethersproject/providers';
 import { BigNumberish, ethers } from 'ethers';
 
+export interface ILadleAction {
+  action: string; // encoded call from useLadleActions
+  ignoreIf?: boolean;
+}
+
 export interface ISignable {
   name: string;
   version: string;

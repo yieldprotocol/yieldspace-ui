@@ -38,13 +38,8 @@ const useTxProcess = () => {
   const handleTxWillFail = (txProcess: ITxProcess) => {};
 
   /* Handle a tx */
-  const handleTx = async (
-    txFn: () => Promise<any>,
-    txProcess: ITxProcess,
-    _isfallback: boolean = false
-  ): Promise<ContractReceipt | null> => {
+  const handleTx = async (txFn: () => Promise<any>, _isfallback: boolean = false): Promise<ContractReceipt | null> => {
     console.log('in handle tx');
-    updateTxProcess(txProcess, { tx: { status: Status.PENDING } });
 
     let tx: ContractTransaction;
     let res: ContractReceipt;
@@ -57,19 +52,15 @@ const useTxProcess = () => {
         tx = await txFn();
         console.log('🦄 ~ file: useTxProcesses.ts ~ line 58 ~ useTxProcess ~ tx', tx);
       } catch (e) {
-        /* this case is when user rejects tx OR wallet rejects tx */
-        _handleTxRejection(txProcess, e);
         return null;
       }
 
       res = await tx.wait();
       const txSuccess = res.status === 1 || false;
-      updateTxProcess(txProcess, { status: txSuccess ? Status.SUCCESS : Status.FAILED });
 
       return res;
     } catch (e) {
       /* catch tx errors */
-      _handleTxError(txProcess, 'some error');
       return null;
     }
   };
@@ -79,12 +70,10 @@ const useTxProcess = () => {
   const handleSign = async (
     signFn: () => Promise<any>,
     fallbackFn: () => Promise<any>,
-    txProcess: ITxProcess,
     approvalMethod: ApprovalType
   ) => {
     /* start a process */
     console.log('in handle sign');
-    updateTxProcess(txProcess, { sig: { status: Status.PENDING } });
 
     let _sig: any;
 
@@ -92,14 +81,12 @@ const useTxProcess = () => {
       _sig = await signFn().catch((err) => {
         console.log(err);
         /* end the process on signature rejection */
-        updateTxProcess(txProcess, { sig: { status: Status.REJECTED } });
         return Promise.reject(err);
       });
     } else {
       await fallbackFn().catch((err) => {
         console.log(err);
         /* end the process on signature rejection */
-        updateTxProcess(txProcess, { sig: { status: Status.REJECTED } });
         return Promise.reject(err);
       });
       /* on Completion of approval tx, send back an empty signed object (which will be ignored) */
@@ -115,7 +102,6 @@ const useTxProcess = () => {
       };
     }
 
-    updateTxProcess(txProcess, { sig: { status: Status.SUCCESS } });
     return _sig;
   };
 

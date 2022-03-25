@@ -2,14 +2,32 @@ import { BigNumberish, ContractTransaction, PayableOverrides } from 'ethers';
 import { LADLE, WRAP_ETH_MODULE } from '../../constants';
 import { Ladle, Pool, WrapEtherModule } from '../../contracts/types';
 import { LadleActions, RoutedActions } from '../../lib/tx/operations';
-import useSignature from '../useSignature';
+import { ILadleAction } from '../../lib/tx/types';
+import useConnector from '../useConnector';
 import useContracts from './useContracts';
 
 const useLadle = () => {
   const contracts = useContracts();
-  const { signer } = useSignature();
+  const { signer } = useConnector();
   const ladle = contracts ? (contracts![LADLE]?.connect(signer!) as Ladle) : undefined;
   const wrapEthModule = contracts ? (contracts![WRAP_ETH_MODULE]?.connect(signer!) as WrapEtherModule) : undefined;
+
+  /**
+   * Formatted representation of the batch function that allows for easier filtering/ignoring of actions
+   * @param actions encoded string array of ladle actions (i.e using the forwardPermit(...args) function here returns the encoded string representation of the action)
+   * @param overrides optional
+   * @returns
+   */
+  const batch = (actions: ILadleAction[], overrides?: PayableOverrides) =>
+    _batch(
+      actions.filter((a) => !a.ignoreIf).map((a) => a.action),
+      overrides
+    );
+
+  const _batch = async (
+    actions: Array<string>,
+    overrides?: PayableOverrides
+  ): Promise<ContractTransaction | undefined> => ladle?.batch(actions, overrides);
 
   const forwardDaiPermitAction = (
     token: string,
@@ -42,11 +60,6 @@ const useLadle = () => {
     s: Buffer
   ): string | undefined =>
     ladle?.interface.encodeFunctionData(LadleActions.Fn.FORWARD_PERMIT, [token, spender, amount, deadline, v, r, s]);
-
-  const batch = async (
-    actions: Array<string>,
-    overrides?: PayableOverrides
-  ): Promise<ContractTransaction | undefined> => ladle?.batch(actions, overrides);
 
   const transferAction = (token: string, receiver: string, wad: BigNumberish): string | undefined =>
     ladle?.interface.encodeFunctionData(LadleActions.Fn.TRANSFER, [token, receiver, wad]);
