@@ -135,7 +135,7 @@ const RemoveLiquidity = () => {
             pool={pool!}
           />
 
-          {pool && (
+          {pool && !pool.isMature && (
             <Toggle
               enabled={burnForBase}
               setEnabled={setBurnForBase}
