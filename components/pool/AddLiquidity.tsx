@@ -32,7 +32,6 @@ export interface IAddLiquidityForm {
   baseAmount: string;
   fyTokenAmount: string;
   method: AddLiquidityActions;
-  description: string;
   useFyToken: boolean;
 }
 
@@ -41,7 +40,6 @@ const INITIAL_FORM_STATE: IAddLiquidityForm = {
   baseAmount: '',
   fyTokenAmount: '',
   method: AddLiquidityActions.MINT_WITH_BASE,
-  description: '',
   useFyToken: false,
 };
 
@@ -53,7 +51,7 @@ const AddLiquidity = () => {
   const { balance: ethBalance } = useETHBalance();
 
   const [form, setForm] = useState<IAddLiquidityForm>(INITIAL_FORM_STATE);
-  const { pool, baseAmount, fyTokenAmount, method, description, useFyToken } = form;
+  const { pool, baseAmount, fyTokenAmount, method, useFyToken } = form;
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
   const [useFyTokenToggle, setUseFyTokenToggle] = useState<boolean>(false);
   const [slippageTolerance, setSlippageTolerance] = useState<number>(0.001);
@@ -63,6 +61,10 @@ const AddLiquidity = () => {
   const isEthPool = pool?.base.symbol === 'ETH';
   const baseIsEth = isEthPool && !useWETH;
   const { errorMsg } = useInputValidation(baseAmount, pool, [], method!, fyTokenAmount, baseIsEth);
+
+  const description = `Add ${baseAmount} ${pool?.base.symbol}${
+    +fyTokenAmount > 0 && useFyToken ? ` and ${fyTokenAmount} ${pool?.fyToken.symbol}` : ''
+  } as liquidity`;
   const { addLiquidity, isAddingLiquidity, addSubmitted } = useAddLiquidity(pool!, baseAmount, method, description);
 
   const baseBalanceToUse = isEthPool ? (useWETH ? pool?.base.balance_ : ethBalance) : pool?.base.balance_;
@@ -92,14 +94,6 @@ const AddLiquidity = () => {
   useEffect(() => {
     pools && setForm((f) => ({ ...f, pool: pools![address as string] }));
   }, [pools, address]);
-
-  // set add liquidity description to use in useAddLiquidity hook
-  useEffect(() => {
-    const _description = `Add ${baseAmount} ${pool?.base.symbol}${
-      +fyTokenAmount > 0 && useFyToken ? ` and ${fyTokenAmount} ${pool?.fyToken.symbol}` : ''
-    } as liquidity`;
-    setForm((f) => ({ ...f, description: _description }));
-  }, [pool?.base.symbol, baseAmount, useFyToken, fyTokenAmount, pool?.fyToken.symbol]);
 
   // set add liquidity method when useFyTokenBalance changes
   useEffect(() => {
