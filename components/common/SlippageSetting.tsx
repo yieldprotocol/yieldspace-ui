@@ -7,7 +7,7 @@ type ButtonProps = {
   $active: boolean;
 };
 
-const Input = tw.input`text-right caret-gray-800 dark:caret-gray-50 text-md appearance-none dark:bg-gray-800 bg-gray-300 dark:focus:text-gray-50 focus:text-gray-800 dark:text-gray-300 text-gray-800 leading-tight focus:outline-none `;
+const Input = tw.input`text-right caret-gray-800 dark:caret-gray-50 text-md appearance-none dark:bg-gray-800 bg-gray-200 dark:focus:text-gray-50 focus:text-gray-800 dark:text-gray-300 text-gray-800 leading-tight focus:outline-none `;
 const InputWrap = tw.div<ButtonProps>`${(p) =>
   p.$active
     ? 'border-primary-500 hover:border-primary-500/70'
@@ -31,9 +31,9 @@ const SlippageSetting = () => {
         leaveFrom="transform opacity-100 scale-100"
         leaveTo="transform opacity-0 scale-95"
       >
-        <Popover.Panel className="mt-2 absolute right-0 origin-top-right rounded-lg shadow-lg z-50 dark:bg-gray-800 bg-gray-300 p-5 border-[1px] border-gray-700">
+        <Popover.Panel className="mt-2 absolute right-0 origin-top-right rounded-lg shadow-lg z-50 dark:bg-gray-800 bg-gray-200 p-5 border-[1px] dark:border-gray-700 border-gray-400">
           <div className="grid gap-3">
-            <div className="text-gray-400 text-sm text-left">Slippage Tolerance</div>
+            <div className="dark:text-gray-400 text-gray-600 text-sm text-left">Slippage Tolerance</div>
             <div className="flex justify-end gap-2">
               <Button $active={setting === ''} onClick={() => setSetting('')}>
                 Auto
