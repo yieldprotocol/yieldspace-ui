@@ -140,7 +140,7 @@ const AddLiquidity = () => {
         <Grid>
           <PoolSelect
             pool={pool}
-            pools={address ? undefined : Object.values(pools).filter((p) => !p.isMature)} // can't add liq when mature, so filter out
+            pools={address ? undefined : pools && Object.values(pools).filter((p) => !p.isMature)} // can't add liq when mature, so filter out
             setPool={(p: IPool) => setForm((f) => ({ ...f, pool: p }))}
           />
         </Grid>

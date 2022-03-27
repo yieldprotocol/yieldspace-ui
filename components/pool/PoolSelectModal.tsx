@@ -113,14 +113,15 @@ const PoolSelectModal: FC<IPoolSelectModal> = ({ pools, open, setOpen, action })
         )}
         {maturities && (
           <div className="flex flex-wrap gap-3 justify-start text-sm">
-            {maturities.map((m) => (
-              <MaturityItem
-                key={m.maturity}
-                maturity={m.maturity}
-                color={m.color}
-                action={() => setMaturityFilter(m.maturity)}
-              />
-            ))}
+            {maturities.length > 1 &&
+              maturities.map((m) => (
+                <MaturityItem
+                  key={m.maturity}
+                  maturity={m.maturity}
+                  color={m.color}
+                  action={() => setMaturityFilter(m.maturity)}
+                />
+              ))}
           </div>
         )}
       </div>
