@@ -1,7 +1,8 @@
 import { Popover, Transition } from '@headlessui/react';
 import { CogIcon } from '@heroicons/react/outline';
-import { Fragment, useState } from 'react';
+import { Fragment } from 'react';
 import tw from 'tailwind-styled-components';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 type ButtonProps = {
   $active: boolean;
@@ -15,7 +16,7 @@ const InputWrap = tw.div<ButtonProps>`${(p) =>
 const Button = tw(InputWrap)`${(p) => p.$active && 'bg-primary-500'} cursor-pointer`;
 
 const SlippageSetting = () => {
-  const [setting, setSetting] = useState<string>(''); // settings comes in as .005 for .5%
+  const [setting, setSetting] = useLocalStorage('slippageTolernace', ''); // settings comes in as .005 for .5%
 
   return (
     <Popover className="relative">
