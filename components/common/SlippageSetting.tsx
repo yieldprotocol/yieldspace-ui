@@ -4,6 +4,9 @@ import { Fragment } from 'react';
 import tw from 'tailwind-styled-components';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 
+export const SLIPPAGE_KEY = 'slippageTolerance';
+export const DEFAULT_SLIPPAGE = '.01'; // 1%
+
 type ButtonProps = {
   $active: boolean;
 };
@@ -16,7 +19,7 @@ const InputWrap = tw.div<ButtonProps>`${(p) =>
 const Button = tw(InputWrap)`${(p) => p.$active && 'bg-primary-500'} cursor-pointer`;
 
 const SlippageSetting = () => {
-  const [setting, setSetting] = useLocalStorage('slippageTolernace', ''); // settings comes in as .005 for .5%
+  const [setting, setSetting] = useLocalStorage(SLIPPAGE_KEY, DEFAULT_SLIPPAGE);
 
   return (
     <Popover className="relative">
