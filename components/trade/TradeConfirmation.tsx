@@ -54,9 +54,10 @@ const TradeConfirmation = ({ form, interestRate, action, disabled, loading }: IT
   const fromAmount_ = valueAtDigits(fromAmount, fromAsset?.digitFormat!);
   const toAmount_ = valueAtDigits(toAmount, toAsset?.digitFormat!);
   const toAmountLessSlippage_ = valueAtDigits(
-    calculateSlippage(toAmount, slippageTolerance as string, true),
+    calculateSlippage(toAmount || '0', slippageTolerance as string, true),
     toAsset?.digitFormat!
   );
+
   const maturityDescription = pool?.isMature ? `Mature` : `${timeTillMaturity_} until maturity`;
 
   return (

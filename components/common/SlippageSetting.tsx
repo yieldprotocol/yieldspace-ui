@@ -5,7 +5,7 @@ import tw from 'tailwind-styled-components';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 export const SLIPPAGE_KEY = 'slippageTolerance';
-export const DEFAULT_SLIPPAGE = '.005'; // 1%
+export const DEFAULT_SLIPPAGE = '.5'; // .5%
 
 type ButtonProps = {
   $active: boolean;
@@ -47,7 +47,7 @@ const SlippageSetting = () => {
                   name="setting"
                   type="number"
                   inputMode="decimal"
-                  value={setting}
+                  value={setting === DEFAULT_SLIPPAGE ? '' : setting}
                   placeholder=".5"
                   onChange={(e) => setSetting(e.target.value)}
                   min="0"
