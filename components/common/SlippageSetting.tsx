@@ -5,7 +5,7 @@ import tw from 'tailwind-styled-components';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 export const SLIPPAGE_KEY = 'slippageTolerance';
-export const DEFAULT_SLIPPAGE = '.01'; // 1%
+export const DEFAULT_SLIPPAGE = '.005'; // 1%
 
 type ButtonProps = {
   $active: boolean;
