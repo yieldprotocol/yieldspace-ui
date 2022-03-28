@@ -15,7 +15,7 @@ export const useTrade = (
   toInput: string,
   method: TradeActions,
   description: string,
-  slippageTolerance: number = 0.05
+  slippageTolerance: string = '.005'
 ) => {
   const { account } = useConnector();
   const { sign } = useSignature();
@@ -52,7 +52,7 @@ export const useTrade = (
 
       const _outputLessSlippage = calculateSlippage(
         ethers.utils.parseUnits(fyTokenOutPreview, decimals),
-        slippageTolerance.toString(),
+        slippageTolerance,
         true
       );
 
