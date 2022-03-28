@@ -21,6 +21,7 @@ import { cleanValue } from '../../utils/appUtils';
 import useInputValidation from '../../hooks/useInputValidation';
 import useETHBalance from '../../hooks/useEthBalance';
 import SlippageSetting from '../common/SlippageSetting';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 const Inner = tw.div`m-4 text-center`;
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
@@ -72,18 +73,19 @@ const TradeWidget = () => {
   const [updatingFromAmount, setUpdatingFromAmount] = useState<boolean>(false);
   const [updatingToAmount, setUpdatingToAmount] = useState<boolean>(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
-  const [slippageTolerance, setSlippageTolerance] = useState<number>(0.005);
 
   const description = `Trade ${fromAmount} ${fromAsset?.symbol} to ~${cleanValue(toAmount, toAsset?.digitFormat)} ${
     toAsset?.symbol
   }`;
+
+  const [slippageTolerance] = useLocalStorage('slippageTolerance', '.005');
   const { trade, isTransacting, tradeSubmitted } = useTrade(
     pool!,
     fromAmount,
     toAmount,
     tradeAction,
     description,
-    slippageTolerance
+    slippageTolerance as string
   );
 
   const isEthPool = pool?.base.symbol === 'ETH';
@@ -264,14 +266,14 @@ const TradeWidget = () => {
         <TopRow>
           <Header>Trade</Header>
           <div className="flex gap-3">
-            <SlippageSetting slippageTolerance={slippageTolerance} />
+            <SlippageSetting />
             <ClearButton onClick={handleClearAll}>Clear All</ClearButton>
           </div>
         </TopRow>
 
         <Grid>
           <PoolSelect
-            pools={pools}
+            pools={pools && Object.values(pools)}
             pool={pool}
             setPool={(p) => setForm((f) => ({ ...f, pool: p }))}
             poolsLoading={loading}
