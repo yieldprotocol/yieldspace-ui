@@ -298,7 +298,7 @@ const TradeWidget = () => {
           {!account ? 'Connect Wallet' : isTransacting ? 'Trade Initiated...' : errorMsg ? errorMsg : 'Trade'}
         </Button>
         {confirmModalOpen && pool && (
-          <Modal isOpen={confirmModalOpen} setIsOpen={setConfirmModalOpen} padding="p-5">
+          <Modal isOpen={confirmModalOpen} setIsOpen={setConfirmModalOpen} styleProps="p-4">
             <TopRow>
               <Header>Confirm Trade</Header>
               <CloseButton action={() => setConfirmModalOpen(false)} height="1.2rem" width="1.2rem" />

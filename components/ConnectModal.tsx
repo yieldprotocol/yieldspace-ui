@@ -70,7 +70,7 @@ function Connection({
 }
 
 const ConnectModal = ({ modalOpen, setModalOpen }: { modalOpen: boolean; setModalOpen: (isOpen: boolean) => void }) => (
-  <Modal isOpen={modalOpen} setIsOpen={setModalOpen}>
+  <Modal isOpen={modalOpen} setIsOpen={setModalOpen} styleProps="p-6">
     <Inner>
       {connectors.map(([connector, hooks], i) => (
         <div key={i}>

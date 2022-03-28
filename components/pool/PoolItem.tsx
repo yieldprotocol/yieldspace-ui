@@ -38,8 +38,6 @@ const marks = {
 };
 
 const Logo = ({ symbol }: { symbol: string }) => {
-  const { theme } = useColorTheme();
-  console.log('🦄 ~ file: PoolItem.tsx ~ line 42 ~ Logo ~ theme', theme);
   const mark = marks[symbol];
   return (
     <div className="absolute">

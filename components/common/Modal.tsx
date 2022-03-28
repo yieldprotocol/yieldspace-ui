@@ -5,10 +5,10 @@ export interface IModal {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   children: ReactNode;
-  padding?: string;
+  styleProps?: string;
 }
 
-const Modal: FC<IModal> = ({ isOpen, setIsOpen, children, padding = null }) => {
+const Modal: FC<IModal> = ({ isOpen, setIsOpen, children, styleProps = null }) => {
   const closeModal = () => {
     setIsOpen(false);
   };
@@ -43,7 +43,7 @@ const Modal: FC<IModal> = ({ isOpen, setIsOpen, children, padding = null }) => {
             leaveTo="opacity-0 scale-95"
           >
             <div
-              className={`${padding} inline-block w-full max-w-md overflow-hidden text-left align-middle transition-all transform bg-gray-100 shadow-xl rounded-2xl dark:bg-gray-900`}
+              className={`${styleProps} inline-block w-full max-w-md overflow-hidden text-left align-middle transition-all transform bg-gray-100 shadow-xl rounded-2xl dark:bg-gray-900`}
             >
               {children}
             </div>
