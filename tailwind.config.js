@@ -11,6 +11,10 @@ module.exports = {
       primary: colors.teal,
       secondary: colors.teal,
     },
+    transitionDuration: {
+      0: '0ms',
+      5000: '5000ms',
+    },
   },
   plugins: [],
 };
