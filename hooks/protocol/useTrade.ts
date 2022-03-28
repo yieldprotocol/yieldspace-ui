@@ -57,10 +57,6 @@ export const useTrade = (
         slippageTolerance as string,
         true
       );
-      console.log(
-        '🦄 ~ file: useTrade.ts ~ line 60 ~ const_sellBase= ~ _outputLessSlippage',
-        ethers.utils.formatUnits(_outputLessSlippage, decimals)
-      );
 
       const permits = await sign([
         {
