@@ -72,7 +72,9 @@ const PoolSelectModal: FC<IPoolSelectModal> = ({ pools, open, setOpen, action })
 
     const _maturities = _pools.reduce(
       (_m, _pool) =>
-        _m.has(_pool.maturity_) ? _m : _m.set(_pool.maturity_, { maturity: _pool.maturity_, color: _pool.color }),
+        _m.has(_pool.maturity_)
+          ? _m
+          : _m.set(_pool.maturity_, { maturity: _pool.maturity_, color: _pool.alternateColor }),
       new Map<string, { maturity: string; color: string }>()
     );
     setMaturities(Array.from(_maturities.values()));

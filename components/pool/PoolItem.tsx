@@ -12,7 +12,6 @@ import USDCMark from '../common/Logos/USDCMark';
 import { cleanValue, hexToRgb } from '../../utils/appUtils';
 import DaiMark from '../common/Logos/DaiMark';
 import ETHMark from '../common/Logos/ETHMark';
-import { useColorTheme } from '../../hooks/useColorTheme';
 
 const Inner = tw.div`m-4 text-center`;
 const ButtonWrap = tw.div`flex justify-between gap-10`;
@@ -31,13 +30,13 @@ const Text = tw.div`text-md dark:text-gray-400`;
 const Data = tw.div`text-lg dark:text-gray-200`;
 const Bottom = tw.div``;
 
-const marks = {
+export const marks = {
   DAI: { component: <DaiMark key="DAI" />, color: '#F5AC37' },
   ETH: { component: <ETHMark key="ETH" />, color: '#627EEA' },
   USDC: { component: <USDCMark key="USDC" />, color: '#3E73C4' },
 };
 
-const Logo = ({ symbol }: { symbol: string }) => {
+export const Logo = ({ symbol }: { symbol: string }) => {
   const mark = marks[symbol];
   return (
     <div className="absolute">

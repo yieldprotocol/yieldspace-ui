@@ -8,7 +8,7 @@ function ETHMark(props: React.SVGProps<SVGSVGElement>) {
         fill="#627EEA"
         fillOpacity="0.12"
       ></path>
-      <g clipPath="url(#clip0_3_22)">
+      <g clipPath="">
         <g opacity="0.8">
           <path
             opacity="0.6"

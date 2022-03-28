@@ -8,7 +8,7 @@ type ButtonProps = {
 };
 
 const Inner = tw.div`
-  h-full w-full dark:bg-gray-900/90 bg-gray-200/70 dark:text-gray-50 text-gray-900 rounded-lg
+  h-full w-full dark:bg-gray-900/90 bg-gray-100/50 dark:text-gray-50 text-gray-900 rounded-lg
   flex p-3 gap-3
 `;
 
@@ -24,7 +24,7 @@ interface IPoolSelectItem {
 const PoolSelectItem: FC<IPoolSelectItem> = ({ pool, action }) => (
   <Outer
     style={{
-      background: pool.color,
+      background: pool.alternateColor,
     }}
     key={pool.address}
     onClick={() => action && action!(pool)}
