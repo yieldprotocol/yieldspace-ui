@@ -8,14 +8,15 @@ import { TradeActions } from '../../lib/protocol/trade/types';
 import useTradePreview from './useTradePreview';
 import useLadle from './useLadle';
 import useTransaction from '../useTransaction';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
+import { DEFAULT_SLIPPAGE, SLIPPAGE_KEY } from '../../components/common/SlippageSetting';
 
 export const useTrade = (
   pool: IPool,
   fromInput: string,
   toInput: string,
   method: TradeActions,
-  description: string,
-  slippageTolerance: string = '.005'
+  description: string
 ) => {
   const { account } = useConnector();
   const { sign } = useSignature();
@@ -30,6 +31,7 @@ export const useTrade = (
     exitETHAction,
     redeemFYToken,
   } = useLadle();
+  const [slippageTolerance] = useLocalStorage(SLIPPAGE_KEY, DEFAULT_SLIPPAGE);
 
   // input data
   const cleanFromInput = cleanValue(fromInput, pool?.decimals);
