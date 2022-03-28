@@ -16,12 +16,10 @@ import Modal from '../common/Modal';
 import TradeConfirmation from './TradeConfirmation';
 import InputsWrap from '../styles/InputsWrap';
 import CloseButton from '../common/CloseButton';
-import { calculateSlippage } from '../../utils/yieldMath';
 import { cleanValue } from '../../utils/appUtils';
 import useInputValidation from '../../hooks/useInputValidation';
 import useETHBalance from '../../hooks/useEthBalance';
 import SlippageSetting from '../common/SlippageSetting';
-import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 const Inner = tw.div`m-4 text-center`;
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
@@ -36,7 +34,6 @@ export interface ITradeForm {
   toAmount: string;
   isFyTokenOutput: boolean;
   tradeAction: TradeActions;
-  toAmountLessSlippage: string;
 }
 
 const INITIAL_FORM_STATE: ITradeForm = {
@@ -47,7 +44,6 @@ const INITIAL_FORM_STATE: ITradeForm = {
   toAmount: '',
   isFyTokenOutput: true,
   tradeAction: TradeActions.SELL_BASE,
-  toAmountLessSlippage: '',
 };
 
 const TradeWidget = () => {
@@ -78,15 +74,7 @@ const TradeWidget = () => {
     toAsset?.symbol
   }`;
 
-  const [slippageTolerance] = useLocalStorage('slippageTolerance', '.005');
-  const { trade, isTransacting, tradeSubmitted } = useTrade(
-    pool!,
-    fromAmount,
-    toAmount,
-    tradeAction,
-    description,
-    slippageTolerance as string
-  );
+  const { trade, isTransacting, tradeSubmitted } = useTrade(pool!, fromAmount, toAmount, tradeAction, description);
 
   const isEthPool = pool?.base.symbol === 'ETH';
 
@@ -242,12 +230,6 @@ const TradeWidget = () => {
       setForm((f) => ({ ...f, pool: _pool, fromAsset: _fromAsset, toAsset: _toAsset }));
     }
   }, [pools, pool, isFyTokenOutput]);
-
-  useEffect(() => {
-    if (toAmount) {
-      setForm((f) => ({ ...f, toAmountLessSlippage: calculateSlippage(toAmount, slippageTolerance.toString(), true) }));
-    }
-  }, [slippageTolerance, toAmount]);
 
   // update the applicalbe from/to asset's balance based on if it is eth
   useEffect(() => {
