@@ -870,17 +870,17 @@ export const splitLiquidity = (
 /**
  * Calculate Slippage
  * @param { BigNumber } value
- * @param { BigNumber } slippage optional: defaults to 0.005 (0.5%)
+ * @param { BigNumber } slippage optional: defaults to 0.5 (0.5%)
  * @param { boolean } minimise optional: whether the resutl should be a minimum or maximum (default max)
  * @returns { string } human readable string
  */
 export const calculateSlippage = (
   value: BigNumber | string,
-  slippage: BigNumber | string = '0.005',
+  slippage: BigNumber | string = '0.05',
   minimise: boolean = false
 ): string => {
   const value_ = new Decimal(value.toString());
-  const _slippageAmount = floorDecimal(mulDecimal(value, slippage));
+  const _slippageAmount = mulDecimal(value, divDecimal(slippage.toString(), '100'));
   if (minimise) {
     return value_.sub(_slippageAmount).toFixed();
   }
