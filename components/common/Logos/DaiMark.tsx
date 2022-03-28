@@ -2,11 +2,12 @@ import * as React from 'react';
 
 function DaiMark(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg width="1em" height="1em" viewBox="0 0 444.44 444.44" fill="none" {...props}>
+    <svg width="100%" height="100%" viewBox="0 0 444.44 444.44" {...props}>
       <g id="Layer_x0020_1">
         <metadata id="CorelCorpID_0Corel-Layer" />
         <path
           fill="#F5AC37"
+          fillOpacity=".5"
           fillRule="nonzero"
           d="M222.22 0c122.74,0 222.22,99.5 222.22,222.22 0,122.74 -99.48,222.22 -222.22,222.22 -122.72,0 -222.22,-99.49 -222.22,-222.22 0,-122.72 99.5,-222.22 222.22,-222.22z"
         />

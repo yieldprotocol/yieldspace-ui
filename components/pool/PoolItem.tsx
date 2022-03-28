@@ -9,7 +9,10 @@ import BackButton from '../common/BackButton';
 import useRemoveLiqPreview from '../../hooks/protocol/useRemoveLiqPreview';
 import { RemoveLiquidityActions } from '../../lib/protocol/liquidity/types';
 import USDCMark from '../common/Logos/USDCMark';
-import { cleanValue } from '../../utils/appUtils';
+import { cleanValue, hexToRgb } from '../../utils/appUtils';
+import DaiMark from '../common/Logos/DaiMark';
+import ETHMark from '../common/Logos/ETHMark';
+import { useColorTheme } from '../../hooks/useColorTheme';
 
 const Inner = tw.div`m-4 text-center`;
 const ButtonWrap = tw.div`flex justify-between gap-10`;
@@ -19,8 +22,8 @@ const PoolData = tw.div`text-xl font-semibold dark:text-gray-100 text-gray-800`;
 
 // new style
 const Wrap = tw.div`mx-auto cursor-pointer min-h-[492px] 
-  w-[290px] bg-gray-800 rounded-lg my-5 justify-center align-middle items-center border-[2px]
-  border-gray-800
+  w-[290px] dark:bg-gray-800 bg-gray-200 rounded-lg my-5 justify-center align-middle items-center border-[2px]
+  dark:border-gray-800 border-gray-200
 `;
 const Top = tw.div`h-[120px] rounded-t-lg animate-pulse ease-out duration-1000`;
 const Middle = tw.div`grid gap-3 justify-start px-5 text-left`;
@@ -28,15 +31,31 @@ const Text = tw.div`text-md dark:text-gray-400`;
 const Data = tw.div`text-lg dark:text-gray-200`;
 const Bottom = tw.div``;
 
-const Logo = () => (
-  <div className="absolute">
-    <div className="flex align-middle justify-center items-center h-[56px] w-[56px] bg-gray-800 rounded-full border-[2px] border-gray-800 relative -mt-[28px]">
-      <div className="rounded-full absolute" style={{ background: 'rgba(62, 115, 196, 0.16)' }}>
-        <USDCMark fillOpacity=".12" />
+const marks = {
+  DAI: { component: <DaiMark key="DAI" />, color: '#F5AC37' },
+  ETH: { component: <ETHMark key="ETH" />, color: '#627EEA' },
+  USDC: { component: <USDCMark key="USDC" />, color: '#3E73C4' },
+};
+
+const Logo = ({ symbol }: { symbol: string }) => {
+  const { theme } = useColorTheme();
+  console.log('🦄 ~ file: PoolItem.tsx ~ line 42 ~ Logo ~ theme', theme);
+  const mark = marks[symbol];
+  return (
+    <div className="absolute">
+      <div className="flex align-middle justify-center items-center h-[56px] w-[56px] dark:bg-gray-800 bg-gray-200 rounded-full border-[2px] dark:border-gray-800 border-gray-200 relative -mt-[28px]">
+        <div
+          className="rounded-full absolute"
+          style={{
+            background: `rgba(${hexToRgb(mark.color)}, .12)`,
+          }}
+        >
+          {mark.component}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const PoolItem: FC = () => {
   const router = useRouter();
@@ -70,7 +89,7 @@ const PoolItem: FC = () => {
             }}
           ></Top>
           <Middle>
-            <Logo />
+            <Logo symbol={pool.base.symbol} />
             <div className="mt-10">
               <Header>{pool.displayName}</Header>
               <PoolDataWrap>
