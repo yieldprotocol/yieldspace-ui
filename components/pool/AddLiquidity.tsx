@@ -54,10 +54,9 @@ const AddLiquidity = () => {
   const { pool, baseAmount, fyTokenAmount, method, useFyToken } = form;
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
   const [useFyTokenToggle, setUseFyTokenToggle] = useState<boolean>(false);
-  const [slippageTolerance] = useState<number>(0.001);
   const [useWETH] = useState<boolean>(false);
 
-  const { fyTokenNeeded } = useAddLiqPreview(pool!, baseAmount, method, slippageTolerance);
+  const { fyTokenNeeded } = useAddLiqPreview(pool!, baseAmount, method);
   const isEthPool = pool?.base.symbol === 'ETH';
   const baseIsEth = isEthPool && !useWETH;
   const { errorMsg } = useInputValidation(baseAmount, pool, [], method!, fyTokenAmount, baseIsEth);
@@ -140,7 +139,7 @@ const AddLiquidity = () => {
         <Grid>
           <PoolSelect
             pool={pool}
-            pools={address ? undefined : pools}
+            pools={address ? undefined : pools && Object.values(pools).filter((p) => !p.isMature)} // can't add liq when mature, so filter out
             setPool={(p: IPool) => setForm((f) => ({ ...f, pool: p }))}
           />
         </Grid>
@@ -196,7 +195,7 @@ const AddLiquidity = () => {
             : 'Add Liquidity'}
         </Button>
         {confirmModalOpen && pool && (
-          <Modal isOpen={confirmModalOpen} setIsOpen={setConfirmModalOpen}>
+          <Modal isOpen={confirmModalOpen} setIsOpen={setConfirmModalOpen} styleProps="p-5">
             <TopRow>
               <Header>Confirm Add Liquidity</Header>
               <CloseButton action={() => setConfirmModalOpen(false)} height="1.2rem" width="1.2rem" />

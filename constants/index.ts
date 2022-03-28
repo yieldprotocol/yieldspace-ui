@@ -21,3 +21,6 @@ export const SECONDS_PER_YEAR: number = 365 * 24 * 60 * 60;
 export const ETH_BYTES = ethers.utils.formatBytes32String('ETH-A');
 
 export const BLANK_ADDRESS = ethers.constants.AddressZero;
+
+export const SLIPPAGE_KEY = 'slippageTolerance';
+export const DEFAULT_SLIPPAGE = '.5'; // .5%

@@ -34,7 +34,11 @@ const useInputValidation = (
   );
 
   // calculate the fyTokenNeeded for minting with both base and fyToken; only used with MINT
-  const { fyTokenNeeded } = useAddLiqPreview(pool!, input!, AddLiquidityActions.MINT);
+  const { fyTokenNeeded } = useAddLiqPreview(
+    pool!,
+    input!,
+    action === AddLiquidityActions.MINT ? AddLiquidityActions.MINT : undefined
+  );
 
   useEffect(() => {
     if (!account) {

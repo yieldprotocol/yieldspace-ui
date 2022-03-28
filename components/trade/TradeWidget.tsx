@@ -16,7 +16,6 @@ import Modal from '../common/Modal';
 import TradeConfirmation from './TradeConfirmation';
 import InputsWrap from '../styles/InputsWrap';
 import CloseButton from '../common/CloseButton';
-import { calculateSlippage } from '../../utils/yieldMath';
 import { cleanValue } from '../../utils/appUtils';
 import useInputValidation from '../../hooks/useInputValidation';
 import useETHBalance from '../../hooks/useEthBalance';
@@ -34,7 +33,6 @@ export interface ITradeForm {
   toAmount: string;
   isFyTokenOutput: boolean;
   tradeAction: TradeActions;
-  toAmountLessSlippage: string;
 }
 
 const INITIAL_FORM_STATE: ITradeForm = {
@@ -45,7 +43,6 @@ const INITIAL_FORM_STATE: ITradeForm = {
   toAmount: '',
   isFyTokenOutput: true,
   tradeAction: TradeActions.SELL_BASE,
-  toAmountLessSlippage: '',
 };
 
 const TradeWidget = () => {
@@ -71,19 +68,12 @@ const TradeWidget = () => {
   const [updatingFromAmount, setUpdatingFromAmount] = useState<boolean>(false);
   const [updatingToAmount, setUpdatingToAmount] = useState<boolean>(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
-  const [slippageTolerance] = useState<number>(0.05);
 
   const description = `Trade ${fromAmount} ${fromAsset?.symbol} to ~${cleanValue(toAmount, toAsset?.digitFormat)} ${
     toAsset?.symbol
   }`;
-  const { trade, isTransacting, tradeSubmitted } = useTrade(
-    pool!,
-    fromAmount,
-    toAmount,
-    tradeAction,
-    description,
-    slippageTolerance
-  );
+
+  const { trade, isTransacting, tradeSubmitted } = useTrade(pool!, fromAmount, toAmount, tradeAction, description);
 
   const isEthPool = pool?.base.symbol === 'ETH';
 
@@ -240,12 +230,6 @@ const TradeWidget = () => {
     }
   }, [pools, pool, isFyTokenOutput]);
 
-  useEffect(() => {
-    if (toAmount) {
-      setForm((f) => ({ ...f, toAmountLessSlippage: calculateSlippage(toAmount, slippageTolerance.toString(), true) }));
-    }
-  }, [slippageTolerance, toAmount]);
-
   // update the applicalbe from/to asset's balance based on if it is eth
   useEffect(() => {
     if (ethBalance && isEthPool) {
@@ -262,12 +246,14 @@ const TradeWidget = () => {
       <Inner>
         <TopRow>
           <Header>Trade</Header>
-          <ClearButton onClick={handleClearAll}>Clear All</ClearButton>
+          <div className="flex gap-3">
+            <ClearButton onClick={handleClearAll}>Clear All</ClearButton>
+          </div>
         </TopRow>
 
         <Grid>
           <PoolSelect
-            pools={pools}
+            pools={pools && Object.values(pools)}
             pool={pool}
             setPool={(p) => setForm((f) => ({ ...f, pool: p }))}
             poolsLoading={loading}
@@ -310,7 +296,7 @@ const TradeWidget = () => {
           {!account ? 'Connect Wallet' : isTransacting ? 'Trade Initiated...' : errorMsg ? errorMsg : 'Trade'}
         </Button>
         {confirmModalOpen && pool && (
-          <Modal isOpen={confirmModalOpen} setIsOpen={setConfirmModalOpen}>
+          <Modal isOpen={confirmModalOpen} setIsOpen={setConfirmModalOpen} styleProps="p-4">
             <TopRow>
               <Header>Confirm Trade</Header>
               <CloseButton action={() => setConfirmModalOpen(false)} height="1.2rem" width="1.2rem" />

@@ -22,7 +22,7 @@ export const useAddLiquidity = (
   const { ladleContract, batch, transferAction, mintWithBaseAction, mintAction, wrapETHAction, exitETHAction } =
     useLadle();
 
-  const { fyTokenNeeded } = useAddLiqPreview(pool, input, method, slippageTolerance);
+  const { fyTokenNeeded } = useAddLiqPreview(pool, input, method);
 
   const addLiquidity = async () => {
     if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
