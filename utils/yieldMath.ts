@@ -880,7 +880,7 @@ export const calculateSlippage = (
   minimise: boolean = false
 ): string => {
   const value_ = new Decimal(value.toString());
-  const _slippageAmount = mulDecimal(value, divDecimal(slippage.toString(), '100'));
+  const _slippageAmount = floorDecimal(mulDecimal(value, divDecimal(slippage.toString(), '100')));
   if (minimise) {
     return value_.sub(_slippageAmount).toFixed();
   }
