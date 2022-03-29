@@ -19,6 +19,7 @@ import CloseButton from '../common/CloseButton';
 import { cleanValue } from '../../utils/appUtils';
 import useInputValidation from '../../hooks/useInputValidation';
 import useETHBalance from '../../hooks/useEthBalance';
+import SlippageSetting from '../common/SlippageSetting';
 
 const Inner = tw.div`m-4 text-center`;
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
@@ -247,6 +248,7 @@ const TradeWidget = () => {
         <TopRow>
           <Header>Trade</Header>
           <div className="flex gap-3">
+            <SlippageSetting />
             <ClearButton onClick={handleClearAll}>Clear All</ClearButton>
           </div>
         </TopRow>

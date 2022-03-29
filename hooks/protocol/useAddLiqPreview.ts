@@ -4,12 +4,12 @@ import { DEFAULT_SLIPPAGE, SLIPPAGE_KEY } from '../../constants';
 import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
 import { IPool } from '../../lib/protocol/types';
 import { fyTokenForMint, mint, mintWithBase, splitLiquidity } from '../../utils/yieldMath';
+import { useLocalStorage } from '../useLocalStorage';
 
 const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityActions | undefined) => {
   const [lpTokenPreview, setLpTokenPreview] = useState<string>();
   const [fyTokenNeeded, setFyTokenNeeded] = useState<string>();
-  // const [slippageTolerance] = useLocalStorage(SLIPPAGE_KEY, DEFAULT_SLIPPAGE);
-  const slippageTolerance = DEFAULT_SLIPPAGE;
+  const [slippageTolerance] = useLocalStorage(SLIPPAGE_KEY, DEFAULT_SLIPPAGE);
 
   useEffect(() => {
     (async () => {

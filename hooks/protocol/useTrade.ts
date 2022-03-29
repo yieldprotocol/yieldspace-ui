@@ -8,7 +8,8 @@ import { TradeActions } from '../../lib/protocol/trade/types';
 import useTradePreview from './useTradePreview';
 import useLadle from './useLadle';
 import useTransaction from '../useTransaction';
-import { DEFAULT_SLIPPAGE } from '../../constants';
+import { DEFAULT_SLIPPAGE, SLIPPAGE_KEY } from '../../constants';
+import { useLocalStorage } from '../useLocalStorage';
 
 export const useTrade = (
   pool: IPool,
@@ -30,7 +31,7 @@ export const useTrade = (
     exitETHAction,
     redeemFYToken,
   } = useLadle();
-  const slippageTolerance = DEFAULT_SLIPPAGE;
+  const [slippageTolerance] = useLocalStorage(SLIPPAGE_KEY, DEFAULT_SLIPPAGE);
 
   // input data
   const cleanFromInput = cleanValue(fromInput, pool?.decimals);
@@ -53,7 +54,7 @@ export const useTrade = (
 
       const _outputLessSlippage = calculateSlippage(
         ethers.utils.parseUnits(fyTokenOutPreview, decimals),
-        slippageTolerance as string,
+        slippageTolerance,
         true
       );
 
