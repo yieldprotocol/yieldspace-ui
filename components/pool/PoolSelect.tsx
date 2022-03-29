@@ -1,6 +1,6 @@
 import { FC, useState } from 'react';
 import tw from 'tailwind-styled-components';
-import { IPool, IPoolMap } from '../../lib/protocol/types';
+import { IPool } from '../../lib/protocol/types';
 import PoolSelectItem from './PoolSelectItem';
 import PoolSelectModal from './PoolSelectModal';
 
@@ -15,7 +15,7 @@ rounded-lg gap-3 align-middle items-center hover:opacity-80
 
 interface IPoolSelect {
   pool: IPool | undefined;
-  pools?: IPoolMap;
+  pools?: IPool[];
   setPool?: (pool: IPool) => void;
   poolsLoading?: boolean;
 }

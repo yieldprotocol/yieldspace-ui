@@ -109,3 +109,13 @@ export const formatFyTokenSymbol = (name: string) => `${name.slice(0, -4)}`;
 
 export const valueAtDigits = (input: string, digits: number) =>
   input && input.length <= digits ? input : `${cleanValue(input, digits)}...`;
+
+export const hexToRgb = (hex: string) => {
+  const res = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  const _res = {
+    r: parseInt(res![1], 16),
+    g: parseInt(res![2], 16),
+    b: parseInt(res![3], 16),
+  };
+  return `${_res.r},${_res.g}, ${_res.b}`;
+};

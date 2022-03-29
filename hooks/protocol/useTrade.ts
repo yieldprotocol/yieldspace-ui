@@ -8,14 +8,15 @@ import { TradeActions } from '../../lib/protocol/trade/types';
 import useTradePreview from './useTradePreview';
 import useLadle from './useLadle';
 import useTransaction from '../useTransaction';
+import { DEFAULT_SLIPPAGE, SLIPPAGE_KEY } from '../../constants';
+import { useLocalStorage } from '../useLocalStorage';
 
 export const useTrade = (
   pool: IPool,
   fromInput: string,
   toInput: string,
   method: TradeActions,
-  description: string,
-  slippageTolerance: number = 0.05
+  description: string
 ) => {
   const { account } = useConnector();
   const { sign } = useSignature();
@@ -30,6 +31,7 @@ export const useTrade = (
     exitETHAction,
     redeemFYToken,
   } = useLadle();
+  const [slippageTolerance] = useLocalStorage(SLIPPAGE_KEY, DEFAULT_SLIPPAGE);
 
   // input data
   const cleanFromInput = cleanValue(fromInput, pool?.decimals);
@@ -52,7 +54,7 @@ export const useTrade = (
 
       const _outputLessSlippage = calculateSlippage(
         ethers.utils.parseUnits(fyTokenOutPreview, decimals),
-        slippageTolerance.toString(),
+        slippageTolerance,
         true
       );
 

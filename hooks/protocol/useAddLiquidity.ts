@@ -8,21 +8,18 @@ import useSignature from '../useSignature';
 import useLadle from './useLadle';
 import useTransaction from '../useTransaction';
 import useAddLiqPreview from './useAddLiqPreview';
+import { useLocalStorage } from '../useLocalStorage';
+import { DEFAULT_SLIPPAGE, SLIPPAGE_KEY } from '../../constants';
 
-export const useAddLiquidity = (
-  pool: IPool,
-  input: string,
-  method: AddLiquidityActions,
-  description: string,
-  slippageTolerance = 0.001
-) => {
+export const useAddLiquidity = (pool: IPool, input: string, method: AddLiquidityActions, description: string) => {
   const { account } = useConnector();
   const { sign } = useSignature();
   const { handleTransact, isTransacting, txSubmitted } = useTransaction();
   const { ladleContract, batch, transferAction, mintWithBaseAction, mintAction, wrapETHAction, exitETHAction } =
     useLadle();
+  const [slippageTolerance] = useLocalStorage(SLIPPAGE_KEY, DEFAULT_SLIPPAGE);
 
-  const { fyTokenNeeded } = useAddLiqPreview(pool, input, method, slippageTolerance);
+  const { fyTokenNeeded } = useAddLiqPreview(pool, input, method);
 
   const addLiquidity = async () => {
     if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
@@ -69,7 +66,7 @@ export const useAddLiquidity = (
         ts,
         g1,
         decimals,
-        slippageTolerance
+        +slippageTolerance
       );
 
       const permits = await sign([

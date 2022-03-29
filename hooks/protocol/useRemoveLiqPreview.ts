@@ -4,12 +4,7 @@ import { RemoveLiquidityActions } from '../../lib/protocol/liquidity/types';
 import { IPool } from '../../lib/protocol/types';
 import { burn, burnForBase } from '../../utils/yieldMath';
 
-const useRemoveLiqPreview = (
-  pool: IPool,
-  lpTokens: string,
-  method: RemoveLiquidityActions,
-  slippageTolerance = 0.001
-) => {
+const useRemoveLiqPreview = (pool: IPool, lpTokens: string, method: RemoveLiquidityActions) => {
   const [baseReceived, setBaseReceived] = useState<string>();
   const [fyTokenReceived, setFyTokenReceived] = useState<string>();
 

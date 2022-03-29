@@ -51,7 +51,14 @@ function Connection({
         </span>
       );
     } else {
-      return isActivating ? 'Connecting...' : 'Connect';
+      return isActivating ? (
+        <span className="flex h-full w-full items-center">
+          <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-yellow-300 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-yellow-300"></span>
+        </span>
+      ) : (
+        <span>Connect</span>
+      );
     }
   };
 
@@ -70,7 +77,7 @@ function Connection({
 }
 
 const ConnectModal = ({ modalOpen, setModalOpen }: { modalOpen: boolean; setModalOpen: (isOpen: boolean) => void }) => (
-  <Modal isOpen={modalOpen} setIsOpen={setModalOpen}>
+  <Modal isOpen={modalOpen} setIsOpen={setModalOpen} styleProps="p-4">
     <Inner>
       {connectors.map(([connector, hooks], i) => (
         <div key={i}>

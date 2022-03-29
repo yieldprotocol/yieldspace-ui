@@ -19,6 +19,7 @@ export interface IPool extends IPoolRoot {
   startColor: string;
   endColor: string;
   color: string;
+  alternateColor: string;
   textColor: string;
   oppStartColor: string;
   oppEndColor: string;

@@ -3,7 +3,7 @@ import { BigNumber, ethers } from 'ethers';
 import { CAULDRON, LADLE } from '../../constants';
 import { Pool__factory } from '../../contracts/types';
 import { IAsset, IContractMap, IPoolMap, IPoolRoot, Provider } from './types';
-import { cleanValue, formatFyTokenSymbol, getSeason, SeasonType } from '../../utils/appUtils';
+import { hexToRgb, cleanValue, formatFyTokenSymbol, getSeason, SeasonType } from '../../utils/appUtils';
 import yieldEnv from '../../config/yieldEnv';
 import { CONTRACTS_TO_FETCH } from '../../hooks/protocol/useContracts';
 import * as contractTypes from '../../contracts/types';
@@ -133,6 +133,9 @@ const _chargePool = (_pool: IPoolRoot, _chainId: number) => {
     startColor,
     endColor,
     color: `linear-gradient(${startColor}, ${endColor})`,
+    alternateColor: `linear-gradient(270deg, rgba(${hexToRgb(startColor)}, .5) 1.04%, rgba(${hexToRgb(
+      endColor
+    )}, .5) 98.99%) 0% 0% / 200% 200%`,
     textColor,
     oppStartColor,
     oppEndColor,

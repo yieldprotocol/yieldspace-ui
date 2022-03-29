@@ -5,9 +5,10 @@ export interface IModal {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   children: ReactNode;
+  styleProps?: string;
 }
 
-const Modal: FC<IModal> = ({ isOpen, setIsOpen, children }) => {
+const Modal: FC<IModal> = ({ isOpen, setIsOpen, children, styleProps = null }) => {
   const closeModal = () => {
     setIsOpen(false);
   };
@@ -41,7 +42,9 @@ const Modal: FC<IModal> = ({ isOpen, setIsOpen, children }) => {
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95"
           >
-            <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-gray-100 shadow-xl rounded-2xl dark:bg-gray-900">
+            <div
+              className={`${styleProps} inline-block w-full max-w-md overflow-hidden text-left align-middle transition-all transform bg-gray-100 shadow-xl rounded-2xl dark:bg-gray-900`}
+            >
               {children}
             </div>
           </Transition.Child>
