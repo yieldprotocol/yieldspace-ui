@@ -20,7 +20,7 @@ const PoolDataLabel = tw.div`text-lg dark:text-gray-400 text-gray-500`;
 const PoolData = tw.div`text-xl font-semibold dark:text-gray-100 text-gray-800`;
 
 // new style
-const Wrap = tw.div`mx-auto cursor-pointer min-h-[492px] 
+const Wrap = tw.div`mx-auto min-h-[492px] 
   w-[290px] dark:bg-gray-800 bg-gray-200 rounded-lg my-5 justify-center align-middle items-center border-[2px]
   dark:border-gray-800 border-gray-200
 `;
@@ -99,16 +99,6 @@ const PoolItem: FC = () => {
             </div>
           </Middle>
         </Wrap>
-        {/* <PoolDataWrap>
-          <PoolDataLabel>LP Token Balance:</PoolDataLabel>
-          <PoolData>{cleanValue(pool.lpTokenBalance_, pool.base.digitFormat)}</PoolData>
-        </PoolDataWrap>
-        <PoolDataWrap>
-          <PoolDataLabel>LP Token Value:</PoolDataLabel>
-          <PoolData>
-            {cleanValue(basePreview, pool.base.digitFormat)} {pool.base.symbol}
-          </PoolData>
-        </PoolDataWrap> */}
         <ButtonWrap>
           {!pool.isMature && <Button action={() => router.push(`/pool/add/${address}`)}>Add Liquidity</Button>}
           <Button action={() => router.push(`/pool/remove/${address}`)}>Remove</Button>
