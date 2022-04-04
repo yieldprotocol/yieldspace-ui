@@ -85,7 +85,7 @@ export const useTrade = (
       const fyTokenAlreadyApproved = (await fyToken.getAllowance(account!, ladleContract?.address!)).gte(_inputToUse);
 
       const _outputLessSlippage = ethers.utils.parseUnits(
-        calculateSlippage(baseOutPreview, slippageTolerance.toString(), true),
+        calculateSlippage(baseOutPreview, slippageTolerance, true),
         decimals
       );
 
