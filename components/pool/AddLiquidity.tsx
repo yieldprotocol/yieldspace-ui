@@ -61,10 +61,7 @@ const AddLiquidity = () => {
   const baseIsEth = isEthPool && !useWETH;
   const { errorMsg } = useInputValidation(baseAmount, pool, [], method!, fyTokenAmount, baseIsEth);
 
-  const description = `Add ${baseAmount} ${pool?.base.symbol}${
-    +fyTokenAmount > 0 && useFyToken ? ` and ${fyTokenAmount} ${pool?.fyToken.symbol}` : ''
-  } as liquidity`;
-  const { addLiquidity, isAddingLiquidity, addSubmitted } = useAddLiquidity(pool!, baseAmount, method, description);
+  const { addLiquidity, isAddingLiquidity, addSubmitted } = useAddLiquidity(pool, baseAmount, method);
 
   const baseBalanceToUse = isEthPool ? (useWETH ? pool?.base.balance_ : ethBalance) : pool?.base.balance_;
 

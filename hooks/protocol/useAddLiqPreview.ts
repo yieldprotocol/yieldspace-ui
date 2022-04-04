@@ -7,8 +7,9 @@ import { fyTokenForMint, mint, mintWithBase, splitLiquidity } from '../../utils/
 import { useLocalStorage } from '../useLocalStorage';
 
 const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityActions | undefined) => {
-  const [lpTokenPreview, setLpTokenPreview] = useState<string>();
-  const [fyTokenNeeded, setFyTokenNeeded] = useState<string>();
+  const [lpTokenPreview, setLpTokenPreview] = useState<string>('');
+  const [fyTokenNeeded, setFyTokenNeeded] = useState<BigNumber>(ethers.constants.Zero);
+  const [fyTokenNeeded_, setFyTokenNeeded_] = useState<string>('');
   const [canTradeForFyToken, setCanTradeForFyToken] = useState<boolean>(false);
   const [slippageTolerance] = useLocalStorage(SLIPPAGE_KEY, DEFAULT_SLIPPAGE);
   const slippageTolerance_ = +slippageTolerance / 100; // find better way (currently slippage in localStorage looks like "1" for "1%")
@@ -27,7 +28,8 @@ const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityA
         try {
           if (method === AddLiquidityActions.MINT) {
             const [, _fyTokenNeeded] = splitLiquidity(cachedBaseReserves, cachedRealReserves, _baseAmount);
-            setFyTokenNeeded(ethers.utils.formatUnits(_fyTokenNeeded, decimals));
+            setFyTokenNeeded(_fyTokenNeeded as BigNumber);
+            setFyTokenNeeded_(ethers.utils.formatUnits(_fyTokenNeeded, decimals));
 
             const [minted] = mint(
               cachedBaseReserves,
@@ -73,7 +75,7 @@ const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityA
     })();
   }, [baseAmount, method, pool, slippageTolerance_]);
 
-  return { lpTokenPreview, fyTokenNeeded, canTradeForFyToken };
+  return { lpTokenPreview, fyTokenNeeded, fyTokenNeeded_, canTradeForFyToken };
 };
 
 export default useAddLiqPreview;
