@@ -24,7 +24,9 @@ export const useAddLiquidity = (pool: IPool | undefined, input: string, method: 
 
   // description to use in toast
   const description = `Add ${input} ${pool?.base.symbol}${
-    +fyTokenNeeded! > 0 && method === AddLiquidityActions.MINT ? ` and ${fyTokenNeeded!} ${pool?.fyToken.symbol}` : ''
+    fyTokenNeeded.gt(ethers.constants.Zero) && method === AddLiquidityActions.MINT
+      ? ` and ${fyTokenNeeded_} ${pool?.fyToken.symbol}`
+      : ''
   } as liquidity`;
 
   const addLiquidity = async () => {
