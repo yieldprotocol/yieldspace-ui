@@ -3,13 +3,14 @@ import { marks } from '../pool/PoolItem';
 
 interface IAssetLogo {
   image: string;
+  styleProps?: string;
 }
 
-const AssetLogo = ({ image }: IAssetLogo) => {
+const AssetLogo = ({ image, styleProps }: IAssetLogo) => {
   const mark = marks[image];
   return (
     <div
-      className="h-[24px] w-[24px] rounded-full"
+      className={`${styleProps ? styleProps : ' h-[24px] w-[24px] rounded-full'}`}
       style={{
         background: `rgba(${hexToRgb(mark.color)}, .12)`,
       }}

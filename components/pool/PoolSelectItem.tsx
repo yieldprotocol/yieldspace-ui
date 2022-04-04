@@ -24,7 +24,7 @@ interface IPoolSelectItem {
 const PoolSelectItem: FC<IPoolSelectItem> = ({ pool, action }) => (
   <Outer
     style={{
-      background: pool.color,
+      background: pool.alternateColor,
     }}
     key={pool.address}
     onClick={() => action && action!(pool)}
