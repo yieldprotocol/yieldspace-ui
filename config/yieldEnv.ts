@@ -21,16 +21,16 @@ const yieldEnv = {
   },
   seasonColors: {
     1: {
-      WINTER: ['#D9D9D9', '#67F2FC', '#333333'],
-      SPRING: ['#6AD99E', '#FF6BE4', '#333333'],
-      SUMMER: ['#FFDE75', '#409C4D', '#333333'],
-      FALL: ['#7255BD', '#D95948', '#ffffff'],
+      WINTER: ['#d4d4d8', '#38bdf8', '#292524'],
+      SPRING: ['#34d399', '#e879f9', '#292524'],
+      SUMMER: ['#facc15', '#15803d', '#292524'],
+      FALL: ['#a78bfa', '#c2410c', '#ffffff'],
     },
     4: {
-      WINTER: ['#D9D9D9', '#67F2FC', '#333333'],
-      SPRING: ['#6AD99E', '#FF6BE4', '#333333'],
-      SUMMER: ['#FFDE75', '#409C4D', '#333333'],
-      FALL: ['#7255BD', '#D95948', '#ffffff'],
+      WINTER: ['#d4d4d8', '#38bdf8', '#292524'],
+      SPRING: ['#34d399', '#e879f9', '#292524'],
+      SUMMER: ['#facc15', '#15803d', '#292524'],
+      FALL: ['#a78bfa', '#c2410c', '#ffffff'],
     },
     42: {
       WINTER: ['#D9D9D9', '#67F2FC', '#333333'],
