@@ -34,7 +34,7 @@ const useInputValidation = (
   );
 
   // calculate the fyTokenNeeded for minting with both base and fyToken; only used with MINT
-  const { fyTokenNeeded } = useAddLiqPreview(
+  const { fyTokenNeeded, canTradeForFyToken } = useAddLiqPreview(
     pool!,
     input!,
     action === AddLiquidityActions.MINT ? AddLiquidityActions.MINT : undefined
@@ -83,6 +83,7 @@ const useInputValidation = (
         break;
       case AddLiquidityActions.MINT_WITH_BASE:
         baseBalance < _input && setErrorMsg(`Insufficient ${base.symbol} balance`);
+        !canTradeForFyToken && setErrorMsg(`Insufficient fy${base.symbol} reserves`);
         isMature && setErrorMsg(`Pool matured: can only remove liquidity`);
         break;
       case AddLiquidityActions.MINT:
@@ -114,6 +115,7 @@ const useInputValidation = (
     _secondaryInput,
     isEth,
     ethBalance,
+    canTradeForFyToken,
   ]);
 
   return { errorMsg };

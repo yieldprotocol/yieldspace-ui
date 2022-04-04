@@ -9,6 +9,7 @@ import { useLocalStorage } from '../useLocalStorage';
 const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityActions | undefined) => {
   const [lpTokenPreview, setLpTokenPreview] = useState<string>();
   const [fyTokenNeeded, setFyTokenNeeded] = useState<string>();
+  const [canTradeForFyToken, setCanTradeForFyToken] = useState<boolean>(false);
   const [slippageTolerance] = useLocalStorage(SLIPPAGE_KEY, DEFAULT_SLIPPAGE);
   const slippageTolerance_ = +slippageTolerance / 100; // find better way (currently slippage in localStorage looks like "1" for "1%")
 
@@ -61,16 +62,18 @@ const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityA
               decimals
             );
 
+            setCanTradeForFyToken(true);
             setLpTokenPreview(ethers.utils.formatUnits(minted, decimals));
           }
         } catch (e) {
+          setCanTradeForFyToken(false);
           console.log(e);
         }
       }
     })();
   }, [baseAmount, method, pool, slippageTolerance_]);
 
-  return { lpTokenPreview, fyTokenNeeded };
+  return { lpTokenPreview, fyTokenNeeded, canTradeForFyToken };
 };
 
 export default useAddLiqPreview;
