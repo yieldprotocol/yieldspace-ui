@@ -7,9 +7,12 @@ import { fyTokenForMint, mint, mintWithBase, splitLiquidity } from '../../utils/
 import { useLocalStorage } from '../useLocalStorage';
 
 const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityActions | undefined) => {
-  const [lpTokenPreview, setLpTokenPreview] = useState<string>();
-  const [fyTokenNeeded, setFyTokenNeeded] = useState<string>();
+  const [lpTokenPreview, setLpTokenPreview] = useState<string>('');
+  const [fyTokenNeeded, setFyTokenNeeded] = useState<BigNumber>(ethers.constants.Zero);
+  const [fyTokenNeeded_, setFyTokenNeeded_] = useState<string>('');
+  const [canTradeForFyToken, setCanTradeForFyToken] = useState<boolean>(true);
   const [slippageTolerance] = useLocalStorage(SLIPPAGE_KEY, DEFAULT_SLIPPAGE);
+  const slippageTolerance_ = +slippageTolerance / 100; // find better way (currently slippage in localStorage looks like "1" for "1%")
 
   useEffect(() => {
     (async () => {
@@ -22,50 +25,56 @@ const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityA
         const cachedRealReserves = cachedFyTokenReserves.sub(totalSupply);
 
         // if minting with both base and fyToken, calculate how much fyToken is needed
-        if (method === AddLiquidityActions.MINT) {
-          const [, _fyTokenNeeded] = splitLiquidity(cachedBaseReserves, cachedRealReserves, _baseAmount);
-          setFyTokenNeeded(ethers.utils.formatUnits(_fyTokenNeeded, decimals));
+        try {
+          if (method === AddLiquidityActions.MINT) {
+            const [, _fyTokenNeeded] = splitLiquidity(cachedBaseReserves, cachedRealReserves, _baseAmount);
+            setFyTokenNeeded(_fyTokenNeeded as BigNumber);
+            setFyTokenNeeded_(ethers.utils.formatUnits(_fyTokenNeeded, decimals));
 
-          const [minted] = mint(
-            cachedBaseReserves,
-            cachedRealReserves,
-            totalSupply,
-            BigNumber.from(_fyTokenNeeded),
-            false
-          );
-          setLpTokenPreview(ethers.utils.formatUnits(minted, decimals));
-        } else {
-          // minting with base
-          const [fyTokenToBuy] = fyTokenForMint(
-            cachedBaseReserves,
-            cachedRealReserves,
-            cachedFyTokenReserves,
-            _baseAmount,
-            timeTillMaturity,
-            ts,
-            g1,
-            decimals,
-            +slippageTolerance
-          );
+            const [minted] = mint(
+              cachedBaseReserves,
+              cachedRealReserves,
+              totalSupply,
+              BigNumber.from(_fyTokenNeeded),
+              false
+            );
+            setLpTokenPreview(ethers.utils.formatUnits(minted, decimals));
+          } else {
+            // minting with base
+            const [fyTokenToBuy] = fyTokenForMint(
+              cachedBaseReserves,
+              cachedRealReserves,
+              cachedFyTokenReserves,
+              _baseAmount,
+              timeTillMaturity,
+              ts,
+              g1,
+              decimals,
+              slippageTolerance_
+            );
 
-          const [minted] = mintWithBase(
-            cachedBaseReserves,
-            cachedFyTokenReserves,
-            cachedRealReserves,
-            fyTokenToBuy,
-            timeTillMaturity,
-            ts,
-            g1,
-            decimals
-          );
+            const [minted] = mintWithBase(
+              cachedBaseReserves,
+              cachedFyTokenReserves,
+              cachedRealReserves,
+              fyTokenToBuy,
+              timeTillMaturity,
+              ts,
+              g1,
+              decimals
+            );
 
-          setLpTokenPreview(ethers.utils.formatUnits(minted, decimals));
+            setLpTokenPreview(ethers.utils.formatUnits(minted, decimals));
+          }
+        } catch (e) {
+          setCanTradeForFyToken(false);
+          console.log(e);
         }
       }
     })();
-  }, [baseAmount, method, pool, slippageTolerance]);
+  }, [baseAmount, method, pool, slippageTolerance_]);
 
-  return { lpTokenPreview, fyTokenNeeded };
+  return { lpTokenPreview, fyTokenNeeded, fyTokenNeeded_, canTradeForFyToken };
 };
 
 export default useAddLiqPreview;

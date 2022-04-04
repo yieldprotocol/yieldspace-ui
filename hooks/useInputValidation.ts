@@ -40,6 +40,13 @@ const useInputValidation = (
     action === AddLiquidityActions.MINT ? AddLiquidityActions.MINT : undefined
   );
 
+  // when minting with base, check if you can trade for fyToken
+  const { canTradeForFyToken } = useAddLiqPreview(
+    pool!,
+    input!,
+    action === AddLiquidityActions.MINT_WITH_BASE ? AddLiquidityActions.MINT_WITH_BASE : undefined
+  );
+
   useEffect(() => {
     if (!account) {
       return setErrorMsg('Please connect');
@@ -83,11 +90,12 @@ const useInputValidation = (
         break;
       case AddLiquidityActions.MINT_WITH_BASE:
         baseBalance < _input && setErrorMsg(`Insufficient ${base.symbol} balance`);
+        !canTradeForFyToken && setErrorMsg(`Insufficient fy${base.symbol} reserves`);
         isMature && setErrorMsg(`Pool matured: can only remove liquidity`);
         break;
       case AddLiquidityActions.MINT:
         baseBalance < _input && setErrorMsg(`Insufficient ${base.symbol} balance`);
-        fyTokenBalance < +fyTokenNeeded! && setErrorMsg(`Insufficient ${fyToken.symbol} balance`);
+        fyToken.balance.lt(fyTokenNeeded) && setErrorMsg(`Insufficient ${fyToken.symbol} balance`);
         break;
       case RemoveLiquidityActions.BURN_FOR_BASE:
       case RemoveLiquidityActions.BURN:
@@ -114,6 +122,7 @@ const useInputValidation = (
     _secondaryInput,
     isEth,
     ethBalance,
+    canTradeForFyToken,
   ]);
 
   return { errorMsg };

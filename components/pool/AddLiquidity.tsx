@@ -56,15 +56,12 @@ const AddLiquidity = () => {
   const [useFyTokenToggle, setUseFyTokenToggle] = useState<boolean>(false);
   const [useWETH] = useState<boolean>(false);
 
-  const { fyTokenNeeded } = useAddLiqPreview(pool!, baseAmount, method);
+  const { fyTokenNeeded_ } = useAddLiqPreview(pool!, baseAmount, method);
   const isEthPool = pool?.base.symbol === 'ETH';
   const baseIsEth = isEthPool && !useWETH;
   const { errorMsg } = useInputValidation(baseAmount, pool, [], method!, fyTokenAmount, baseIsEth);
 
-  const description = `Add ${baseAmount} ${pool?.base.symbol}${
-    +fyTokenAmount > 0 && useFyToken ? ` and ${fyTokenAmount} ${pool?.fyToken.symbol}` : ''
-  } as liquidity`;
-  const { addLiquidity, isAddingLiquidity, addSubmitted } = useAddLiquidity(pool!, baseAmount, method, description);
+  const { addLiquidity, isAddingLiquidity, addSubmitted } = useAddLiquidity(pool, baseAmount, method);
 
   const baseBalanceToUse = isEthPool ? (useWETH ? pool?.base.balance_ : ethBalance) : pool?.base.balance_;
 
@@ -124,8 +121,8 @@ const AddLiquidity = () => {
   }, [pools, pool]);
 
   useEffect(() => {
-    fyTokenNeeded && setForm((f) => ({ ...f, fyTokenAmount: fyTokenNeeded }));
-  }, [fyTokenNeeded]);
+    setForm((f) => ({ ...f, fyTokenAmount: fyTokenNeeded_ }));
+  }, [fyTokenNeeded_]);
 
   return (
     <BorderWrap>

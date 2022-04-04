@@ -4,12 +4,14 @@ import YieldMark from './YieldMark';
 
 interface IFyTokenLogo {
   pool: IPool | undefined;
+  height?: number;
+  width?: number;
 }
 
-const FyTokenLogo: FC<IFyTokenLogo> = ({ pool }) => (
+const FyTokenLogo: FC<IFyTokenLogo> = ({ pool, height, width }) => (
   <div className="rounded-full p-[1px] dark:text-gray-50" style={{ background: pool?.color! }}>
-    <div className="p-1 bg-gray-50 rounded-full">
-      <YieldMark height={14} width={14} colors={[pool?.startColor!, pool?.endColor!]} />
+    <div className="p-1 bg-gray-50/80 rounded-full">
+      <YieldMark height={height || 14} width={width || 14} colors={[pool?.startColor!, pool?.endColor!]} />
     </div>
   </div>
 );

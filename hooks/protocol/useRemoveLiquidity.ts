@@ -30,7 +30,7 @@ export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiq
     const alreadyApproved = (await pool.contract.allowance(account!, ladleContract?.address!)).gte(_input);
 
     const overrides = {
-      gasLimit: 250000,
+      gasLimit: 300000,
     };
 
     const isETH = base.symbol === 'ETH';

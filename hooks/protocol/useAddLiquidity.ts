@@ -11,15 +11,23 @@ import useAddLiqPreview from './useAddLiqPreview';
 import { useLocalStorage } from '../useLocalStorage';
 import { DEFAULT_SLIPPAGE, SLIPPAGE_KEY } from '../../constants';
 
-export const useAddLiquidity = (pool: IPool, input: string, method: AddLiquidityActions, description: string) => {
+export const useAddLiquidity = (pool: IPool | undefined, input: string, method: AddLiquidityActions) => {
   const { account } = useConnector();
   const { sign } = useSignature();
   const { handleTransact, isTransacting, txSubmitted } = useTransaction();
   const { ladleContract, batch, transferAction, mintWithBaseAction, mintAction, wrapETHAction, exitETHAction } =
     useLadle();
+  const { fyTokenNeeded, fyTokenNeeded_ } = useAddLiqPreview(pool!, input, method);
+
+  // settings
   const [slippageTolerance] = useLocalStorage(SLIPPAGE_KEY, DEFAULT_SLIPPAGE);
 
-  const { fyTokenNeeded } = useAddLiqPreview(pool, input, method);
+  // description to use in toast
+  const description = `Add ${input} ${pool?.base.symbol}${
+    fyTokenNeeded.gt(ethers.constants.Zero) && method === AddLiquidityActions.MINT
+      ? ` and ${fyTokenNeeded_} ${pool?.fyToken.symbol}`
+      : ''
+  } as liquidity`;
 
   const addLiquidity = async () => {
     if (!pool) throw new Error('no pool'); // prohibit trade if there is no pool
@@ -44,16 +52,15 @@ export const useAddLiquidity = (pool: IPool, input: string, method: AddLiquidity
     // input data
     const cleanInput = cleanValue(input, base.decimals);
     const _input = ethers.utils.parseUnits(cleanInput, base.decimals);
-    const _fyTokenNeeded = ethers.utils.parseUnits(fyTokenNeeded!, fyToken.decimals);
 
     // check if signature is still required
     const alreadyApprovedBase = (await base.getAllowance(account!, ladleContract?.address!)).gte(_input);
-    const alreadyApprovedFyToken = (await fyToken.getAllowance(account!, ladleContract?.address!)).gte(_fyTokenNeeded);
+    const alreadyApprovedFyToken = (await fyToken.getAllowance(account!, ladleContract?.address!)).gte(fyTokenNeeded);
 
     const overrides = {
       gasLimit: 250000,
     };
-    const isEth = pool.base.symbol === 'ETH';
+    const isEth = base.symbol === 'ETH';
     const withEthOverrides = { ...overrides, value: isEth ? _input : undefined } as PayableOverrides;
 
     const _mintWithBase = async () => {
@@ -110,7 +117,7 @@ export const useAddLiquidity = (pool: IPool, input: string, method: AddLiquidity
         {
           target: fyToken,
           spender: ladleContract?.address!,
-          amount: _fyTokenNeeded,
+          amount: fyTokenNeeded,
           ignoreIf: alreadyApprovedFyToken,
         },
       ]);
@@ -120,7 +127,7 @@ export const useAddLiquidity = (pool: IPool, input: string, method: AddLiquidity
           ...permits,
           { action: wrapETHAction(poolContract, _input)!, ignoreIf: !isEth },
           { action: transferAction(base.address, poolAddress, _input)!, ignoreIf: isEth },
-          { action: transferAction(fyToken.address, poolAddress, _fyTokenNeeded)! },
+          { action: transferAction(fyToken.address, poolAddress, fyTokenNeeded)! },
           {
             action: mintAction(
               poolContract,
