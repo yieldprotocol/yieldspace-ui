@@ -20,8 +20,9 @@ type LinkItemProps = {
   $current: boolean;
 };
 
-const InnerContainer = tw.div`flex py-2 px-10 align-middle relative items-center justify-between`;
-const LinksWrap = tw.div`flex space-x-8 items-center`;
+const Grid = tw.div`grid grid-cols-3 items-center px-10 py-2`;
+const MarkWrap = tw.div`flex`;
+const LinksWrap = tw.div`flex space-x-8 justify-center`;
 const LinkItem = tw.div<LinkItemProps>`${(p) =>
   p.$current
     ? 'text-primary-500'
@@ -36,8 +37,8 @@ const Navigation = () => {
 
   return (
     <Container>
-      <InnerContainer>
-        <LinksWrap>
+      <Grid>
+        <MarkWrap>
           <Link href="/trade" passHref>
             <div className="hover:cursor-pointer p-2.5 rounded-full bg-gray-700/20">
               <YieldMark
@@ -45,6 +46,8 @@ const Navigation = () => {
               />
             </div>
           </Link>
+        </MarkWrap>
+        <LinksWrap>
           {navigation.map((x) => (
             <Link href={x.href} key={x.name} passHref>
               <LinkItem $current={router.pathname.includes(x.href)}>{x.name}</LinkItem>
@@ -52,7 +55,7 @@ const Navigation = () => {
           ))}
         </LinksWrap>
         <Account />
-      </InnerContainer>
+      </Grid>
     </Container>
   );
 };
