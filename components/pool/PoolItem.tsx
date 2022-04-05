@@ -19,12 +19,11 @@ const PoolDataWrap = tw.div`grid my-5 gap-2 flex-nowrap`;
 const PoolDataLabel = tw.div`text-lg dark:text-gray-400 text-gray-500`;
 const PoolData = tw.div`text-xl font-semibold dark:text-gray-100 text-gray-800`;
 
-// new style
 const Wrap = tw.div`mx-auto min-h-[492px] 
-  w-[290px] dark:bg-gray-800 bg-gray-200 rounded-lg my-5 justify-center align-middle items-center border-[2px]
-  dark:border-gray-800 border-gray-200
+   dark:bg-gray-800/50 bg-gray-300 rounded-lg my-5 justify-center align-middle items-center border-[2px]
+  dark:border-gray-800/50 border-gray-300
 `;
-const Top = tw.div`h-[120px] rounded-t-lg animate-pulse ease-out duration-1000`;
+const Top = tw.div`h-[120px] rounded-t-lg`;
 const Middle = tw.div`grid gap-3 justify-start px-5 text-left`;
 
 export const marks = {
