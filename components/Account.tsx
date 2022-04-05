@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import tw from 'tailwind-styled-components';
-import Connect from './ConnectModal';
+import ConnectModal from './ConnectModal';
 import Dropdown from './ConnectDropdown';
 import useConnector from '../hooks/useConnector';
 import Chain from './Chain';
@@ -16,13 +16,13 @@ const Account = () => {
       {!account ? (
         <ConnectButton onClick={() => setConnectModalOpen(true)}>Connect Wallet</ConnectButton>
       ) : (
-        <div className="flex gap-3">
+        <div className="flex gap-3 justify-end">
           <Chain />
           <ETHBalance />
           <Dropdown setModalOpen={setConnectModalOpen} />
         </div>
       )}
-      {connectModalOpen && <Connect modalOpen={connectModalOpen} setModalOpen={setConnectModalOpen} />}
+      {connectModalOpen && <ConnectModal modalOpen={connectModalOpen} setModalOpen={setConnectModalOpen} />}
     </div>
   );
 };
