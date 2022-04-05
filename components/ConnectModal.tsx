@@ -10,6 +10,7 @@ import { connectors } from '../connectors';
 import tw from 'tailwind-styled-components';
 import Modal from './common/Modal';
 import metamaskLogo from '../public/logos/metamask.png';
+import WalletconnectMark from './common/logos/WalletconnectMark';
 
 const Inner = tw.div`p-2 space-y-2 items-center`;
 const ConnectorButton = tw.button`w-full gap-4 bg-gray-500/25 align-middle px-4 py-3 text-primary-500 rounded-md hover:bg-gray-600/25 flex`;
@@ -31,7 +32,7 @@ function Connection({
   connector,
   hooks: { useChainId, useIsActivating, useError, useIsActive },
 }: {
-  connector: MetaMask;
+  connector: MetaMask | WalletConnect;
   hooks: Web3ReactHooks;
 }) {
   const isActivating = useIsActivating();
@@ -39,6 +40,8 @@ function Connection({
   const active = useIsActive();
 
   const [desiredChainId] = useState<number>(-1);
+
+  const connectorName = getName(connector);
 
   const status = () => {
     if (error) {
@@ -64,12 +67,20 @@ function Connection({
 
   return (
     <ConnectorButton
-      onClick={() => connector.activate(desiredChainId === -1 ? undefined : getAddChainParameters(desiredChainId))}
+      onClick={() =>
+        connector instanceof WalletConnect
+          ? void connector.activate()
+          : void connector.activate(desiredChainId === -1 ? undefined : getAddChainParameters(desiredChainId))
+      }
       disabled={isActivating || active}
     >
-      <Image src={metamaskLogo} height={20} width={20} alt="metamask-logo" />
+      {connectorName === 'WalletConnect' ? (
+        <WalletconnectMark height={20} width={20} />
+      ) : (
+        <Image src={metamaskLogo} height={20} width={20} alt="metamask-logo" />
+      )}
       <div className="flex w-full justify-between">
-        <ConnectorButtonText>{getName(connector)}</ConnectorButtonText>
+        <ConnectorButtonText>{connectorName}</ConnectorButtonText>
         <ConnectorButtonText>{status()}</ConnectorButtonText>
       </div>
     </ConnectorButton>
