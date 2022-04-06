@@ -20,8 +20,8 @@ import useInputValidation from '../../hooks/useInputValidation';
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
-const TopRow = tw.div`flex justify-between align-middle text-center items-center`;
-const ClearButton = tw.button`text-sm`;
+const TopRow = tw.div`grid grid-cols-3 justify-between align-middle text-center items-center`;
+const ClearButton = tw.button`text-sm justify-self-end`;
 
 export interface IRemoveLiquidityForm {
   pool: IPool | undefined;

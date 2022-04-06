@@ -60,7 +60,7 @@ function Connection({
           <span className="relative inline-flex rounded-full h-3 w-3 bg-yellow-300"></span>
         </span>
       ) : (
-        <span>Connect</span>
+        <span></span>
       );
     }
   };

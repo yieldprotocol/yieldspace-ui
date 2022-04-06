@@ -16,7 +16,7 @@ const Account = () => {
       {!account ? (
         <ConnectButton onClick={() => setConnectModalOpen(true)}>Connect Wallet</ConnectButton>
       ) : (
-        <div className="flex gap-3 justify-end">
+        <div className="flex gap-3">
           <Chain />
           <ETHBalance />
           <Dropdown setModalOpen={setConnectModalOpen} />
