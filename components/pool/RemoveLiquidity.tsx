@@ -110,7 +110,7 @@ const RemoveLiquidity = () => {
       <Inner>
         <TopRow>
           <BackButton onClick={() => router.back()} />
-          <Header>Remove Liquidity</Header>
+          <Header>Remove</Header>
           <ClearButton onClick={handleClearAll}>Clear All</ClearButton>
         </TopRow>
 

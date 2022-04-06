@@ -129,7 +129,7 @@ const AddLiquidity = () => {
       <Inner>
         <TopRow>
           <BackButton onClick={() => router.back()} />
-          <Header>Add Liquidity</Header>
+          <Header>Add</Header>
           <ClearButton onClick={handleClearAll}>Clear All</ClearButton>
         </TopRow>
 
@@ -143,30 +143,28 @@ const AddLiquidity = () => {
 
         <Grid>
           <HeaderSmall>Deposit Amounts</HeaderSmall>
-          <InputsWrap>
+          <InputWrap
+            name="baseAmount"
+            value={baseAmount}
+            item={pool?.base}
+            balance={baseBalanceToUse!}
+            handleChange={handleInputChange}
+            useMax={handleMaxBase}
+            pool={pool}
+          />
+          {useFyToken && <Arrow isPlusIcon={true} />}
+          {useFyToken && (
             <InputWrap
-              name="baseAmount"
-              value={baseAmount}
-              item={pool?.base}
-              balance={baseBalanceToUse!}
+              name="fyTokenAmount"
+              value={fyTokenAmount}
+              item={pool?.fyToken}
+              balance={pool?.fyToken.balance_!}
               handleChange={handleInputChange}
-              useMax={handleMaxBase}
+              unFocused={true}
+              disabled
               pool={pool}
             />
-            {useFyToken && <Arrow isPlusIcon={true} />}
-            {useFyToken && (
-              <InputWrap
-                name="fyTokenAmount"
-                value={fyTokenAmount}
-                item={pool?.fyToken}
-                balance={pool?.fyToken.balance_!}
-                handleChange={handleInputChange}
-                unFocused={true}
-                disabled
-                pool={pool}
-              />
-            )}
-          </InputsWrap>
+          )}
           {+pool?.fyToken?.balance_! > 0 && (
             <Toggle
               enabled={useFyToken}
