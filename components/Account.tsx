@@ -12,7 +12,7 @@ const Account = () => {
   const { account } = useConnector();
   const [connectModalOpen, setConnectModalOpen] = useState<boolean>(false);
   return (
-    <div>
+    <div className="flex justify-end">
       {!account ? (
         <ConnectButton onClick={() => setConnectModalOpen(true)}>Connect Wallet</ConnectButton>
       ) : (
