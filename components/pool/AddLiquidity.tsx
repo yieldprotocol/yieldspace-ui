@@ -192,8 +192,13 @@ const AddLiquidity = () => {
         {confirmModalOpen && pool && (
           <Modal isOpen={confirmModalOpen} setIsOpen={setConfirmModalOpen} styleProps="p-5">
             <TopRow>
-              <Header>Confirm Add Liquidity</Header>
-              <CloseButton action={() => setConfirmModalOpen(false)} height="1.2rem" width="1.2rem" />
+              <div className="justify-self-start">
+                <Header>Confirm</Header>
+              </div>
+              <div> </div>
+              <div className="justify-self-end">
+                <CloseButton action={() => setConfirmModalOpen(false)} height="1.2rem" width="1.2rem" />
+              </div>
             </TopRow>
             <AddConfirmation
               form={form}
