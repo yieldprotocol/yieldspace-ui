@@ -96,6 +96,7 @@ const useInputValidation = (
       case AddLiquidityActions.MINT:
         baseBalance < _input && setErrorMsg(`Insufficient ${base.symbol} balance`);
         fyToken.balance.lt(fyTokenNeeded) && setErrorMsg(`Insufficient ${fyToken.symbol} balance`);
+        fyTokenNeeded.gt(pool.fyTokenReserves) && setErrorMsg(`Insufficient ${fyToken.symbol} reserves`);
         break;
       case RemoveLiquidityActions.BURN_FOR_BASE:
       case RemoveLiquidityActions.BURN:
