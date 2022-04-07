@@ -4,8 +4,8 @@ import YieldMark from './YieldMark';
 
 interface IFyTokenLogo {
   pool: IPool | undefined;
-  height?: number;
-  width?: number;
+  height?: string | number;
+  width?: string | number;
 }
 
 const FyTokenLogo: FC<IFyTokenLogo> = ({ pool, height, width }) => (

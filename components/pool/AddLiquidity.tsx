@@ -9,14 +9,13 @@ import usePools from '../../hooks/protocol/usePools';
 import PoolSelect from './PoolSelect';
 import { IPool } from '../../lib/protocol/types';
 import useConnector from '../../hooks/useConnector';
-import { BorderWrap, Header } from '../styles/';
+import { BorderWrap, Header } from '../styles/common';
 import { useAddLiquidity } from '../../hooks/protocol/useAddLiquidity';
 import Modal from '../common/Modal';
 import AddConfirmation from './AddConfirmation';
 import CloseButton from '../common/CloseButton';
 import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
 import Arrow from '../trade/Arrow';
-import InputsWrap from '../styles/InputsWrap';
 import useInputValidation from '../../hooks/useInputValidation';
 import useAddLiqPreview from '../../hooks/protocol/useAddLiqPreview';
 import useETHBalance from '../../hooks/useEthBalance';
@@ -24,8 +23,8 @@ import useETHBalance from '../../hooks/useEthBalance';
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
-const TopRow = tw.div`flex justify-between align-middle text-center items-center`;
-const ClearButton = tw.button`text-sm`;
+const TopRow = tw.div`grid grid-cols-3 justify-between align-middle text-center items-center`;
+const ClearButton = tw.button`text-sm justify-self-end`;
 
 export interface IAddLiquidityForm {
   pool: IPool | undefined;
@@ -129,7 +128,7 @@ const AddLiquidity = () => {
       <Inner>
         <TopRow>
           <BackButton onClick={() => router.back()} />
-          <Header>Add Liquidity</Header>
+          <Header>Add</Header>
           <ClearButton onClick={handleClearAll}>Clear All</ClearButton>
         </TopRow>
 
@@ -143,30 +142,28 @@ const AddLiquidity = () => {
 
         <Grid>
           <HeaderSmall>Deposit Amounts</HeaderSmall>
-          <InputsWrap>
+          <InputWrap
+            name="baseAmount"
+            value={baseAmount}
+            item={pool?.base}
+            balance={baseBalanceToUse!}
+            handleChange={handleInputChange}
+            useMax={handleMaxBase}
+            pool={pool}
+          />
+          {useFyToken && <Arrow isPlusIcon={true} />}
+          {useFyToken && (
             <InputWrap
-              name="baseAmount"
-              value={baseAmount}
-              item={pool?.base}
-              balance={baseBalanceToUse!}
+              name="fyTokenAmount"
+              value={fyTokenAmount}
+              item={pool?.fyToken}
+              balance={pool?.fyToken.balance_!}
               handleChange={handleInputChange}
-              useMax={handleMaxBase}
+              unFocused={true}
+              disabled
               pool={pool}
             />
-            {useFyToken && <Arrow isPlusIcon={true} />}
-            {useFyToken && (
-              <InputWrap
-                name="fyTokenAmount"
-                value={fyTokenAmount}
-                item={pool?.fyToken}
-                balance={pool?.fyToken.balance_!}
-                handleChange={handleInputChange}
-                unFocused={true}
-                disabled
-                pool={pool}
-              />
-            )}
-          </InputsWrap>
+          )}
           {+pool?.fyToken?.balance_! > 0 && (
             <Toggle
               enabled={useFyToken}
@@ -194,8 +191,13 @@ const AddLiquidity = () => {
         {confirmModalOpen && pool && (
           <Modal isOpen={confirmModalOpen} setIsOpen={setConfirmModalOpen} styleProps="p-5">
             <TopRow>
-              <Header>Confirm Add Liquidity</Header>
-              <CloseButton action={() => setConfirmModalOpen(false)} height="1.2rem" width="1.2rem" />
+              <div className="justify-self-start">
+                <Header>Confirm</Header>
+              </div>
+              <div> </div>
+              <div className="justify-self-end">
+                <CloseButton action={() => setConfirmModalOpen(false)} height="1.2rem" width="1.2rem" />
+              </div>
             </TopRow>
             <AddConfirmation
               form={form}

@@ -10,7 +10,7 @@ const A = tw.a`dark:hover:underline dark:decoration-gray-50`;
 const Inner = ({ msg, link }: { msg: string; link?: string }) => (
   <Body>
     {link ? (
-      <A href={link} target="_blank" rel="noreferrer">
+      <A href={link} target="_blank" rel="noreferrer" className="etherscan-link">
         <Text>{msg}</Text>
       </A>
     ) : (

@@ -8,7 +8,7 @@ import usePools from '../../hooks/protocol/usePools';
 import PoolSelect from './PoolSelect';
 import { IPool } from '../../lib/protocol/types';
 import useConnector from '../../hooks/useConnector';
-import { BorderWrap, Header } from '../styles/';
+import { BorderWrap, Header } from '../styles/common';
 import { useRemoveLiquidity } from '../../hooks/protocol/useRemoveLiquidity';
 import { RemoveLiquidityActions } from '../../lib/protocol/liquidity/types';
 import Toggle from '../common/Toggle';
@@ -16,12 +16,13 @@ import Modal from '../common/Modal';
 import CloseButton from '../common/CloseButton';
 import RemoveConfirmation from './RemoveConfirmation';
 import useInputValidation from '../../hooks/useInputValidation';
+import useRemoveLiqPreview from '../../hooks/protocol/useRemoveLiqPreview';
 
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
-const TopRow = tw.div`flex justify-between align-middle text-center items-center`;
-const ClearButton = tw.button`text-sm`;
+const TopRow = tw.div`grid grid-cols-3 justify-between align-middle text-center items-center`;
+const ClearButton = tw.button`text-sm justify-self-end`;
 
 export interface IRemoveLiquidityForm {
   pool: IPool | undefined;
@@ -54,6 +55,7 @@ const RemoveLiquidity = () => {
       : ` receive both ${pool?.base.symbol} and ${pool?.fyToken.symbol}`
   }`;
   const { removeLiquidity, isRemovingLiq, removeSubmitted } = useRemoveLiquidity(pool!, lpTokens, method, description);
+  const { canReceiveAllBase } = useRemoveLiqPreview(pool!, lpTokens, method);
 
   const handleMaxLpTokens = () => {
     setForm((f) => ({ ...f, lpTokens: pool?.lpTokenBalance_! }));
@@ -85,9 +87,9 @@ const RemoveLiquidity = () => {
   useEffect(() => {
     setForm((f) => ({
       ...f,
-      method: burnForBase ? RemoveLiquidityActions.BURN_FOR_BASE : RemoveLiquidityActions.BURN,
+      method: burnForBase && canReceiveAllBase ? RemoveLiquidityActions.BURN_FOR_BASE : RemoveLiquidityActions.BURN,
     }));
-  }, [pool, burnForBase]);
+  }, [pool, burnForBase, canReceiveAllBase]);
 
   // update the form's pool whenever the pool changes (i.e. when the user interacts and balances change)
   useEffect(() => {
@@ -110,7 +112,7 @@ const RemoveLiquidity = () => {
       <Inner>
         <TopRow>
           <BackButton onClick={() => router.back()} />
-          <Header>Remove Liquidity</Header>
+          <Header>Remove</Header>
           <ClearButton onClick={handleClearAll}>Clear All</ClearButton>
         </TopRow>
 
@@ -132,6 +134,7 @@ const RemoveLiquidity = () => {
 
           {pool && !pool.isMature && (
             <Toggle
+              disabled={!canReceiveAllBase && lpTokens !== ''}
               enabled={burnForBase}
               setEnabled={setBurnForBase}
               label={
@@ -154,8 +157,13 @@ const RemoveLiquidity = () => {
         {confirmModalOpen && pool && (
           <Modal isOpen={confirmModalOpen} setIsOpen={setConfirmModalOpen} styleProps="p-5">
             <TopRow>
-              <Header>Confirm Remove Liquidity</Header>
-              <CloseButton action={() => setConfirmModalOpen(false)} height="1.2rem" width="1.2rem" />
+              <div className="justify-self-start">
+                <Header>Confirm</Header>
+              </div>
+              <div> </div>
+              <div className="justify-self-end">
+                <CloseButton action={() => setConfirmModalOpen(false)} height="1.2rem" width="1.2rem" />
+              </div>
             </TopRow>
             <RemoveConfirmation
               form={form}

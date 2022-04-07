@@ -1,5 +1,5 @@
+import { marks } from '../../config/marks';
 import { hexToRgb } from '../../utils/appUtils';
-import { marks } from '../pool/PoolItem';
 
 interface IAssetLogo {
   image: string;

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import tw from 'tailwind-styled-components';
-import Connect from './ConnectModal';
+import ConnectModal from './ConnectModal';
 import Dropdown from './ConnectDropdown';
 import useConnector from '../hooks/useConnector';
 import Chain from './Chain';
@@ -12,7 +12,7 @@ const Account = () => {
   const { account } = useConnector();
   const [connectModalOpen, setConnectModalOpen] = useState<boolean>(false);
   return (
-    <div>
+    <div className="flex justify-end">
       {!account ? (
         <ConnectButton onClick={() => setConnectModalOpen(true)}>Connect Wallet</ConnectButton>
       ) : (
@@ -22,7 +22,7 @@ const Account = () => {
           <Dropdown setModalOpen={setConnectModalOpen} />
         </div>
       )}
-      {connectModalOpen && <Connect modalOpen={connectModalOpen} setModalOpen={setConnectModalOpen} />}
+      {connectModalOpen && <ConnectModal modalOpen={connectModalOpen} setModalOpen={setConnectModalOpen} />}
     </div>
   );
 };

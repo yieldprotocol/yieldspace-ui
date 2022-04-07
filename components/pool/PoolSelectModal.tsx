@@ -4,8 +4,7 @@ import { IAsset, IPool } from '../../lib/protocol/types';
 import AssetSelect from '../common/AssetSelect';
 import CloseButton from '../common/CloseButton';
 import Modal from '../common/Modal';
-import { Header } from '../styles';
-import TopRow from '../styles/TopRow';
+import { Header, TopRow } from '../styles/common';
 import PoolSelectItem from './PoolSelectItem';
 
 const Grid = tw.div`grid auto-rows-auto gap-2 overflow-auto p-5 max-h-[428px]`;

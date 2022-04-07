@@ -4,9 +4,11 @@ import { DEFAULT_SLIPPAGE, SLIPPAGE_KEY } from '../../constants';
 import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
 import { IPool } from '../../lib/protocol/types';
 import { fyTokenForMint, mint, mintWithBase, splitLiquidity } from '../../utils/yieldMath';
+import { useDebounce } from '../generalHooks';
 import { useLocalStorage } from '../useLocalStorage';
 
 const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityActions | undefined) => {
+  const baseAmountDebounced = useDebounce(baseAmount, 1000);
   const [lpTokenPreview, setLpTokenPreview] = useState<string>('');
   const [fyTokenNeeded, setFyTokenNeeded] = useState<BigNumber>(ethers.constants.Zero);
   const [fyTokenNeeded_, setFyTokenNeeded_] = useState<string>('');
@@ -16,11 +18,11 @@ const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityA
 
   useEffect(() => {
     (async () => {
-      if (pool && baseAmount !== '' && method) {
+      if (pool && baseAmountDebounced !== '' && method) {
         const { totalSupply, decimals, contract, getTimeTillMaturity, ts, g1 } = pool;
         const timeTillMaturity = getTimeTillMaturity().toString();
 
-        const _baseAmount = ethers.utils.parseUnits(baseAmount || '0', decimals);
+        const _baseAmount = ethers.utils.parseUnits(baseAmountDebounced || '0', decimals);
         const [cachedBaseReserves, cachedFyTokenReserves] = await contract.getCache();
         const cachedRealReserves = cachedFyTokenReserves.sub(totalSupply);
 
@@ -64,6 +66,7 @@ const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityA
               decimals
             );
 
+            setCanTradeForFyToken(!fyTokenToBuy.eq(ethers.constants.Zero));
             setLpTokenPreview(ethers.utils.formatUnits(minted, decimals));
           }
         } catch (e) {
@@ -72,7 +75,7 @@ const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityA
         }
       }
     })();
-  }, [baseAmount, method, pool, slippageTolerance_]);
+  }, [baseAmountDebounced, method, pool, slippageTolerance_]);
 
   return { lpTokenPreview, fyTokenNeeded, fyTokenNeeded_, canTradeForFyToken };
 };

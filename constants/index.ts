@@ -22,5 +22,5 @@ export const ETH_BYTES = ethers.utils.formatBytes32String('ETH-A');
 
 export const BLANK_ADDRESS = ethers.constants.AddressZero;
 
-export const SLIPPAGE_KEY = 'slippageTolerance';
+export const SLIPPAGE_KEY = 'yieldspace-slippageTolerance';
 export const DEFAULT_SLIPPAGE = '.5'; // .5%

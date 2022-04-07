@@ -2,11 +2,12 @@ import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
 import { RemoveLiquidityActions } from '../../lib/protocol/liquidity/types';
 import { IPool } from '../../lib/protocol/types';
-import { burn, burnForBase } from '../../utils/yieldMath';
+import { burn, burnForBase, newPoolState, sellFYToken } from '../../utils/yieldMath';
 
-const useRemoveLiqPreview = (pool: IPool, lpTokens: string, method: RemoveLiquidityActions) => {
+const useRemoveLiqPreview = (pool: IPool | undefined, lpTokens: string, method: RemoveLiquidityActions) => {
   const [baseReceived, setBaseReceived] = useState<string>();
   const [fyTokenReceived, setFyTokenReceived] = useState<string>();
+  const [canReceiveAllBase, setCanReceiveAllBase] = useState<boolean>(true);
 
   useEffect(() => {
     const getPrevewData = async () => {
@@ -14,15 +15,39 @@ const useRemoveLiqPreview = (pool: IPool, lpTokens: string, method: RemoveLiquid
         setFyTokenReceived('');
         return setBaseReceived('');
       }
-      const { totalSupply, decimals, contract, getTimeTillMaturity, ts, g2 } = pool;
 
-      const _lpTokens = ethers.utils.parseUnits(lpTokens, decimals);
+      const { totalSupply, decimals, contract, getTimeTillMaturity, ts, g2 } = pool;
+      const timeTillMaturity = getTimeTillMaturity().toString();
+
+      const _lpTokens = ethers.utils.parseUnits(lpTokens || '0', decimals);
 
       const [cachedBaseReserves, cachedFyTokenReserves] = await contract.getCache();
       const cachedRealReserves = cachedFyTokenReserves.sub(totalSupply);
 
+      const [_baseReceived, _fyTokenReceived] = burn(cachedBaseReserves, cachedRealReserves, totalSupply, _lpTokens);
+
+      const newPool = newPoolState(
+        _baseReceived.mul(-1),
+        _fyTokenReceived.mul(-1),
+        cachedBaseReserves,
+        cachedRealReserves,
+        totalSupply
+      );
+
+      const fyTokenTrade = sellFYToken(
+        newPool.baseReserves,
+        newPool.fyTokenVirtualReserves,
+        _fyTokenReceived,
+        timeTillMaturity,
+        ts,
+        g2,
+        decimals
+      );
+
+      setCanReceiveAllBase(fyTokenTrade.gt(ethers.constants.Zero)); // check if the user can receive all base, otherwise, default to burn
+
       if (method === RemoveLiquidityActions.BURN_FOR_BASE) {
-        const _baseReceived = burnForBase(
+        const baseTokenReceived = burnForBase(
           cachedBaseReserves,
           cachedFyTokenReserves,
           cachedRealReserves,
@@ -33,23 +58,18 @@ const useRemoveLiqPreview = (pool: IPool, lpTokens: string, method: RemoveLiquid
           decimals
         );
 
-        const baseReceived_ = ethers.utils.formatUnits(_baseReceived, decimals);
         setFyTokenReceived(undefined);
-        return setBaseReceived(baseReceived_);
+        return setBaseReceived(ethers.utils.formatUnits(baseTokenReceived, decimals));
       } else {
-        const [_baseReceived, _fyTokenReceived] = burn(cachedBaseReserves, cachedRealReserves, totalSupply, _lpTokens);
-
-        const baseReceived_ = ethers.utils.formatUnits(_baseReceived, decimals);
-        const fyTokenReceived_ = ethers.utils.formatUnits(_fyTokenReceived, decimals);
-        setBaseReceived(baseReceived_);
-        setFyTokenReceived(fyTokenReceived_);
+        setBaseReceived(ethers.utils.formatUnits(_baseReceived, decimals));
+        setFyTokenReceived(ethers.utils.formatUnits(_fyTokenReceived, decimals));
       }
     };
 
     getPrevewData();
   }, [lpTokens, method, pool]);
 
-  return { baseReceived, fyTokenReceived };
+  return { baseReceived, fyTokenReceived, canReceiveAllBase };
 };
 
 export default useRemoveLiqPreview;
