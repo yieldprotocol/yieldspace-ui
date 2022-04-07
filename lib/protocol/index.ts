@@ -23,7 +23,6 @@ const formatMaturity = (maturity: number) => format(new Date(maturity * 1000), '
  * @param contractMap the contracts to use for events
  * @param chainId currently connected chain id or mainnet as default
  * @param account user's account address if there is a connected account
- * @param blockNum
  * @returns  {IPoolMap}
  */
 export const getPools = async (
