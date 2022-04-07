@@ -1,4 +1,3 @@
-import tw from 'tailwind-styled-components';
 import Arrow from './Arrow';
 import AssetSelect from '../common/AssetSelect';
 import { IAsset, IPool } from '../../lib/protocol/types';
@@ -21,10 +20,11 @@ import {
   DetailGray,
   Detail,
   Italic,
+  Flex,
+  DisclaimerTextWrap,
+  AssetSelectWrap,
+  Right,
 } from '../styles/confirm';
-
-const AssetSelectOuter = tw.div`min-w-fit dark:text-gray-50`;
-const AssetSelectWrap = tw.div`p-1`;
 
 interface ITradeConfirmation {
   form: ITradeForm;
@@ -37,11 +37,9 @@ interface ITradeConfirmation {
 const ConfirmItem = ({ value, asset, pool }: { value: string; asset: IAsset; pool: IPool }) => (
   <InputStyleContainer>
     <InputStyle>{value}</InputStyle>
-    <AssetSelectOuter>
-      <AssetSelectWrap>
-        <AssetSelect item={asset} isFyToken={asset.symbol.includes('FY') || false} pool={pool} />
-      </AssetSelectWrap>
-    </AssetSelectOuter>
+    <AssetSelectWrap>
+      <AssetSelect item={asset} isFyToken={asset.symbol.includes('FY') || false} pool={pool} />
+    </AssetSelectWrap>
   </InputStyleContainer>
 );
 
@@ -70,9 +68,9 @@ const TradeConfirmation = ({ form, interestRate, action, disabled, loading }: IT
           <DetailWrap>
             <Detail>Maturity</Detail>
             <Detail>
-              <div>{pool?.displayName}</div>
+              <Flex>{pool?.displayName}</Flex>
               <Italic>
-                <div className="float-right">{maturityDescription}</div>
+                <Right>{maturityDescription}</Right>
               </Italic>
             </Detail>
           </DetailWrap>
@@ -88,20 +86,20 @@ const TradeConfirmation = ({ form, interestRate, action, disabled, loading }: IT
             <DetailGray>{toAmountLessSlippage_}</DetailGray>
           </DetailWrap>
           <DetailWrap>
-            <div className="flex">
+            <Flex>
               <DetailGray>Expected interest rate</DetailGray>
               <InfoIcon infoText="if held until maturity" height=".9rem" width=".9rem" />
-            </div>
+            </Flex>
             <DetailGray>{interestRate}%</DetailGray>
           </DetailWrap>
         </DetailsWrap>
       </InputStyleContainer>
-      <div className="my-3 text-center">
+      <DisclaimerTextWrap>
         <Italic>
           Output is estimated. You will receive at least {toAmountLessSlippage_} in {toAsset?.symbol} or the transaction
           will revert.
         </Italic>
-      </div>
+      </DisclaimerTextWrap>
       <Button action={action} disabled={disabled} loading={loading}>
         {loading ? 'Trade Initiated...' : 'Confirm Trade'}
       </Button>

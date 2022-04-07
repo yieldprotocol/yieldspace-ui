@@ -7,17 +7,19 @@ import { IAddLiquidityForm } from './AddLiquidity';
 import Arrow from '../trade/Arrow';
 import useAddLiquidityPreview from '../../hooks/protocol/useAddLiqPreview';
 import { valueAtDigits } from '../../utils/appUtils';
-import { Container, InputsWrap } from '../styles/confirm';
-
-const InputStyleContainer = tw.div`flex rounded-md justify-between p-1 w-full gap-5 align-middle border dark:border-gray-800 dark:bg-gray-800 bg-gray-300 border-gray-300 items-center`;
-const InputStyle = tw.div`h-full caret-gray-800 dark:caret-gray-50 text-2xl appearance-none w-full dark:bg-gray-800 bg-gray-300 dark:focus:text-gray-50 focus:text-gray-800 dark:text-gray-300 text-gray-800 py-1 px-4 leading-tight focus:outline-none items-center`;
-const InputInner = tw.div`w-auto ml-3 text-center text-lg align-middle my-1 items-center`;
-const AssetSelectOuter = tw.div`min-w-fit dark:text-gray-50`;
-const AssetSelectWrap = tw.div`p-1`;
-const DetailsWrap = tw.div`grid w-full p-2 gap-2`;
-const DetailWrap = tw.div`justify-between flex`;
-const Detail = tw.div`text-sm dark:text-gray-50 text-gray-900`;
-const Italic = tw.div`italic text-xs dark:text-gray-300 text-gray-800 my-3`;
+import {
+  AssetSelectWrap,
+  Container,
+  Right,
+  InputStyle,
+  InputStyleContainer,
+  InputsWrap,
+  Italic,
+  Detail,
+  DisclaimerTextWrap,
+  DetailWrap,
+  DetailsWrap,
+} from '../styles/confirm';
 
 interface IAddConfirmation {
   form: IAddLiquidityForm;
@@ -28,14 +30,10 @@ interface IAddConfirmation {
 
 const ConfirmItem = ({ value, asset, pool }: { value: string; asset: IAsset; pool: IPool }) => (
   <InputStyleContainer>
-    <InputInner>
-      <InputStyle>{value}</InputStyle>
-    </InputInner>
-    <AssetSelectOuter>
-      <AssetSelectWrap>
-        {asset && <AssetSelect item={asset} isFyToken={asset.symbol.includes('FY') || false} pool={pool} />}
-      </AssetSelectWrap>
-    </AssetSelectOuter>
+    <InputStyle>{value}</InputStyle>
+    <AssetSelectWrap>
+      {asset && <AssetSelect item={asset} isFyToken={asset.symbol.includes('FY') || false} pool={pool} />}
+    </AssetSelectWrap>
   </InputStyleContainer>
 );
 
@@ -43,6 +41,7 @@ const AddConfirmation = ({ form, action, disabled, loading }: IAddConfirmation) 
   const { pool, baseAmount, fyTokenAmount, useFyToken, method } = form;
   const { lpTokenPreview } = useAddLiquidityPreview(pool!, baseAmount, method!);
   const timeTillMaturity_ = useTimeTillMaturity(pool?.maturity!);
+  const maturityDescription = pool?.isMature ? `Mature` : `${timeTillMaturity_} until maturity`;
 
   return (
     <Container>
@@ -63,10 +62,12 @@ const AddConfirmation = ({ form, action, disabled, loading }: IAddConfirmation) 
         <DetailsWrap>
           <DetailWrap>
             <Detail>Maturity</Detail>
-            <div className="text-sm dark:text-gray-50">
-              <div className="flex justify-end">{pool?.displayName}</div>
-              <div className="italic text-xs dark:text-gray-300">{timeTillMaturity_} until maturity</div>
-            </div>
+            <Detail>
+              <Right>{pool?.displayName}</Right>
+              <Italic>
+                <Right>{maturityDescription}</Right>
+              </Italic>
+            </Detail>
           </DetailWrap>
           <DetailWrap>
             <Detail>LP Tokens to Receive</Detail>
@@ -74,7 +75,9 @@ const AddConfirmation = ({ form, action, disabled, loading }: IAddConfirmation) 
           </DetailWrap>
         </DetailsWrap>
       </InputStyleContainer>
-      <Italic>Output is estimated.</Italic>
+      <DisclaimerTextWrap>
+        <Italic>Output is estimated.</Italic>
+      </DisclaimerTextWrap>
       <Button action={action} disabled={disabled} loading={loading}>
         {loading ? 'Add Liquidity Initiated...' : 'Confirm Add Liquidity'}
       </Button>
