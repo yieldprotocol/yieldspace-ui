@@ -10,18 +10,21 @@ import { valueAtDigits } from '../../utils/appUtils';
 import { calculateSlippage } from '../../utils/yieldMath';
 import { DEFAULT_SLIPPAGE, SLIPPAGE_KEY } from '../../constants';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
-import { Container, InputsWrap } from '../styles/confirm';
+import {
+  Container,
+  InputsWrap,
+  InputStyleContainer,
+  InputStyle,
+  DetailsWrap,
+  DetailWrap,
+  LineBreak,
+  DetailGray,
+  Detail,
+  Italic,
+} from '../styles/confirm';
 
-const InputStyleContainer = tw.div`items-center flex rounded-md justify-between p-1 w-full gap-5 align-middle border dark:border-gray-800 dark:bg-gray-800 bg-gray-300 border-gray-300`;
-const InputStyle = tw.div`h-full caret-gray-800 dark:caret-gray-50 text-2xl appearance-none w-full dark:bg-gray-800 bg-gray-300 dark:focus:text-gray-50 focus:text-gray-800 dark:text-gray-300 text-gray-800 py-1 px-4 leading-tight focus:outline-none `;
-const InputInner = tw.div`w-auto ml-3 text-center text-lg align-middle my-1 items-center`;
 const AssetSelectOuter = tw.div`min-w-fit dark:text-gray-50`;
 const AssetSelectWrap = tw.div`p-1`;
-const DetailsWrap = tw.div`grid w-full p-2 gap-2`;
-const DetailWrap = tw.div`justify-between flex`;
-const Detail = tw.div`text-sm dark:text-gray-50 text-gray-900`;
-const DetailGray = tw.div`italic dark:text-gray-300 text-gray-600 text-sm`;
-const Italic = tw.div`italic text-xs dark:text-gray-300 text-gray-800 my-3`;
 
 interface ITradeConfirmation {
   form: ITradeForm;
@@ -33,9 +36,7 @@ interface ITradeConfirmation {
 
 const ConfirmItem = ({ value, asset, pool }: { value: string; asset: IAsset; pool: IPool }) => (
   <InputStyleContainer>
-    <InputInner>
-      <InputStyle>{value}</InputStyle>
-    </InputInner>
+    <InputStyle>{value}</InputStyle>
     <AssetSelectOuter>
       <AssetSelectWrap>
         <AssetSelect item={asset} isFyToken={asset.symbol.includes('FY') || false} pool={pool} />
@@ -68,10 +69,12 @@ const TradeConfirmation = ({ form, interestRate, action, disabled, loading }: IT
         <DetailsWrap>
           <DetailWrap>
             <Detail>Maturity</Detail>
-            <div className="text-sm dark:text-gray-50">
-              <div className="flex justify-end">{pool?.displayName}</div>
-              <div className="italic text-xs dark:text-gray-300 float-right">{maturityDescription}</div>
-            </div>
+            <Detail>
+              <div>{pool?.displayName}</div>
+              <Italic>
+                <div className="float-right">{maturityDescription}</div>
+              </Italic>
+            </Detail>
           </DetailWrap>
           <DetailWrap>
             <Detail>Expected output</Detail>
@@ -79,7 +82,7 @@ const TradeConfirmation = ({ form, interestRate, action, disabled, loading }: IT
               {toAmount_} {toAsset?.symbol}
             </Detail>
           </DetailWrap>
-          <div className="w-full h-[1px] bg-gray-700" />
+          <LineBreak />
           <DetailWrap>
             <DetailGray>Minimum received after slippage</DetailGray>
             <DetailGray>{toAmountLessSlippage_}</DetailGray>
@@ -93,10 +96,12 @@ const TradeConfirmation = ({ form, interestRate, action, disabled, loading }: IT
           </DetailWrap>
         </DetailsWrap>
       </InputStyleContainer>
-      <Italic>
-        Output is estimated. You will receive at least {toAmountLessSlippage_} in {toAsset?.symbol} or the transaction
-        will revert.
-      </Italic>
+      <div className="my-3 text-center">
+        <Italic>
+          Output is estimated. You will receive at least {toAmountLessSlippage_} in {toAsset?.symbol} or the transaction
+          will revert.
+        </Italic>
+      </div>
       <Button action={action} disabled={disabled} loading={loading}>
         {loading ? 'Trade Initiated...' : 'Confirm Trade'}
       </Button>
