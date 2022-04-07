@@ -180,11 +180,10 @@ export const getAsset = async (
   const ERC20 = ERC20Permit__factory.connect(tokenAddress, provider);
   const FYTOKEN = FYToken__factory.connect(tokenAddress, provider);
 
-  const [symbol, decimals, name, version] = await Promise.all([
+  const [symbol, decimals, name] = await Promise.all([
     isFyToken ? FYTOKEN.symbol() : ERC20.symbol(),
     isFyToken ? FYTOKEN.decimals() : ERC20.decimals(),
     isFyToken ? FYTOKEN.name() : ERC20.name(),
-    isFyToken ? FYTOKEN.version() : ERC20.version(),
   ]);
 
   const balance = account ? await getBalance(provider, tokenAddress, account, isFyToken) : ethers.constants.Zero;
@@ -196,7 +195,7 @@ export const getAsset = async (
 
   return {
     address: tokenAddress,
-    version,
+    version: symbol === 'USDC' ? '2' : '1',
     name,
     symbol: isFyToken ? formatFyTokenSymbol(symbol) : symbol_,
     decimals,
