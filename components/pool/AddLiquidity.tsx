@@ -16,7 +16,6 @@ import AddConfirmation from './AddConfirmation';
 import CloseButton from '../common/CloseButton';
 import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
 import Arrow from '../trade/Arrow';
-import InputsWrap from '../styles/InputsWrap';
 import useInputValidation from '../../hooks/useInputValidation';
 import useAddLiqPreview from '../../hooks/protocol/useAddLiqPreview';
 import useETHBalance from '../../hooks/useEthBalance';

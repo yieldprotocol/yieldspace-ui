@@ -7,16 +7,13 @@ import { IAddLiquidityForm } from './AddLiquidity';
 import Arrow from '../trade/Arrow';
 import useAddLiquidityPreview from '../../hooks/protocol/useAddLiqPreview';
 import { valueAtDigits } from '../../utils/appUtils';
+import { Container, InputsWrap } from '../styles/confirm';
 
-const Container = tw.div`relative flex justify-center items-center w-full`;
-const Wrap = tw.div`w-full text-center text-lg align-middle items-center`;
 const InputStyleContainer = tw.div`flex rounded-md justify-between p-1 w-full gap-5 align-middle border dark:border-gray-800 dark:bg-gray-800 bg-gray-300 border-gray-300 items-center`;
-const InputsOuter = tw.div`flex items-center justify-center relative w-full`;
 const InputStyle = tw.div`h-full caret-gray-800 dark:caret-gray-50 text-2xl appearance-none w-full dark:bg-gray-800 bg-gray-300 dark:focus:text-gray-50 focus:text-gray-800 dark:text-gray-300 text-gray-800 py-1 px-4 leading-tight focus:outline-none items-center`;
 const InputInner = tw.div`w-auto ml-3 text-center text-lg align-middle my-1 items-center`;
 const AssetSelectOuter = tw.div`min-w-fit dark:text-gray-50`;
 const AssetSelectWrap = tw.div`p-1`;
-const InputsWrap = tw.div`w-full flex flex-col gap-1 my-5`;
 const DetailsWrap = tw.div`grid w-full p-2 gap-2`;
 const DetailWrap = tw.div`justify-between flex`;
 const Detail = tw.div`text-sm dark:text-gray-50 text-gray-900`;
@@ -49,42 +46,38 @@ const AddConfirmation = ({ form, action, disabled, loading }: IAddConfirmation) 
 
   return (
     <Container>
-      <Wrap>
-        <InputsOuter>
-          <InputsWrap>
-            <ConfirmItem value={valueAtDigits(baseAmount, pool?.base.digitFormat!)} asset={pool?.base!} pool={pool!} />
-            {useFyToken && (
-              <>
-                <Arrow isPlusIcon={true} />
-                <ConfirmItem
-                  value={valueAtDigits(fyTokenAmount, pool?.fyToken.digitFormat!)}
-                  asset={pool?.fyToken!}
-                  pool={pool!}
-                />
-              </>
-            )}
-          </InputsWrap>
-        </InputsOuter>
-        <InputStyleContainer>
-          <DetailsWrap>
-            <DetailWrap>
-              <Detail>Maturity</Detail>
-              <div className="text-sm dark:text-gray-50">
-                <div className="flex justify-end">{pool?.displayName}</div>
-                <div className="italic text-xs dark:text-gray-300">{timeTillMaturity_} until maturity</div>
-              </div>
-            </DetailWrap>
-            <DetailWrap>
-              <Detail>LP Tokens to Receive</Detail>
-              <Detail>{lpTokenPreview && valueAtDigits(lpTokenPreview, 6)}</Detail>
-            </DetailWrap>
-          </DetailsWrap>
-        </InputStyleContainer>
-        <Italic>Output is estimated.</Italic>
-        <Button action={action} disabled={disabled} loading={loading}>
-          {loading ? 'Add Liquidity Initiated...' : 'Confirm Add Liquidity'}
-        </Button>
-      </Wrap>
+      <InputsWrap>
+        <ConfirmItem value={valueAtDigits(baseAmount, pool?.base.digitFormat!)} asset={pool?.base!} pool={pool!} />
+        {useFyToken && (
+          <>
+            <Arrow isPlusIcon={true} />
+            <ConfirmItem
+              value={valueAtDigits(fyTokenAmount, pool?.fyToken.digitFormat!)}
+              asset={pool?.fyToken!}
+              pool={pool!}
+            />
+          </>
+        )}
+      </InputsWrap>
+      <InputStyleContainer>
+        <DetailsWrap>
+          <DetailWrap>
+            <Detail>Maturity</Detail>
+            <div className="text-sm dark:text-gray-50">
+              <div className="flex justify-end">{pool?.displayName}</div>
+              <div className="italic text-xs dark:text-gray-300">{timeTillMaturity_} until maturity</div>
+            </div>
+          </DetailWrap>
+          <DetailWrap>
+            <Detail>LP Tokens to Receive</Detail>
+            <Detail>{lpTokenPreview && valueAtDigits(lpTokenPreview, 6)}</Detail>
+          </DetailWrap>
+        </DetailsWrap>
+      </InputStyleContainer>
+      <Italic>Output is estimated.</Italic>
+      <Button action={action} disabled={disabled} loading={loading}>
+        {loading ? 'Add Liquidity Initiated...' : 'Confirm Add Liquidity'}
+      </Button>
     </Container>
   );
 };
