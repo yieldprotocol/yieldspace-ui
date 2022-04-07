@@ -8,10 +8,8 @@ import usePools from '../../hooks/protocol/usePools';
 import BackButton from '../common/BackButton';
 import useRemoveLiqPreview from '../../hooks/protocol/useRemoveLiqPreview';
 import { RemoveLiquidityActions } from '../../lib/protocol/liquidity/types';
-import USDCMark from '../common/logos/USDCMark';
 import { cleanValue, hexToRgb } from '../../utils/appUtils';
-import DAIMark from '../common/logos/DAIMark';
-import ETHMark from '../common/logos/ETHMark';
+import { marks } from '../../config/marks';
 
 const Inner = tw.div`m-4 text-center`;
 const ButtonWrap = tw.div`flex justify-between gap-10`;
@@ -25,12 +23,6 @@ const Wrap = tw.div`mx-auto min-h-[492px]
 `;
 const Top = tw.div`h-[120px] rounded-t-lg`;
 const Middle = tw.div`grid gap-3 justify-start px-5 text-left`;
-
-export const marks = {
-  DAI: { component: <DAIMark key="DAI" />, color: '#F5AC37' },
-  ETH: { component: <ETHMark key="ETH" />, color: '#627EEA' },
-  USDC: { component: <USDCMark key="USDC" />, color: '#3E73C4' },
-};
 
 export const Logo = ({ symbol }: { symbol: string }) => {
   const mark = marks[symbol];

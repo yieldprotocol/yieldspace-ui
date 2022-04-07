@@ -10,7 +10,6 @@ import * as contractTypes from '../../contracts/types';
 import { ERC20Permit__factory } from '../../contracts/types/factories/ERC20Permit__factory';
 import { FYToken__factory } from '../../contracts/types/factories/FYToken__factory';
 import { PoolAddedEvent } from '../../contracts/types/Ladle';
-import { ASSET_INFO } from '../../config/assets';
 import { SeriesAddedEvent } from '../../contracts/types/Cauldron';
 
 const { seasonColors } = yieldEnv;
@@ -182,10 +181,11 @@ export const getAsset = async (
   const ERC20 = ERC20Permit__factory.connect(tokenAddress, provider);
   const FYTOKEN = FYToken__factory.connect(tokenAddress, provider);
 
-  const [symbol, decimals, name] = await Promise.all([
+  const [symbol, decimals, name, version] = await Promise.all([
     isFyToken ? FYTOKEN.symbol() : ERC20.symbol(),
     isFyToken ? FYTOKEN.decimals() : ERC20.decimals(),
     isFyToken ? FYTOKEN.name() : ERC20.name(),
+    isFyToken ? FYTOKEN.version() : ERC20.version(),
   ]);
 
   const balance = account ? await getBalance(provider, tokenAddress, account, isFyToken) : ethers.constants.Zero;
@@ -193,12 +193,11 @@ export const getAsset = async (
   const contract = isFyToken ? FYTOKEN : ERC20;
   const getAllowance = async (acc: string, spender: string) =>
     isFyToken ? FYTOKEN.allowance(acc, spender) : ERC20.allowance(acc, spender);
-  const digitFormat = ASSET_INFO.get(symbol)?.digitFormat || 4;
   const symbol_ = symbol === 'WETH' ? 'ETH' : symbol;
 
   return {
     address: tokenAddress,
-    version: symbol === 'USDC' ? '2' : '1',
+    version,
     name,
     symbol: isFyToken ? formatFyTokenSymbol(symbol) : symbol_,
     decimals,
@@ -206,7 +205,7 @@ export const getAsset = async (
     balance_: cleanValue(ethers.utils.formatUnits(balance, decimals), decimals),
     contract,
     getAllowance,
-    digitFormat,
+    digitFormat: 4,
   };
 };
 
