@@ -43,17 +43,19 @@ const AddConfirmation = ({ form, action, disabled, loading }: IAddConfirmation) 
   const timeTillMaturity_ = useTimeTillMaturity(pool?.maturity!);
   const maturityDescription = pool?.isMature ? `Mature` : `${timeTillMaturity_} until maturity`;
 
+  if (!pool) return null;
+
   return (
     <Container>
       <InputsWrap>
-        <ConfirmItem value={valueAtDigits(baseAmount, pool?.base.digitFormat!)} asset={pool?.base!} pool={pool!} />
+        <ConfirmItem value={valueAtDigits(baseAmount, pool.base.digitFormat)} asset={pool.base} pool={pool!} />
         {useFyToken && (
           <>
             <Arrow isPlusIcon={true} />
             <ConfirmItem
-              value={valueAtDigits(fyTokenAmount, pool?.fyToken.digitFormat!)}
-              asset={pool?.fyToken!}
-              pool={pool!}
+              value={valueAtDigits(fyTokenAmount, pool.fyToken.digitFormat)}
+              asset={pool.fyToken}
+              pool={pool}
             />
           </>
         )}
@@ -63,7 +65,7 @@ const AddConfirmation = ({ form, action, disabled, loading }: IAddConfirmation) 
           <DetailWrap>
             <Detail>Maturity</Detail>
             <Detail>
-              <Right>{pool?.displayName}</Right>
+              <Right>{pool.displayName}</Right>
               <Italic>
                 <Right>{maturityDescription}</Right>
               </Italic>

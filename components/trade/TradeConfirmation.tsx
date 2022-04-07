@@ -56,19 +56,21 @@ const TradeConfirmation = ({ form, interestRate, action, disabled, loading }: IT
 
   const maturityDescription = pool?.isMature ? `Mature` : `${timeTillMaturity_} until maturity`;
 
+  if (!pool || !fromAsset || !toAsset) return null;
+
   return (
     <Container>
       <InputsWrap>
-        <ConfirmItem value={fromAmount_} asset={fromAsset!} pool={pool!} />
+        <ConfirmItem value={fromAmount_} asset={fromAsset} pool={pool} />
         <Arrow />
-        <ConfirmItem value={toAmount_} asset={toAsset!} pool={pool!} />
+        <ConfirmItem value={toAmount_} asset={toAsset} pool={pool} />
       </InputsWrap>
       <InputStyleContainer>
         <DetailsWrap>
           <DetailWrap>
             <Detail>Maturity</Detail>
             <Detail>
-              <Flex>{pool?.displayName}</Flex>
+              <Flex>{pool.displayName}</Flex>
               <Italic>
                 <Right>{maturityDescription}</Right>
               </Italic>
@@ -77,7 +79,7 @@ const TradeConfirmation = ({ form, interestRate, action, disabled, loading }: IT
           <DetailWrap>
             <Detail>Expected output</Detail>
             <Detail>
-              {toAmount_} {toAsset?.symbol}
+              {toAmount_} {toAsset.symbol}
             </Detail>
           </DetailWrap>
           <LineBreak />
@@ -96,7 +98,7 @@ const TradeConfirmation = ({ form, interestRate, action, disabled, loading }: IT
       </InputStyleContainer>
       <DisclaimerTextWrap>
         <Italic>
-          Output is estimated. You will receive at least {toAmountLessSlippage_} in {toAsset?.symbol} or the transaction
+          Output is estimated. You will receive at least {toAmountLessSlippage_} in {toAsset.symbol} or the transaction
           will revert.
         </Italic>
       </DisclaimerTextWrap>

@@ -37,6 +37,8 @@ const RemoveConfirmation = ({ form, action, disabled, loading }: IRemoveConfirma
   const { pool, lpTokens, method } = form;
   const { baseReceived, fyTokenReceived } = useRemoveLiqPreview(pool!, lpTokens, method!);
 
+  if (!pool) return null;
+
   return (
     <Container>
       <InputsWrap>
@@ -45,13 +47,13 @@ const RemoveConfirmation = ({ form, action, disabled, loading }: IRemoveConfirma
       <InputStyleContainer>
         <DetailsWrap>
           <DetailWrap>
-            <Detail>Estimated {pool?.base.symbol} Received</Detail>
-            <Detail>{cleanValue(baseReceived, pool?.base.digitFormat)}</Detail>
+            <Detail>Estimated {pool.base.symbol} Received</Detail>
+            <Detail>{cleanValue(baseReceived, pool.base.digitFormat)}</Detail>
           </DetailWrap>
           {fyTokenReceived && (
             <DetailWrap>
-              <Detail>Estimated {pool?.fyToken.symbol} Received</Detail>
-              <Detail>{cleanValue(fyTokenReceived, pool?.fyToken.digitFormat)}</Detail>
+              <Detail>Estimated {pool.fyToken.symbol} Received</Detail>
+              <Detail>{cleanValue(fyTokenReceived, pool.fyToken.digitFormat)}</Detail>
             </DetailWrap>
           )}
         </DetailsWrap>
