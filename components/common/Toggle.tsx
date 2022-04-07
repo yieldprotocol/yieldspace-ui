@@ -5,9 +5,10 @@ interface IToggle {
   enabled: boolean;
   setEnabled: (bool: boolean) => void;
   label: string;
+  disabled?: boolean;
 }
 
-const Toggle: FC<IToggle> = ({ enabled, setEnabled, label }) => (
+const Toggle: FC<IToggle> = ({ enabled, setEnabled, label, disabled }) => (
   <Switch.Group>
     <div className="flex gap-2 items-center">
       <Switch
@@ -16,6 +17,7 @@ const Toggle: FC<IToggle> = ({ enabled, setEnabled, label }) => (
         className={`${
           enabled ? 'bg-primary-600' : 'dark:bg-gray-700 bg-gray-400'
         } relative inline-flex items-center h-6 rounded-full w-11`}
+        disabled={disabled}
       >
         <span
           className={`${

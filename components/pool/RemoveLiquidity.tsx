@@ -16,6 +16,7 @@ import Modal from '../common/Modal';
 import CloseButton from '../common/CloseButton';
 import RemoveConfirmation from './RemoveConfirmation';
 import useInputValidation from '../../hooks/useInputValidation';
+import useRemoveLiqPreview from '../../hooks/protocol/useRemoveLiqPreview';
 
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
@@ -54,6 +55,7 @@ const RemoveLiquidity = () => {
       : ` receive both ${pool?.base.symbol} and ${pool?.fyToken.symbol}`
   }`;
   const { removeLiquidity, isRemovingLiq, removeSubmitted } = useRemoveLiquidity(pool!, lpTokens, method, description);
+  const { canReceiveAllBase } = useRemoveLiqPreview(pool!, lpTokens, method);
 
   const handleMaxLpTokens = () => {
     setForm((f) => ({ ...f, lpTokens: pool?.lpTokenBalance_! }));
@@ -85,9 +87,9 @@ const RemoveLiquidity = () => {
   useEffect(() => {
     setForm((f) => ({
       ...f,
-      method: burnForBase ? RemoveLiquidityActions.BURN_FOR_BASE : RemoveLiquidityActions.BURN,
+      method: burnForBase && canReceiveAllBase ? RemoveLiquidityActions.BURN_FOR_BASE : RemoveLiquidityActions.BURN,
     }));
-  }, [pool, burnForBase]);
+  }, [pool, burnForBase, canReceiveAllBase]);
 
   // update the form's pool whenever the pool changes (i.e. when the user interacts and balances change)
   useEffect(() => {
@@ -132,6 +134,7 @@ const RemoveLiquidity = () => {
 
           {pool && !pool.isMature && (
             <Toggle
+              disabled={!canReceiveAllBase && lpTokens !== ''}
               enabled={burnForBase}
               setEnabled={setBurnForBase}
               label={
