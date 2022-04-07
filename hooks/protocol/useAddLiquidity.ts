@@ -73,7 +73,7 @@ export const useAddLiquidity = (pool: IPool | undefined, input: string, method: 
         ts,
         g1,
         decimals,
-        +slippageTolerance
+        +slippageTolerance / 100
       );
 
       const permits = await sign([
