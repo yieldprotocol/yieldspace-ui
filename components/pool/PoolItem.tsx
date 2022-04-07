@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import tw from 'tailwind-styled-components';
 import { IPool } from '../../lib/protocol/types';
 import Button from '../common/Button';
-import { BorderWrap, Header } from '../styles';
+import { BorderWrap, Header } from '../styles/common';
 import usePools from '../../hooks/protocol/usePools';
 import BackButton from '../common/BackButton';
 import useRemoveLiqPreview from '../../hooks/protocol/useRemoveLiqPreview';

@@ -5,7 +5,7 @@ import { IPool } from '../../lib/protocol/types';
 import { cleanValue } from '../../utils/appUtils';
 import AssetLogo from '../common/AssetLogo';
 import FyTokenLogo from '../common/FyTokenLogo';
-import { Header } from '../styles';
+import { Header } from '../styles/common';
 
 const Container = tw.button`w-full my-1.5 dark:hover:bg-gray-700/50 hover:bg-gray-400/50 dark:bg-gray-800/80 bg-gray-300 rounded-md shadow-md`;
 const Inner = tw.div`align-middle text-left p-3`;

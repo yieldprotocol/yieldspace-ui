@@ -1,4 +1,3 @@
-import tw from 'tailwind-styled-components';
 import AssetSelect from '../common/AssetSelect';
 import { IAsset, IPool } from '../../lib/protocol/types';
 import Button from '../common/Button';

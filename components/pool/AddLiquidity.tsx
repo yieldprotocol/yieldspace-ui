@@ -9,7 +9,7 @@ import usePools from '../../hooks/protocol/usePools';
 import PoolSelect from './PoolSelect';
 import { IPool } from '../../lib/protocol/types';
 import useConnector from '../../hooks/useConnector';
-import { BorderWrap, Header } from '../styles/';
+import { BorderWrap, Header } from '../styles/common';
 import { useAddLiquidity } from '../../hooks/protocol/useAddLiquidity';
 import Modal from '../common/Modal';
 import AddConfirmation from './AddConfirmation';

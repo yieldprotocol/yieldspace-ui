@@ -8,7 +8,7 @@ import usePools from '../../hooks/protocol/usePools';
 import PoolSelect from './PoolSelect';
 import { IPool } from '../../lib/protocol/types';
 import useConnector from '../../hooks/useConnector';
-import { BorderWrap, Header } from '../styles/';
+import { BorderWrap, Header } from '../styles/common';
 import { useRemoveLiquidity } from '../../hooks/protocol/useRemoveLiquidity';
 import { RemoveLiquidityActions } from '../../lib/protocol/liquidity/types';
 import Toggle from '../common/Toggle';
