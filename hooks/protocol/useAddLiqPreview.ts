@@ -66,6 +66,7 @@ const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityA
               decimals
             );
 
+            setCanTradeForFyToken(!fyTokenToBuy.eq(ethers.constants.Zero));
             setLpTokenPreview(ethers.utils.formatUnits(minted, decimals));
           }
         } catch (e) {
