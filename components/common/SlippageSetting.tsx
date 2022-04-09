@@ -40,10 +40,10 @@ const SlippageSetting = () => {
           <div className="grid gap-3">
             <div className="dark:text-gray-400 text-gray-600 text-sm text-left">Slippage Tolerance</div>
             <div className="flex justify-end gap-2">
-              <Button $active={setting === ''} onClick={() => setSetting('')}>
+              <Button $active={setting === DEFAULT_SLIPPAGE} onClick={() => setSetting(DEFAULT_SLIPPAGE)}>
                 Auto
               </Button>
-              <InputWrap $active={setting !== ''}>
+              <InputWrap $active={setting !== DEFAULT_SLIPPAGE}>
                 <Input
                   name="setting"
                   type="number"
