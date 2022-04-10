@@ -19,7 +19,7 @@ const Button = tw.button<ButtonProps>`${(p) =>
 
 const ConnectDropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setModalOpen }) => {
   const { theme, toggleTheme } = useColorTheme();
-  const { account, ensName, chainId, connector } = useWeb3React();
+  const { account, ENSName, chainId, connector } = useWeb3React();
   const { copied, copy } = useCopy(account!);
   const chainData = chainId ? (CHAINS[chainId] as ExtendedChainInformation) : undefined;
   const blockExplorer = chainData?.blockExplorerUrls![0];
@@ -36,7 +36,7 @@ const ConnectDropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setM
         {({ open }) => (
           <>
             <Menu.Button className="inline-flex justify-between gap-2 align-middle w-full dark:bg-gray-500/25 px-4 py-2 dark:text-gray-50 text-gray-800 rounded-md hover:bg-gray-600/25 dark:hover:bg-gray-600/25 bg-gray-300">
-              {ensName || abbreviateHash(account!)}
+              {ENSName || abbreviateHash(account!)}
               <ChevronDownIcon className="my-auto w-5 h-5 dark:text-gray-50 text-gray-800" aria-hidden="true" />
             </Menu.Button>
             <Transition
