@@ -2,7 +2,6 @@ import { ethers, PayableOverrides } from 'ethers';
 import { cleanValue } from '../../utils/appUtils';
 import { calculateSlippage } from '../../utils/yieldMath';
 import { IPool } from '../../lib/protocol/types';
-import useConnector from '../useConnector';
 import useSignature from '../useSignature';
 import { TradeActions } from '../../lib/protocol/trade/types';
 import useTradePreview from './useTradePreview';
@@ -10,6 +9,7 @@ import useLadle from './useLadle';
 import useTransaction from '../useTransaction';
 import { DEFAULT_SLIPPAGE, SLIPPAGE_KEY } from '../../constants';
 import { useLocalStorage } from '../useLocalStorage';
+import { useWeb3React } from '@web3-react/core';
 
 export const useTrade = (
   pool: IPool,
@@ -18,7 +18,7 @@ export const useTrade = (
   method: TradeActions,
   description: string
 ) => {
-  const { account } = useConnector();
+  const { account } = useWeb3React();
   const { sign } = useSignature();
   const { handleTransact, isTransacting, txSubmitted } = useTransaction();
   const {

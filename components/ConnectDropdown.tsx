@@ -4,9 +4,9 @@ import { ChevronDownIcon } from '@heroicons/react/solid';
 import tw from 'tailwind-styled-components';
 import useCopy from '../hooks/useCopy';
 import { abbreviateHash } from '../utils/appUtils';
-import useConnector from '../hooks/useConnector';
 import { CHAINS, ExtendedChainInformation } from '../config/chains';
 import { useColorTheme } from '../hooks/useColorTheme';
+import { useWeb3React } from '@web3-react/core';
 
 type ButtonProps = {
   $active: boolean;
@@ -19,7 +19,7 @@ const Button = tw.button<ButtonProps>`${(p) =>
 
 const ConnectDropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setModalOpen }) => {
   const { theme, toggleTheme } = useColorTheme();
-  const { account, ensName, chainId, connector } = useConnector();
+  const { account, ensName, chainId, connector } = useWeb3React();
   const { copied, copy } = useCopy(account!);
   const chainData = chainId ? (CHAINS[chainId] as ExtendedChainInformation) : undefined;
   const blockExplorer = chainData?.blockExplorerUrls![0];
