@@ -7,18 +7,11 @@ import yieldEnv from '../../config/yieldEnv';
 import * as contractTypes from '../../contracts/types';
 import { SeriesAddedEvent } from '../../contracts/types/Cauldron';
 import { PoolAddedEvent } from '../../contracts/types/Ladle';
-import {
-  IInitialAssetData,
-  IInitialPoolData,
-  IInitialPoolMap,
-  IPool,
-  IPoolMap,
-  IPoolRoot,
-} from '../../lib/protocol/types';
+import { IAsset, IPoolMap, IPoolRoot } from '../../lib/protocol/types';
 import { cleanValue, formatFyTokenSymbol, getSeason, hexToRgb, SeasonType } from '../../utils/appUtils';
 
 const Trade = ({ pools }: InferGetServerSidePropsType<typeof getServerSideProps>) => (
-  <TradeWidget pools={JSON.parse(pools) as IInitialPoolMap} />
+  <TradeWidget pools={JSON.parse(pools) as IPoolMap} />
 );
 
 export default Trade;
@@ -44,7 +37,7 @@ export async function getServerSideProps(context) {
     tokenAddress: string,
     account: string | null = null,
     isFyToken: boolean = false
-  ): Promise<IInitialAssetData> => {
+  ): Promise<IAsset> => {
     const ERC20 = contractTypes.ERC20Permit__factory.connect(tokenAddress, provider);
     const FYTOKEN = contractTypes.FYToken__factory.connect(tokenAddress, provider);
 
@@ -72,7 +65,7 @@ export async function getServerSideProps(context) {
   };
   const formatMaturity = (maturity: number) => format(new Date(maturity * 1000), 'MMMM dd, yyyy');
 
-  const _chargePool = (_pool: IInitialPoolData, _chainId: number) => {
+  const _chargePool = (_pool: IPoolRoot, _chainId: number) => {
     const { seasonColors } = yieldEnv;
     const season = getSeason(_pool.maturity);
     const oppSeason = (_season: SeasonType) => getSeason(_pool.maturity + 23670000);

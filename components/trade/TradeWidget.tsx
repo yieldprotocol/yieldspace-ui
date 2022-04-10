@@ -262,7 +262,7 @@ const TradeWidget = ({ pools: poolsProps }: { pools: IPoolMap }) => {
             pools={pools && Object.values(pools)}
             pool={pool}
             setPool={(p) => setForm((f) => ({ ...f, pool: p }))}
-            poolsLoading={loading}
+            poolsLoading={!pools}
           />
           <InterestRateInput
             rate={interestRatePreview}
