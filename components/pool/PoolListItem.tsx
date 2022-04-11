@@ -38,7 +38,7 @@ const PoolListItem: FC<IPoolListItem> = ({ pool }) => (
           <div className="z-0 relative items-center flex">
             <FyTokenLogo pool={pool} height={20} width={20} />
           </div>
-          <div className="z-20 -ml-5 items-center flex">
+          <div className="z-1 -ml-5 items-center flex">
             <AssetLogo image={pool.base.symbol} styleProps="h-[31px] w-[31px] rounded-full" />
           </div>
           <Inner>
