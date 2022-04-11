@@ -47,7 +47,7 @@ const INITIAL_FORM_STATE: ITradeForm = {
 
 const TradeWidget = ({ pools: poolsProps }: { pools: IPoolMap }) => {
   const { chainId, account } = useWeb3React();
-  const { data: _pools, loading } = usePools();
+  const { data: _pools } = usePools();
   const pools = _pools || poolsProps;
   const { balance: ethBalance } = useETHBalance();
 
@@ -241,10 +241,6 @@ const TradeWidget = ({ pools: poolsProps }: { pools: IPoolMap }) => {
       }
     }
   }, [ethBalance, isEthPool, isFyTokenOutput, pool?.base.balance_]);
-
-  useEffect(() => {
-    console.log('🦄 ~ file: TradeWidget.tsx ~ line 52 ~ TradeWidget ~ pools', pools);
-  }, [pools]);
 
   return (
     <BorderWrap>
