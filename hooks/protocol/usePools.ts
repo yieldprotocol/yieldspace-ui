@@ -17,7 +17,7 @@ const usePools = () => {
   );
 
   return {
-    data: data as IPoolMap,
+    data: data as IPoolMap | undefined,
     loading: !data && !error,
     error,
   };
