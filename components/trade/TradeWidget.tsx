@@ -1,3 +1,4 @@
+import { useWeb3React } from '@web3-react/core';
 import { useEffect, useState } from 'react';
 import tw from 'tailwind-styled-components';
 import Button from '../common/Button';
@@ -18,7 +19,6 @@ import { cleanValue } from '../../utils/appUtils';
 import useInputValidation from '../../hooks/useInputValidation';
 import useETHBalance from '../../hooks/useEthBalance';
 import SlippageSetting from '../common/SlippageSetting';
-import { useWeb3React } from '@web3-react/core';
 
 const Inner = tw.div`m-4 text-center`;
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
