@@ -74,7 +74,7 @@ export const getPools = async (
         poolContract.g2(),
         poolContract.fyToken(),
         poolContract.base(),
-        poolContract.balanceOf(account!),
+        account ? poolContract.balanceOf(account) : ethers.constants.Zero,
         poolContract.getBaseBalance(),
         poolContract.getFYTokenBalance(),
         poolContract.totalSupply(),
