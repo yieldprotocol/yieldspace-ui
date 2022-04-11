@@ -10,7 +10,7 @@ import useContracts from './useContracts';
 const useLadle = () => {
   const contracts = useContracts();
   const { provider } = useWeb3React();
-  const signer = (provider as Web3Provider).getSigner();
+  const signer = (provider as Web3Provider)?.getSigner();
   const ladle = contracts ? (contracts![LADLE]?.connect(signer) as Ladle) : undefined;
   const wrapEthModule = contracts ? (contracts![WRAP_ETH_MODULE]?.connect(signer) as WrapEtherModule) : undefined;
 
