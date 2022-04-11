@@ -13,7 +13,7 @@ import { Web3Provider } from '@ethersproject/providers';
 
 const useSignature = () => {
   const { account, provider, chainId } = useWeb3React();
-  const signer = (provider as Web3Provider).getSigner();
+  const signer = (provider as Web3Provider)?.getSigner();
   const { ladleContract: ladle, forwardDaiPermitAction, forwardPermitAction } = useLadle();
   const { handleTx, handleSign } = useTxProcesses();
   const approvalMethod = useApprovalMethod();
