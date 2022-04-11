@@ -41,8 +41,8 @@ const useTradePreview = (
     if (!tradeAction) return;
 
     if (pool) {
-      const { baseReserves, fyTokenReserves, getTimeTillMaturity, ts, g1, g2, decimals, maturity, base, fyToken } =
-        pool;
+      const { baseReserves, fyTokenReserves, ts, g1, g2, decimals, maturity, base, fyToken } = pool;
+      const getTimeTillMaturity = () => maturity - Math.round(new Date().getTime() / 1000);
       const timeTillMaturity = getTimeTillMaturity().toString();
 
       // sellBase

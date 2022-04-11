@@ -47,8 +47,7 @@ const INITIAL_FORM_STATE: ITradeForm = {
 
 const TradeWidget = ({ pools: poolsProps }: { pools: IPoolMap }) => {
   const { chainId, account } = useWeb3React();
-  const { data: _pools } = usePools();
-  const pools = _pools || poolsProps;
+  const { data: pools } = usePools();
   const { balance: ethBalance } = useETHBalance();
 
   const [form, setForm] = useState<ITradeForm>(INITIAL_FORM_STATE);
@@ -255,10 +254,10 @@ const TradeWidget = ({ pools: poolsProps }: { pools: IPoolMap }) => {
 
         <Grid>
           <PoolSelect
-            pools={pools && Object.values(pools)}
+            pools={(pools && Object.values(pools)) || (poolsProps && Object.values(poolsProps))}
             pool={pool}
             setPool={(p) => setForm((f) => ({ ...f, pool: p }))}
-            poolsLoading={!pools}
+            poolsLoading={!pools || !poolsProps}
           />
           <InterestRateInput
             rate={interestRatePreview}
