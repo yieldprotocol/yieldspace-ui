@@ -90,7 +90,7 @@ export async function getServerSideProps(context) {
     };
   };
 
-  const pools: IPoolMap = await poolAddresses.reduce(async (pools: any, x) => {
+  const _pools: IPoolMap = await poolAddresses.reduce(async (pools: any, x) => {
     const address = x;
     const poolContract = contractTypes.Pool__factory.connect(address, provider);
     const [
@@ -155,5 +155,5 @@ export async function getServerSideProps(context) {
     return { ...(await pools), [address]: _chargePool(newPool, chainId) };
   }, {});
 
-  return { props: { pools: JSON.stringify(pools) } };
+  return { props: { pools: JSON.stringify(_pools) } };
 }
