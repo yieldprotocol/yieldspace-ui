@@ -1,5 +1,3 @@
-import { format } from 'date-fns';
-import { EventFilter, constants, utils } from 'ethers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { InferGetServerSidePropsType } from 'next';
 import TradeWidget from '../../components/trade/TradeWidget';
