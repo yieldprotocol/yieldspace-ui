@@ -9,9 +9,11 @@ import { DAI_PERMIT_ASSETS, NON_PERMIT_ASSETS } from '../config/assets';
 import { LadleActions } from '../lib/tx/operations';
 import useLadle from './protocol/useLadle';
 import { useWeb3React } from '@web3-react/core';
+import { Web3Provider } from '@ethersproject/providers';
 
 const useSignature = () => {
   const { account, provider, chainId } = useWeb3React();
+  const signer = (provider as Web3Provider).getSigner();
   const { ladleContract: ladle, forwardDaiPermitAction, forwardPermitAction } = useLadle();
   const { handleTx, handleSign } = useTxProcesses();
   const approvalMethod = useApprovalMethod();

@@ -1,3 +1,4 @@
+import { Web3Provider } from '@ethersproject/providers';
 import { useWeb3React } from '@web3-react/core';
 import { BigNumberish, ContractTransaction, PayableOverrides } from 'ethers';
 import { LADLE, WRAP_ETH_MODULE } from '../../constants';
@@ -9,8 +10,9 @@ import useContracts from './useContracts';
 const useLadle = () => {
   const contracts = useContracts();
   const { provider } = useWeb3React();
-  const ladle = contracts ? (contracts![LADLE]?.connect(provider!) as Ladle) : undefined;
-  const wrapEthModule = contracts ? (contracts![WRAP_ETH_MODULE]?.connect(provider!) as WrapEtherModule) : undefined;
+  const signer = (provider as Web3Provider).getSigner();
+  const ladle = contracts ? (contracts![LADLE]?.connect(signer) as Ladle) : undefined;
+  const wrapEthModule = contracts ? (contracts![WRAP_ETH_MODULE]?.connect(signer) as WrapEtherModule) : undefined;
 
   /**
    * Formatted representation of the batch function that allows for easier filtering/ignoring of actions
