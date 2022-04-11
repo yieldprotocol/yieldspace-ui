@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
-import { ethers } from 'ethers';
+import { EventFilter, constants, utils } from 'ethers';
+import { JsonRpcProvider } from '@ethersproject/providers';
 import { InferGetServerSidePropsType } from 'next';
 import TradeWidget from '../../components/trade/TradeWidget';
 import { URLS } from '../../config/chains';
@@ -18,15 +19,15 @@ export default Trade;
 
 export async function getServerSideProps(context) {
   const chainId = context.query.chainId || 4;
-  const provider = new ethers.providers.JsonRpcProvider(URLS[chainId][0]);
+  const provider = new JsonRpcProvider(URLS[chainId][0], chainId);
   const { addresses } = yieldEnv;
   const chainAddrs = addresses[chainId];
   const Cauldron = contractTypes.Cauldron__factory.connect(chainAddrs.Cauldron, provider);
   const Ladle = contractTypes.Ladle__factory.connect(chainAddrs.Ladle, provider);
 
-  const poolAddedEvents = await Ladle.queryFilter('PoolAdded' as ethers.EventFilter);
+  const poolAddedEvents = await Ladle.queryFilter('PoolAdded' as EventFilter);
   const poolAddresses: string[] = poolAddedEvents.map((e: PoolAddedEvent) => e.args.pool);
-  const seriesAddedEvents = await Cauldron.queryFilter('SeriesAdded' as ethers.EventFilter);
+  const seriesAddedEvents = await Cauldron.queryFilter('SeriesAdded' as EventFilter);
   const fyTokenToSeries: Map<string, string> = seriesAddedEvents.reduce(
     (acc: Map<string, string>, e: SeriesAddedEvent) =>
       acc.has(e.args.fyToken) ? acc : acc.set(e.args.fyToken, e.args.seriesId),
@@ -55,8 +56,8 @@ export async function getServerSideProps(context) {
       name,
       symbol: isFyToken ? formatFyTokenSymbol(symbol) : symbol_,
       decimals,
-      balance: ethers.constants.Zero,
-      balance_: cleanValue(ethers.utils.formatUnits(ethers.constants.Zero, decimals), decimals),
+      balance: constants.Zero,
+      balance_: cleanValue(utils.formatUnits(constants.Zero, decimals), decimals),
       digitFormat: 4,
       contract: isFyToken ? FYTOKEN : ERC20,
       getAllowance: async (acc: string, spender: string) =>
@@ -117,7 +118,7 @@ export async function getServerSideProps(context) {
       poolContract.g2(),
       poolContract.fyToken(),
       poolContract.base(),
-      ethers.constants.Zero,
+      constants.Zero,
       poolContract.getBaseBalance(),
       poolContract.getFYTokenBalance(),
       poolContract.totalSupply(),
@@ -141,11 +142,11 @@ export async function getServerSideProps(context) {
       isMature: maturity < (await provider.getBlock('latest')).timestamp,
       getTimeTillMaturity,
       lpTokenBalance,
-      lpTokenBalance_: ethers.utils.formatUnits(lpTokenBalance, decimals),
+      lpTokenBalance_: utils.formatUnits(lpTokenBalance, decimals),
       baseReserves,
-      baseReserves_: ethers.utils.formatUnits(baseReserves, decimals),
+      baseReserves_: utils.formatUnits(baseReserves, decimals),
       fyTokenReserves,
-      fyTokenReserves_: ethers.utils.formatUnits(fyTokenReserves, decimals),
+      fyTokenReserves_: utils.formatUnits(fyTokenReserves, decimals),
       totalSupply,
       seriesId,
       base,
