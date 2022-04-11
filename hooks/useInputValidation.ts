@@ -1,10 +1,10 @@
+import { useWeb3React } from '@web3-react/core';
 import { useEffect, useState } from 'react';
 import { AddLiquidityActions, RemoveLiquidityActions } from '../lib/protocol/liquidity/types';
 import { TradeActions } from '../lib/protocol/trade/types';
 import { IPool } from '../lib/protocol/types';
 import useAddLiqPreview from './protocol/useAddLiqPreview';
 import useTradePreview from './protocol/useTradePreview';
-import useConnector from './useConnector';
 import useETHBalance from './useEthBalance';
 
 const useInputValidation = (
@@ -15,7 +15,7 @@ const useInputValidation = (
   secondaryInput: string = '', // this is the "to" amount when trading
   isEth = false // if the asset is eth
 ) => {
-  const { account } = useConnector();
+  const { account } = useWeb3React();
   const { balance: ethBalance } = useETHBalance();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 

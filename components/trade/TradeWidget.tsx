@@ -4,8 +4,7 @@ import Button from '../common/Button';
 import InputWrap from '../pool/InputWrap';
 import usePools from '../../hooks/protocol/usePools';
 import PoolSelect from '../pool/PoolSelect';
-import { IAsset, IPool } from '../../lib/protocol/types';
-import useConnector from '../../hooks/useConnector';
+import { IAsset, IPool, IPoolMap } from '../../lib/protocol/types';
 import useTradePreview from '../../hooks/protocol/useTradePreview';
 import InterestRateInput from './InterestRateInput';
 import { TradeActions } from '../../lib/protocol/trade/types';
@@ -19,6 +18,7 @@ import { cleanValue } from '../../utils/appUtils';
 import useInputValidation from '../../hooks/useInputValidation';
 import useETHBalance from '../../hooks/useEthBalance';
 import SlippageSetting from '../common/SlippageSetting';
+import { useWeb3React } from '@web3-react/core';
 
 const Inner = tw.div`m-4 text-center`;
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
@@ -45,9 +45,10 @@ const INITIAL_FORM_STATE: ITradeForm = {
   tradeAction: TradeActions.SELL_BASE,
 };
 
-const TradeWidget = () => {
-  const { chainId, account } = useConnector();
-  const { data: pools, loading } = usePools();
+const TradeWidget = ({ pools: poolsProps }: { pools: IPoolMap }) => {
+  const { chainId, account } = useWeb3React();
+  const { data: _pools } = usePools();
+  const pools = _pools || poolsProps;
   const { balance: ethBalance } = useETHBalance();
 
   const [form, setForm] = useState<ITradeForm>(INITIAL_FORM_STATE);
@@ -257,7 +258,7 @@ const TradeWidget = () => {
             pools={pools && Object.values(pools)}
             pool={pool}
             setPool={(p) => setForm((f) => ({ ...f, pool: p }))}
-            poolsLoading={loading}
+            poolsLoading={!pools}
           />
           <InterestRateInput
             rate={interestRatePreview}

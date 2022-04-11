@@ -1,11 +1,11 @@
+import { useWeb3React } from '@web3-react/core';
 import useSWR from 'swr';
 import { getPools } from '../../lib/protocol';
 import { IPoolMap } from '../../lib/protocol/types';
-import useConnector from '../useConnector';
 import useContracts from './useContracts';
 
 const usePools = () => {
-  const { chainId, account, provider } = useConnector();
+  const { chainId, account, provider } = useWeb3React();
   const contractMap = useContracts();
 
   const { data, error } = useSWR(

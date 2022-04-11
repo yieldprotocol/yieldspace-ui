@@ -7,7 +7,6 @@ import InputWrap from './InputWrap';
 import usePools from '../../hooks/protocol/usePools';
 import PoolSelect from './PoolSelect';
 import { IPool } from '../../lib/protocol/types';
-import useConnector from '../../hooks/useConnector';
 import { BorderWrap, Header } from '../styles/common';
 import { useRemoveLiquidity } from '../../hooks/protocol/useRemoveLiquidity';
 import { RemoveLiquidityActions } from '../../lib/protocol/liquidity/types';
@@ -17,6 +16,7 @@ import CloseButton from '../common/CloseButton';
 import RemoveConfirmation from './RemoveConfirmation';
 import useInputValidation from '../../hooks/useInputValidation';
 import useRemoveLiqPreview from '../../hooks/protocol/useRemoveLiqPreview';
+import { useWeb3React } from '@web3-react/core';
 
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
@@ -39,7 +39,7 @@ const INITIAL_FORM_STATE: IRemoveLiquidityForm = {
 const RemoveLiquidity = () => {
   const router = useRouter();
   const { address } = router.query;
-  const { chainId, account } = useConnector();
+  const { chainId, account } = useWeb3React();
   const { data: pools } = usePools();
 
   const [form, setForm] = useState<IRemoveLiquidityForm>(INITIAL_FORM_STATE);

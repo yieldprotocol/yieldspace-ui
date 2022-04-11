@@ -2,7 +2,6 @@ import { ethers, PayableOverrides } from 'ethers';
 import { cleanValue } from '../../utils/appUtils';
 import { calcPoolRatios, fyTokenForMint } from '../../utils/yieldMath';
 import { IPool } from '../../lib/protocol/types';
-import useConnector from '../useConnector';
 import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
 import useSignature from '../useSignature';
 import useLadle from './useLadle';
@@ -10,9 +9,10 @@ import useTransaction from '../useTransaction';
 import useAddLiqPreview from './useAddLiqPreview';
 import { useLocalStorage } from '../useLocalStorage';
 import { DEFAULT_SLIPPAGE, SLIPPAGE_KEY } from '../../constants';
+import { useWeb3React } from '@web3-react/core';
 
 export const useAddLiquidity = (pool: IPool | undefined, input: string, method: AddLiquidityActions) => {
-  const { account } = useConnector();
+  const { account } = useWeb3React();
   const { sign } = useSignature();
   const { handleTransact, isTransacting, txSubmitted } = useTransaction();
   const { ladleContract, batch, transferAction, mintWithBaseAction, mintAction, wrapETHAction, exitETHAction } =

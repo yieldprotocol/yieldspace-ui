@@ -3,13 +3,13 @@ import { RemoveLiquidityActions } from '../../lib/protocol/liquidity/types';
 import { IPool } from '../../lib/protocol/types';
 import { cleanValue } from '../../utils/appUtils';
 import { calcPoolRatios } from '../../utils/yieldMath';
-import useConnector from '../useConnector';
 import useSignature from '../useSignature';
 import useLadle from './useLadle';
 import useTransaction from '../useTransaction';
+import { useWeb3React } from '@web3-react/core';
 
 export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiquidityActions, description: string) => {
-  const { account } = useConnector();
+  const { account } = useWeb3React();
   const { sign } = useSignature();
   const { handleTransact, isTransacting, txSubmitted } = useTransaction();
   const { ladleContract, batch, transferAction, burnForBaseAction, burnAction, exitETHAction, redeemFYToken } =

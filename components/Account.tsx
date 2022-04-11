@@ -2,14 +2,14 @@ import { useState } from 'react';
 import tw from 'tailwind-styled-components';
 import ConnectModal from './ConnectModal';
 import Dropdown from './ConnectDropdown';
-import useConnector from '../hooks/useConnector';
 import Chain from './Chain';
 import ETHBalance from './common/ETHBalance';
+import { useWeb3React } from '@web3-react/core';
 
 const ConnectButton = tw.button`bg-primary-500/25 align-middle px-4 py-2 text-primary-500 rounded-md hover:bg-primary-600/25`;
 
 const Account = () => {
-  const { account } = useConnector();
+  const { account } = useWeb3React();
   const [connectModalOpen, setConnectModalOpen] = useState<boolean>(false);
   return (
     <div className="flex justify-end">

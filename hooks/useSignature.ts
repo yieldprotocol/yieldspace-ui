@@ -1,7 +1,6 @@
 import { ethers } from 'ethers';
 import { signDaiPermit, signERC2612Permit } from 'eth-permit';
 import { useApprovalMethod } from './useApprovalMethod';
-import useConnector from './useConnector';
 import useTxProcesses from './useTxProcesses';
 import { ApprovalType, ILadleAction, ISignData } from '../lib/tx/types';
 import { MAX_256 } from '../constants';
@@ -9,9 +8,12 @@ import { ERC20Permit__factory } from '../contracts/types';
 import { DAI_PERMIT_ASSETS, NON_PERMIT_ASSETS } from '../config/assets';
 import { LadleActions } from '../lib/tx/operations';
 import useLadle from './protocol/useLadle';
+import { useWeb3React } from '@web3-react/core';
+import { Web3Provider } from '@ethersproject/providers';
 
 const useSignature = () => {
-  const { account, provider, chainId, signer } = useConnector();
+  const { account, provider, chainId } = useWeb3React();
+  const signer = (provider as Web3Provider).getSigner();
   const { ladleContract: ladle, forwardDaiPermitAction, forwardPermitAction } = useLadle();
   const { handleTx, handleSign } = useTxProcesses();
   const approvalMethod = useApprovalMethod();

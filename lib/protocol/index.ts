@@ -95,8 +95,6 @@ export const getPools = async (
         ts,
         g1,
         g2,
-        base,
-        fyToken,
         isMature: maturity < (await provider.getBlock('latest')).timestamp,
         lpTokenBalance,
         lpTokenBalance_: ethers.utils.formatUnits(lpTokenBalance, decimals),
@@ -108,6 +106,8 @@ export const getPools = async (
         contract: poolContract,
         totalSupply,
         seriesId,
+        base,
+        fyToken,
       } as IPoolRoot;
       return { ...(await pools), [address]: _chargePool(newPool, chainId) };
     }, {});

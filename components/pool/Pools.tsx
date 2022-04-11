@@ -2,14 +2,14 @@ import { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import tw from 'tailwind-styled-components';
 import usePools from '../../hooks/protocol/usePools';
-import useConnector from '../../hooks/useConnector';
 import { IPool } from '../../lib/protocol/types';
 import PoolListItem from './PoolListItem';
+import { useWeb3React } from '@web3-react/core';
 
 const Container = tw.div`p-2 max-w-lg`;
 
 const Pools = () => {
-  const { account } = useConnector();
+  const { account } = useWeb3React();
   const { data: pools, loading } = usePools();
   const [poolsList, setPoolsList] = useState<IPool[]>([]);
 

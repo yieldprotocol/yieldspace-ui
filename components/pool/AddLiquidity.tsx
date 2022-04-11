@@ -8,7 +8,6 @@ import Toggle from '../common/Toggle';
 import usePools from '../../hooks/protocol/usePools';
 import PoolSelect from './PoolSelect';
 import { IPool } from '../../lib/protocol/types';
-import useConnector from '../../hooks/useConnector';
 import { BorderWrap, Header } from '../styles/common';
 import { useAddLiquidity } from '../../hooks/protocol/useAddLiquidity';
 import Modal from '../common/Modal';
@@ -19,6 +18,7 @@ import Arrow from '../trade/Arrow';
 import useInputValidation from '../../hooks/useInputValidation';
 import useAddLiqPreview from '../../hooks/protocol/useAddLiqPreview';
 import useETHBalance from '../../hooks/useEthBalance';
+import { useWeb3React } from '@web3-react/core';
 
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
@@ -45,7 +45,7 @@ const INITIAL_FORM_STATE: IAddLiquidityForm = {
 const AddLiquidity = () => {
   const router = useRouter();
   const { address } = router.query;
-  const { chainId, account } = useConnector();
+  const { chainId, account } = useWeb3React();
   const { data: pools } = usePools();
   const { balance: ethBalance } = useETHBalance();
 

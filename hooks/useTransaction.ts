@@ -1,13 +1,13 @@
+import { useWeb3React } from '@web3-react/core';
 import { ContractTransaction } from 'ethers';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { useSWRConfig } from 'swr';
 import { CHAINS, ExtendedChainInformation } from '../config/chains';
-import useConnector from './useConnector';
 import useToasty from './useToasty';
 
 const useTransaction = () => {
-  const { account, chainId } = useConnector();
+  const { account, chainId } = useWeb3React();
   const { mutate } = useSWRConfig();
   const { toasty } = useToasty();
 
