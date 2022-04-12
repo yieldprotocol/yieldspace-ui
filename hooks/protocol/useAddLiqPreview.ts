@@ -8,7 +8,7 @@ import { useDebounce } from '../generalHooks';
 import { useLocalStorage } from '../useLocalStorage';
 
 const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityActions | undefined) => {
-  const baseAmountDebounced = useDebounce(baseAmount, 1000);
+  const baseAmountDebounced = useDebounce(baseAmount, 1000) as string;
   const [lpTokenPreview, setLpTokenPreview] = useState<string>('');
   const [fyTokenNeeded, setFyTokenNeeded] = useState<BigNumber>(ethers.constants.Zero);
   const [fyTokenNeeded_, setFyTokenNeeded_] = useState<string>('');
@@ -18,15 +18,16 @@ const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityA
 
   useEffect(() => {
     (async () => {
-      if (pool && baseAmountDebounced !== '' && method) {
+      if (pool && baseAmount !== '' && method) {
         const { totalSupply, decimals, contract, getTimeTillMaturity, ts, g1 } = pool;
         const timeTillMaturity = getTimeTillMaturity().toString();
 
-        const _baseAmount = ethers.utils.parseUnits(baseAmountDebounced || '0', decimals);
         const [cachedBaseReserves, cachedFyTokenReserves] = await contract.getCache();
         const cachedRealReserves = cachedFyTokenReserves.sub(totalSupply);
 
         // if minting with both base and fyToken, calculate how much fyToken is needed
+        // use baseAmount (not debounced value)
+        const _baseAmount = ethers.utils.parseUnits(baseAmount || '0', decimals);
         try {
           if (method === AddLiquidityActions.MINT) {
             const [, _fyTokenNeeded] = splitLiquidity(cachedBaseReserves, cachedRealReserves, _baseAmount);
@@ -43,11 +44,15 @@ const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityA
             setLpTokenPreview(ethers.utils.formatUnits(minted, decimals));
           } else {
             // minting with base
+            // use debounced value becuase of somewhat intensive calc in fyTokenForMint
+            setCanTradeForFyToken(false);
+            const _baseAmountDebounced = ethers.utils.parseUnits(baseAmountDebounced || '0', decimals);
+
             const [fyTokenToBuy] = fyTokenForMint(
               cachedBaseReserves,
               cachedRealReserves,
               cachedFyTokenReserves,
-              _baseAmount,
+              _baseAmountDebounced,
               timeTillMaturity,
               ts,
               g1,
@@ -75,7 +80,7 @@ const useAddLiqPreview = (pool: IPool, baseAmount: string, method: AddLiquidityA
         }
       }
     })();
-  }, [baseAmountDebounced, method, pool, slippageTolerance_]);
+  }, [baseAmount, baseAmountDebounced, method, pool, slippageTolerance_]);
 
   return { lpTokenPreview, fyTokenNeeded, fyTokenNeeded_, canTradeForFyToken };
 };
