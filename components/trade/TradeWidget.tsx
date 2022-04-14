@@ -263,6 +263,7 @@ const TradeWidget = ({ pools: poolsProps }: { pools: IPoolMap }) => {
             rate={interestRatePreview}
             setRate={(rate: string) => setForm((f) => ({ ...f, interestRate: rate }))}
             disabled={true}
+            negative={!isFyTokenOutput && +interestRatePreview !== 0}
           />
         </Grid>
 
