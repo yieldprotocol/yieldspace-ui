@@ -1,5 +1,8 @@
 import Link from 'next/link';
 import tw from 'tailwind-styled-components';
+import { THEME_KEY } from '../constants';
+import { useColorTheme } from '../hooks/useColorTheme';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 import Account from './Account';
 import YieldMark from './common/YieldMark';
 import NavTabs from './NavTabs';
@@ -24,10 +27,8 @@ const Navigation = () => (
     <Grid>
       <MarkWrap>
         <Link href="/trade" passHref>
-          <div className="hover:cursor-pointer p-2.5 rounded-full bg-gray-700/20">
-            <YieldMark
-              colors={['#f79533', '#f37055', '#ef4e7b', '#a166ab', '#5073b8', '#1098ad', '#07b39b', '#6fba82']}
-            />
+          <div className="hover:cursor-pointer p-2.5 rounded-full dark:bg-gray-50/20 bg-gray-50/50">
+            <YieldMark />
           </div>
         </Link>
       </MarkWrap>
@@ -36,5 +37,4 @@ const Navigation = () => (
     </Grid>
   </Container>
 );
-
 export default Navigation;
