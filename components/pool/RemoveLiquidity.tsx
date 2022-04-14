@@ -17,6 +17,7 @@ import RemoveConfirmation from './RemoveConfirmation';
 import useInputValidation from '../../hooks/useInputValidation';
 import useRemoveLiqPreview from '../../hooks/protocol/useRemoveLiqPreview';
 import { useWeb3React } from '@web3-react/core';
+import { valueAtDigits } from '../../utils/appUtils';
 
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
@@ -49,7 +50,7 @@ const RemoveLiquidity = () => {
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
 
   const { errorMsg } = useInputValidation(lpTokens, pool, [0, lpTokens], method);
-  const description = `Remove ${lpTokens} LP tokens${
+  const description = `Remove ${valueAtDigits(lpTokens, 4)} LP tokens${
     method! === RemoveLiquidityActions.BURN_FOR_BASE
       ? ` and receive all ${pool?.base.symbol}`
       : ` receive both ${pool?.base.symbol} and ${pool?.fyToken.symbol}`
@@ -134,11 +135,11 @@ const RemoveLiquidity = () => {
 
           {pool && !pool.isMature && (
             <Toggle
-              disabled={!canReceiveAllBase && lpTokens !== ''}
+              disabled={!canReceiveAllBase}
               enabled={burnForBase}
               setEnabled={setBurnForBase}
               label={
-                burnForBase
+                burnForBase && canReceiveAllBase
                   ? `Receive all ${pool?.base?.symbol}`
                   : `Receive both ${pool?.base?.symbol} and fy${pool?.base?.symbol}`
               }

@@ -48,7 +48,7 @@ const PoolItem: FC = () => {
   const { address } = router.query;
 
   const [pool, setPool] = useState<IPool | undefined>();
-  const { baseReceived: basePreview } = useRemoveLiqPreview(
+  const { baseReceived: basePreview, fyTokenReceived: fyTokenPreview } = useRemoveLiqPreview(
     pool!,
     pool?.lpTokenBalance_!,
     RemoveLiquidityActions.BURN_FOR_BASE
@@ -86,6 +86,11 @@ const PoolItem: FC = () => {
                 <PoolData>
                   {cleanValue(basePreview, pool.base.digitFormat)} {pool.base.symbol}
                 </PoolData>
+                {fyTokenPreview && (
+                  <PoolData>
+                    {cleanValue(fyTokenPreview, pool.fyToken.digitFormat)} {pool.fyToken.symbol}
+                  </PoolData>
+                )}
               </PoolDataWrap>
             </div>
           </Middle>

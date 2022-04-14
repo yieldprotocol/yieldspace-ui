@@ -1,32 +1,33 @@
+import { useWeb3React } from '@web3-react/core';
 import { ethers, PayableOverrides } from 'ethers';
-import { cleanValue } from '../../utils/appUtils';
+import { cleanValue, valueAtDigits } from '../../utils/appUtils';
 import { calcPoolRatios, fyTokenForMint } from '../../utils/yieldMath';
 import { IPool } from '../../lib/protocol/types';
 import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
 import useSignature from '../useSignature';
 import useLadle from './useLadle';
 import useTransaction from '../useTransaction';
-import useAddLiqPreview from './useAddLiqPreview';
 import { useLocalStorage } from '../useLocalStorage';
 import { DEFAULT_SLIPPAGE, SLIPPAGE_KEY } from '../../constants';
-import { useWeb3React } from '@web3-react/core';
 
-export const useAddLiquidity = (pool: IPool | undefined, input: string, method: AddLiquidityActions) => {
+export const useAddLiquidity = (
+  pool: IPool | undefined,
+  baseInput: string,
+  fyTokenInput: string,
+  method: AddLiquidityActions
+) => {
   const { account } = useWeb3React();
   const { sign } = useSignature();
   const { handleTransact, isTransacting, txSubmitted } = useTransaction();
   const { ladleContract, batch, transferAction, mintWithBaseAction, mintAction, wrapETHAction, exitETHAction } =
     useLadle();
-  const { fyTokenNeeded, fyTokenNeeded_ } = useAddLiqPreview(pool!, input, method);
 
   // settings
   const [slippageTolerance] = useLocalStorage(SLIPPAGE_KEY, DEFAULT_SLIPPAGE);
 
   // description to use in toast
-  const description = `Add ${input} ${pool?.base.symbol}${
-    fyTokenNeeded.gt(ethers.constants.Zero) && method === AddLiquidityActions.MINT
-      ? ` and ${fyTokenNeeded_} ${pool?.fyToken.symbol}`
-      : ''
+  const description = `Add ${valueAtDigits(baseInput, 4)} ${pool?.base.symbol}${
+    method === AddLiquidityActions.MINT ? ` and ${valueAtDigits(fyTokenInput, 4)} ${pool?.fyToken.symbol}` : ''
   } as liquidity`;
 
   const addLiquidity = async () => {
@@ -50,25 +51,27 @@ export const useAddLiquidity = (pool: IPool | undefined, input: string, method: 
     const [minRatio, maxRatio] = calcPoolRatios(cachedBaseReserves, cachedRealReserves);
 
     // input data
-    const cleanInput = cleanValue(input, base.decimals);
-    const _input = ethers.utils.parseUnits(cleanInput, base.decimals);
+    const cleanBaseInput = cleanValue(baseInput, base.decimals);
+    const _baseInput = ethers.utils.parseUnits(cleanBaseInput, base.decimals);
+    const cleanFyTokenInput = cleanValue(fyTokenInput, fyToken.decimals);
+    const _fyTokenInput = ethers.utils.parseUnits(cleanFyTokenInput, base.decimals);
 
     // check if signature is still required
-    const alreadyApprovedBase = (await base.getAllowance(account!, ladleContract?.address!)).gte(_input);
-    const alreadyApprovedFyToken = (await fyToken.getAllowance(account!, ladleContract?.address!)).gte(fyTokenNeeded);
+    const alreadyApprovedBase = (await base.getAllowance(account!, ladleContract?.address!)).gte(_baseInput);
+    const alreadyApprovedFyToken = (await fyToken.getAllowance(account!, ladleContract?.address!)).gte(_fyTokenInput);
 
     const overrides = {
       gasLimit: 250000,
     };
     const isEth = base.symbol === 'ETH';
-    const withEthOverrides = { ...overrides, value: isEth ? _input : undefined } as PayableOverrides;
+    const withEthOverrides = { ...overrides, value: isEth ? _baseInput : undefined } as PayableOverrides;
 
     const _mintWithBase = async () => {
       const [_fyTokenToBeMinted] = fyTokenForMint(
         cachedBaseReserves,
         cachedRealReserves,
         cachedFyTokenReserves,
-        _input,
+        _baseInput,
         timeTillMaturity,
         ts,
         g1,
@@ -80,7 +83,7 @@ export const useAddLiquidity = (pool: IPool | undefined, input: string, method: 
         {
           target: base,
           spender: ladleContract?.address!,
-          amount: _input,
+          amount: _baseInput,
           ignoreIf: alreadyApprovedBase,
         },
       ]);
@@ -88,8 +91,8 @@ export const useAddLiquidity = (pool: IPool | undefined, input: string, method: 
       return batch(
         [
           ...permits,
-          { action: wrapETHAction(poolContract, _input)!, ignoreIf: !isEth },
-          { action: transferAction(base.address, poolAddress, _input)!, ignoreIf: isEth },
+          { action: wrapETHAction(poolContract, _baseInput)!, ignoreIf: !isEth },
+          { action: transferAction(base.address, poolAddress, _baseInput)!, ignoreIf: isEth },
           {
             action: mintWithBaseAction(
               poolContract,
@@ -111,13 +114,13 @@ export const useAddLiquidity = (pool: IPool | undefined, input: string, method: 
         {
           target: base,
           spender: ladleContract?.address!,
-          amount: _input,
+          amount: _baseInput,
           ignoreIf: alreadyApprovedBase,
         },
         {
           target: fyToken,
           spender: ladleContract?.address!,
-          amount: fyTokenNeeded,
+          amount: _fyTokenInput,
           ignoreIf: alreadyApprovedFyToken,
         },
       ]);
@@ -125,9 +128,9 @@ export const useAddLiquidity = (pool: IPool | undefined, input: string, method: 
       return batch(
         [
           ...permits,
-          { action: wrapETHAction(poolContract, _input)!, ignoreIf: !isEth },
-          { action: transferAction(base.address, poolAddress, _input)!, ignoreIf: isEth },
-          { action: transferAction(fyToken.address, poolAddress, fyTokenNeeded)! },
+          { action: wrapETHAction(poolContract, _baseInput)!, ignoreIf: !isEth },
+          { action: transferAction(base.address, poolAddress, _baseInput)!, ignoreIf: isEth },
+          { action: transferAction(fyToken.address, poolAddress, _fyTokenInput)! },
           {
             action: mintAction(
               poolContract,

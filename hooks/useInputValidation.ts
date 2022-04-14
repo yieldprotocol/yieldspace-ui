@@ -90,7 +90,7 @@ const useInputValidation = (
         break;
       case AddLiquidityActions.MINT_WITH_BASE:
         baseBalance < _input && setErrorMsg(`Insufficient ${base.symbol} balance`);
-        !canTradeForFyToken && setErrorMsg(`Insufficient fy${base.symbol} reserves`);
+        !canTradeForFyToken && setErrorMsg(`Can't trade for ${base.symbol}. Use ${fyToken.symbol}.`);
         isMature && setErrorMsg(`Pool matured: can only remove liquidity`);
         break;
       case AddLiquidityActions.MINT:

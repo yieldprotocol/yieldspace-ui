@@ -44,9 +44,10 @@ const useRemoveLiqPreview = (pool: IPool | undefined, lpTokens: string, method: 
         decimals
       );
 
-      setCanReceiveAllBase(fyTokenTrade.gt(ethers.constants.Zero)); // check if the user can receive all base, otherwise, default to burn
+      const _canReceiveAllBase = fyTokenTrade.gt(ethers.constants.Zero);
+      setCanReceiveAllBase(_canReceiveAllBase); // check if the user can receive all base, otherwise, default to burn
 
-      if (method === RemoveLiquidityActions.BURN_FOR_BASE) {
+      if (method === RemoveLiquidityActions.BURN_FOR_BASE && _canReceiveAllBase) {
         const baseTokenReceived = burnForBase(
           cachedBaseReserves,
           cachedFyTokenReserves,
@@ -67,7 +68,7 @@ const useRemoveLiqPreview = (pool: IPool | undefined, lpTokens: string, method: 
     };
 
     getPrevewData();
-  }, [lpTokens, method, pool]);
+  }, [canReceiveAllBase, lpTokens, method, pool]);
 
   return { baseReceived, fyTokenReceived, canReceiveAllBase };
 };

@@ -1,3 +1,4 @@
+import { useWeb3React } from '@web3-react/core';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import tw from 'tailwind-styled-components';
@@ -18,7 +19,6 @@ import Arrow from '../trade/Arrow';
 import useInputValidation from '../../hooks/useInputValidation';
 import useAddLiqPreview from '../../hooks/protocol/useAddLiqPreview';
 import useETHBalance from '../../hooks/useEthBalance';
-import { useWeb3React } from '@web3-react/core';
 
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
@@ -53,19 +53,35 @@ const AddLiquidity = () => {
   const { pool, baseAmount, fyTokenAmount, method, useFyToken } = form;
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
   const [useFyTokenToggle, setUseFyTokenToggle] = useState<boolean>(false);
+  const [updatingBaseAmount, setUpdatingBaseAmount] = useState<boolean>(true);
+  const [updatingFyTokenAmount, setUpdatingFyTokenAmount] = useState<boolean>(false);
   const [useWETH] = useState<boolean>(false);
 
-  const { fyTokenNeeded_ } = useAddLiqPreview(pool!, baseAmount, method);
+  const { fyTokenNeeded_, baseNeeded_ } = useAddLiqPreview(
+    pool!,
+    baseAmount,
+    method,
+    fyTokenAmount,
+    updatingFyTokenAmount
+  );
   const isEthPool = pool?.base.symbol === 'ETH';
   const baseIsEth = isEthPool && !useWETH;
   const { errorMsg } = useInputValidation(baseAmount, pool, [], method!, fyTokenAmount, baseIsEth);
 
-  const { addLiquidity, isAddingLiquidity, addSubmitted } = useAddLiquidity(pool, baseAmount, method);
+  const { addLiquidity, isAddingLiquidity, addSubmitted } = useAddLiquidity(pool, baseAmount, fyTokenAmount, method);
 
   const baseBalanceToUse = isEthPool ? (useWETH ? pool?.base.balance_ : ethBalance) : pool?.base.balance_;
 
   const handleMaxBase = () => {
+    setUpdatingBaseAmount(true);
+    setUpdatingFyTokenAmount(false);
     setForm((f) => ({ ...f, baseAmount: baseBalanceToUse! }));
+  };
+
+  const handleMaxFyToken = () => {
+    setUpdatingBaseAmount(false);
+    setUpdatingFyTokenAmount(true);
+    setForm((f) => ({ ...f, fyTokenAmount: pool?.fyToken.balance_! }));
   };
 
   const handleClearAll = () => {
@@ -77,7 +93,17 @@ const AddLiquidity = () => {
   };
 
   const handleInputChange = (name: string, value: string) => {
-    setForm((f) => ({ ...f, [name]: value, fyTokenAmount: value }));
+    setForm((f) => ({ ...f, [name]: value }));
+    if (name === 'baseAmount') {
+      setUpdatingBaseAmount(true);
+      setUpdatingFyTokenAmount(false);
+    } else if (name === 'fyTokenAmount') {
+      setUpdatingBaseAmount(false);
+      setUpdatingFyTokenAmount(true);
+    } else {
+      setUpdatingBaseAmount(false);
+      setUpdatingFyTokenAmount(false);
+    }
   };
 
   // reset chosen pool when chainId changes
@@ -119,9 +145,15 @@ const AddLiquidity = () => {
     }
   }, [pools, pool]);
 
+  // update the form's base and fyToken amount based on where the user is inputting, and the corresponding alternate asset preview
+  // i.e.: if user is updating fyTokenAmount, then show baseNeeded_ in the base input component
   useEffect(() => {
-    setForm((f) => ({ ...f, fyTokenAmount: fyTokenNeeded_ }));
-  }, [fyTokenNeeded_]);
+    setForm((f) => ({
+      ...f,
+      baseAmount: updatingFyTokenAmount ? baseNeeded_ : baseAmount,
+      fyTokenAmount: updatingFyTokenAmount ? fyTokenAmount : fyTokenNeeded_,
+    }));
+  }, [baseAmount, baseNeeded_, fyTokenAmount, fyTokenNeeded_, updatingBaseAmount, updatingFyTokenAmount]);
 
   return (
     <BorderWrap>
@@ -149,6 +181,7 @@ const AddLiquidity = () => {
             balance={baseBalanceToUse!}
             handleChange={handleInputChange}
             useMax={handleMaxBase}
+            unFocused={updatingFyTokenAmount}
             pool={pool}
           />
           {useFyToken && <Arrow isPlusIcon={true} />}
@@ -159,8 +192,8 @@ const AddLiquidity = () => {
               item={pool?.fyToken}
               balance={pool?.fyToken.balance_!}
               handleChange={handleInputChange}
-              unFocused={true}
-              disabled
+              useMax={handleMaxFyToken}
+              unFocused={updatingBaseAmount}
               pool={pool}
             />
           )}
