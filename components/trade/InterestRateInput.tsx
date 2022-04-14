@@ -5,22 +5,24 @@ interface IInterestRateInput {
   rate: string;
   setRate: (rate: string) => void;
   disabled?: boolean;
+  negative?: boolean; // if the trade will lead to "losing" value (aka when borrowing: selling fyToken for base), then the interest rate is "negative"
 }
-const Input = tw.input`caret-gray-800 dark:caret-gray-50 text-2xl rounded-md appearance-none w-full dark:bg-gray-900 bg-gray-100 dark:focus:text-gray-50 focus:text-gray-800 dark:text-gray-300 text-gray-700 py-3 px-4 leading-tight focus:outline-none`;
+const Text = tw.div`text-2xl`;
+const Input = tw.input`text-right text-2xl rounded-md w-full dark:bg-gray-900 bg-gray-100 py-3 px-3`;
 
-const InterestRateInput: FC<IInterestRateInput> = ({ rate, setRate, disabled = false }) => (
-  <div className="flex justify-between items-center">
+const InterestRateInput: FC<IInterestRateInput> = ({ rate, setRate, disabled = false, negative = false }) => (
+  <div className="flex justify-between items-center dark:text-gray-200 text-gray-700">
+    <div className="whitespace-nowrap">Interest Rate</div>
     <Input
       type="number"
       inputMode="decimal"
-      value={rate}
+      value={`${negative ? '-' : ''}${rate}`}
       placeholder="0.0"
       onChange={(e) => setRate(e.target.value)}
       min="0"
       disabled={disabled}
     />
-    <div>%</div>
-    <div className="whitespace-nowrap px-2">Interest Rate</div>
+    <Text>%</Text>
   </div>
 );
 
