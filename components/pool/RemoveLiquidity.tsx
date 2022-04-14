@@ -135,11 +135,11 @@ const RemoveLiquidity = () => {
 
           {pool && !pool.isMature && (
             <Toggle
-              disabled={!canReceiveAllBase && lpTokens !== ''}
+              disabled={!canReceiveAllBase}
               enabled={burnForBase}
               setEnabled={setBurnForBase}
               label={
-                burnForBase
+                burnForBase && canReceiveAllBase
                   ? `Receive all ${pool?.base?.symbol}`
                   : `Receive both ${pool?.base?.symbol} and fy${pool?.base?.symbol}`
               }
