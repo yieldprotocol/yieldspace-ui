@@ -133,7 +133,7 @@ const RemoveLiquidity = () => {
             pool={pool!}
           />
 
-          {pool && !pool.isMature && (
+          {pool && !pool.isMature && lpTokens && (
             <Toggle
               disabled={!canReceiveAllBase}
               enabled={burnForBase}
