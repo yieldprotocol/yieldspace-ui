@@ -1,8 +1,5 @@
 import Link from 'next/link';
 import tw from 'tailwind-styled-components';
-import { THEME_KEY } from '../constants';
-import { useColorTheme } from '../hooks/useColorTheme';
-import { useLocalStorage } from '../hooks/useLocalStorage';
 import Account from './Account';
 import YieldMark from './common/YieldMark';
 import NavTabs from './NavTabs';
