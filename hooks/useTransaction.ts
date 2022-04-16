@@ -29,20 +29,28 @@ const useTransaction = () => {
       setIsTransacting(false);
       setTxSubmitted(true);
 
-      res &&
-        toasty(
-          async () => {
-            await res?.wait();
-            mutate(`/pools/${chainId}/${account}`);
-            mutate(`/ethBalance/${chainId}/${account}`); // update eth balance
-          },
-          description,
-          explorer && `${explorer}/tx/${res.hash}`
-        );
-      return res;
+      try {
+        res &&
+          toasty(
+            async () => {
+              await res?.wait();
+              mutate(`/pools/${chainId}/${account}`);
+              mutate(`/ethBalance/${chainId}/${account}`); // update eth balance
+            },
+            description,
+            explorer && `${explorer}/tx/${res.hash}`
+          );
+        return res;
+      } catch (e) {
+        console.log(e);
+        toast.error('Transaction failed');
+
+        setIsTransacting(false);
+        setTxSubmitted(false);
+      }
     } catch (e) {
       console.log(e);
-      toast.error('Transaction failed or rejected');
+      toast.error('Transaction rejected');
 
       setIsTransacting(false);
       setTxSubmitted(false);
