@@ -70,7 +70,7 @@ const TradeConfirmation = ({ form, interestRate, action, disabled, loading }: IT
           <DetailWrap>
             <Detail>Maturity</Detail>
             <Detail>
-              <Flex>{pool.displayName}</Flex>
+              <Right>{pool.displayName}</Right>
               <Italic>
                 <Right>{maturityDescription}</Right>
               </Italic>
