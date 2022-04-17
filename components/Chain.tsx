@@ -1,4 +1,5 @@
 import { Menu, Transition } from '@headlessui/react';
+import { ChevronDownIcon } from '@heroicons/react/solid';
 import { useWeb3React } from '@web3-react/core';
 import { Fragment } from 'react';
 import tw from 'tailwind-styled-components';
@@ -27,9 +28,10 @@ const Chain = () => {
     <Menu as="div" className="relative inline-block text-left">
       {({ open }) => (
         <>
-          <Menu.Button className="h-full flex gap-2 items-center px-2 dark:bg-gray-700/50 border-[1px] dark:border-gray-700 border-gray-300 dark:text-gray-50 text-gray-800 rounded-md bg-gray-300">
+          <Menu.Button className="h-full flex gap-2 items-center px-2 dark:bg-gray-700/50 border-[1px] dark:border-gray-700 border-gray-200 dark:text-gray-50 text-gray-800 rounded-md bg-gray-100 dark:hover:border-gray-600 hover:border-gray-300">
             <AssetLogo image="ETH" />
             <NameWrap>{CHAINS[chainId].name}</NameWrap>
+            <ChevronDownIcon className="my-auto w-5 h-5 dark:text-gray-50 text-gray-800" aria-hidden="true" />
           </Menu.Button>
           <Transition
             show={open}
