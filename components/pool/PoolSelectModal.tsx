@@ -121,22 +121,24 @@ const PoolSelectModal: FC<IPoolSelectModal> = ({ pools, open, setOpen, action })
           </div>
         )}
         {maturities && (
-          <div className="flex flex-wrap gap-3 justify-start text-sm">
-            {maturities.length > 1 &&
-              maturities.map((m) => (
-                <MaturityItem
-                  key={m.maturity}
-                  maturity={m.maturity}
-                  color={m.color}
-                  action={() => setMaturityFilter(m.maturity)}
-                />
-              ))}
-            {
+          <>
+            <div className="flex flex-wrap gap-3 justify-start text-sm">
+              {maturities.length > 1 &&
+                maturities.map((m) => (
+                  <MaturityItem
+                    key={m.maturity}
+                    maturity={m.maturity}
+                    color={m.color}
+                    action={() => setMaturityFilter(m.maturity)}
+                  />
+                ))}
+            </div>
+            <div className="mt-1">
               <ClearButton onClick={() => setShowMatureFilter(!showMatureFilter)}>
-                {showMatureFilter ? 'Hide Mature' : 'Show Mature'}
+                {showMatureFilter ? 'Hide Matured Pools' : 'Show Matured Pools'}
               </ClearButton>
-            }
-          </div>
+            </div>
+          </>
         )}
       </div>
       <div className="p-[.25px] dark:bg-gray-700 bg-gray-300"></div>
