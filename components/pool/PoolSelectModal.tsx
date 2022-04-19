@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 import tw from 'tailwind-styled-components';
 import { IAsset, IPool } from '../../lib/protocol/types';
 import AssetSelect from '../common/AssetSelect';
@@ -43,6 +43,7 @@ const PoolSelectModal: FC<IPoolSelectModal> = ({ pools, open, setOpen, action })
   const [assets, setAssets] = useState<IAsset[] | undefined>();
   const [symbolFilter, setSymbolFilter] = useState<string | undefined>();
   const [maturityFilter, setMaturityFilter] = useState<string | undefined>();
+  const [showMatureFilter, setShowMatureFilter] = useState<boolean>(false);
 
   const handleClearFilters = () => {
     if (symbolFilter) {
@@ -51,25 +52,36 @@ const PoolSelectModal: FC<IPoolSelectModal> = ({ pools, open, setOpen, action })
     if (maturityFilter) {
       setMaturityFilter(undefined);
     }
+    setShowMatureFilter(false);
   };
 
-  useEffect(() => {
-    const sorted = _pools
-      .sort((a, b) => (a.base.symbol < b.base.symbol ? 1 : -1)) // sort alphabetically by base
-      .sort((a, b) => (a.maturity < b.maturity ? 1 : -1)); // closest maturity first
+  const handleSort = useCallback(
+    () =>
+      _pools
+        .sort((a, b) => (a.base.symbol < b.base.symbol ? 1 : -1)) // sort alphabetically by base
+        .sort((a, b) => (a.maturity < b.maturity ? 1 : -1)), // closest maturity first
     // .sort((a, b) => (a.base.balance.gte(b.base.balance) ? 1 : -1)) // sort by base balance
     // .sort((a, b) => (a.isMature ? -1 : 1)); // mature pools at the end
-    setPoolList(sorted);
-  }, [_pools]);
+    [_pools]
+  );
+
+  const handleFilter = useCallback(
+    () =>
+      _pools
+        .filter((p) => (showMatureFilter ? true : !p.isMature))
+        .filter((p) => (symbolFilter ? p.base.symbol === symbolFilter : true))
+        .filter((p) => (maturityFilter ? p.maturity_ === maturityFilter : true)),
+    [maturityFilter, _pools, showMatureFilter, symbolFilter]
+  );
 
   useEffect(() => {
-    const _baseAssets = _pools.reduce(
+    const _baseAssets = poolList.reduce(
       (_assets, _pool) => (_assets.has(_pool.base.symbol) ? _assets : _assets.set(_pool.base.symbol, _pool.base)),
       new Map<string, IAsset>()
     );
     setAssets(Array.from(_baseAssets.values()));
 
-    const _maturities = _pools.reduce(
+    const _maturities = poolList.reduce(
       (_m, _pool) =>
         _m.has(_pool.maturity_)
           ? _m
@@ -77,26 +89,22 @@ const PoolSelectModal: FC<IPoolSelectModal> = ({ pools, open, setOpen, action })
       new Map<string, { maturity: string; color: string }>()
     );
     setMaturities(Array.from(_maturities.values()));
-  }, [_pools]);
+  }, [poolList]);
 
   useEffect(() => {
-    const _handleFilter = () => {
-      setPoolList(
-        _pools
-          .filter((p) => (symbolFilter ? p.base.symbol === symbolFilter : true))
-          .filter((p) => (maturityFilter ? p.maturity_ === maturityFilter : true))
-      );
-    };
+    setPoolList(handleSort());
+  }, [handleSort]);
 
-    _handleFilter();
-  }, [_pools, maturityFilter, symbolFilter]);
+  useEffect(() => {
+    setPoolList(handleFilter());
+  }, [handleFilter]);
 
   return (
     <Modal isOpen={open} setIsOpen={setOpen}>
       <div className="grid gap-2 p-5">
         <TopRow>
           <Header>Select a pool</Header>
-          {(symbolFilter || maturityFilter) && <ClearButton onClick={handleClearFilters}>Clear Filter</ClearButton>}
+          {(symbolFilter || maturityFilter) && <ClearButton onClick={handleClearFilters}>Clear Filters</ClearButton>}
           <CloseButton action={() => setOpen(false)} height="1.2rem" width="1.2rem" />
         </TopRow>
         {assets && (
@@ -113,17 +121,24 @@ const PoolSelectModal: FC<IPoolSelectModal> = ({ pools, open, setOpen, action })
           </div>
         )}
         {maturities && (
-          <div className="flex flex-wrap gap-3 justify-start text-sm">
-            {maturities.length > 1 &&
-              maturities.map((m) => (
-                <MaturityItem
-                  key={m.maturity}
-                  maturity={m.maturity}
-                  color={m.color}
-                  action={() => setMaturityFilter(m.maturity)}
-                />
-              ))}
-          </div>
+          <>
+            <div className="flex flex-wrap gap-3 justify-start text-sm">
+              {maturities.length > 1 &&
+                maturities.map((m) => (
+                  <MaturityItem
+                    key={m.maturity}
+                    maturity={m.maturity}
+                    color={m.color}
+                    action={() => setMaturityFilter(m.maturity)}
+                  />
+                ))}
+            </div>
+            <div className="mt-1">
+              <ClearButton onClick={() => setShowMatureFilter(!showMatureFilter)}>
+                {showMatureFilter ? 'Hide Matured Pools' : 'Show Matured Pools'}
+              </ClearButton>
+            </div>
+          </>
         )}
       </div>
       <div className="p-[.25px] dark:bg-gray-700 bg-gray-300"></div>
