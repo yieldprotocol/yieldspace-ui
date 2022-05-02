@@ -51,9 +51,9 @@ export const useAddLiquidity = (
     const [minRatio, maxRatio] = calcPoolRatios(cachedBaseReserves, cachedRealReserves);
 
     // input data
-    const cleanBaseInput = cleanValue(baseInput, base.decimals);
+    const cleanBaseInput = cleanValue(baseInput || '0', base.decimals);
     const _baseInput = ethers.utils.parseUnits(cleanBaseInput, base.decimals);
-    const cleanFyTokenInput = cleanValue(fyTokenInput, fyToken.decimals);
+    const cleanFyTokenInput = cleanValue(fyTokenInput || '0', fyToken.decimals);
     const _fyTokenInput = ethers.utils.parseUnits(cleanFyTokenInput, base.decimals);
 
     // check if signature is still required
