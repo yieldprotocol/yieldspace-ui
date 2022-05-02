@@ -52,7 +52,7 @@ const useAddLiqPreview = (
             );
 
             // assigning to more meaningful variables for clarity
-            const _fyTokenNeeded = xPortion;
+            const _fyTokenNeeded = yPortion;
             const _baseNeeded = yPortion;
             const lpTokensMinted = updatingFyTokenAmount ? yPortion : xPortion;
 
