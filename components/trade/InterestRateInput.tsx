@@ -1,4 +1,3 @@
-import { FC } from 'react';
 import tw from 'tailwind-styled-components';
 
 interface IInterestRateInput {
@@ -10,13 +9,13 @@ interface IInterestRateInput {
 const Text = tw.div`text-2xl`;
 const Input = tw.input`text-right text-2xl rounded-md w-full dark:bg-gray-900 bg-gray-100 py-3 px-3`;
 
-const InterestRateInput: FC<IInterestRateInput> = ({ rate, setRate, disabled = false, negative = false }) => (
+const InterestRateInput = ({ rate, setRate, disabled = false }: IInterestRateInput) => (
   <div className="flex justify-between items-center dark:text-gray-200 text-gray-700">
     <div className="whitespace-nowrap">Interest Rate</div>
     <Input
       type="number"
       inputMode="decimal"
-      value={`${negative ? '-' : ''}${rate}`}
+      value={rate}
       placeholder="0.0"
       onChange={(e) => setRate(e.target.value)}
       min="0"
