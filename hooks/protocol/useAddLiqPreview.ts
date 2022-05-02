@@ -29,6 +29,8 @@ const useAddLiqPreview = (
   const slippageTolerance_ = +slippageTolerance / 100; // find better way (currently slippage in localStorage looks like "1" for "1%")
 
   useEffect(() => {
+    setCanTradeForFyToken(true); // reset
+
     (async () => {
       if (pool && method) {
         const { totalSupply, decimals, contract, getTimeTillMaturity, ts, g1 } = pool;
@@ -52,7 +54,7 @@ const useAddLiqPreview = (
             );
 
             // assigning to more meaningful variables for clarity
-            const _fyTokenNeeded = xPortion;
+            const _fyTokenNeeded = yPortion;
             const _baseNeeded = yPortion;
             const lpTokensMinted = updatingFyTokenAmount ? yPortion : xPortion;
 

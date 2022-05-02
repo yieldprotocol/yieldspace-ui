@@ -71,7 +71,7 @@ const useTradePreview = (
         );
 
         setBaseOutPreview(ethers.utils.formatUnits(validatePreview(_baseOutPreview), decimals));
-        setInterestRatePreview(cleanValue(calculateAPR(_baseOutPreview, fyTokenIn, maturity)!, 2));
+        setInterestRatePreview('-' + cleanValue(calculateAPR(_baseOutPreview, fyTokenIn, maturity)!, 2)); // negative value to convey paying debt/value when swapping from fyToken to base
       } else if (tradeAction === TradeActions.BUY_BASE) {
         // buyBase
         // fyTokenInForBaseOut
@@ -80,7 +80,7 @@ const useTradePreview = (
 
         const _fyTokenInPreview = buyBase(baseReserves, fyTokenReserves, baseOut, timeTillMaturity, ts, g2, decimals);
         setFyTokenInPreview(ethers.utils.formatUnits(validatePreview(_fyTokenInPreview), decimals));
-        setInterestRatePreview(cleanValue(calculateAPR(baseOut, _fyTokenInPreview, maturity)!, 2));
+        setInterestRatePreview('-' + cleanValue(calculateAPR(baseOut, _fyTokenInPreview, maturity)!, 2)); // negative value to convey paying debt/value when swapping from fyToken to base
       } else if (tradeAction === TradeActions.BUY_FYTOKEN) {
         // buyFYToken
         // baseInForFYTokenOut

@@ -6,9 +6,9 @@ const yieldEnv = {
       WrapEtherModule: '0x22768FCaFe7BB9F03e31cb49823d1Ece30C0b8eA',
     },
     4: {
-      Cauldron: '0xb2cf78ccA863675Ef61a0c696885DED0C833F8f3',
-      Ladle: '0x45f502A7358ec631c7a422270922d7dFA142cb9C',
-      WrapEtherModule: '0xd6AdA52c4A04895c3Ef4668a1defd186ccD5aC44',
+      Cauldron: '0x84EFA55faA9d774B4846c7a51c1C470232DFE50f',
+      Ladle: '0xAE53c79926cb960feA17aF2369DE10938f5D0d52',
+      WrapEtherModule: '0x6C688D4257204FEe0Fce47d3feb9AE81e8B86283',
     },
     42: {
       Cauldron: '0x82Dfaef826C8c190E9b472896a9a99165Ccee35a',
