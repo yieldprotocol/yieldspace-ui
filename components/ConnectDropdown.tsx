@@ -4,10 +4,8 @@ import { ChevronDownIcon } from '@heroicons/react/solid';
 import tw from 'tailwind-styled-components';
 import useCopy from '../hooks/useCopy';
 import { abbreviateHash } from '../utils/appUtils';
-import { CHAINS, ExtendedChainInformation } from '../config/chains';
 import { useColorTheme } from '../hooks/useColorTheme';
-import { useAccount, useEnsName } from 'wagmi';
-import { useChainId } from 'wagmi/dist/declarations/src/hooks';
+import { useAccount, useEnsName, useNetwork } from 'wagmi';
 
 type ButtonProps = {
   $active: boolean;
@@ -23,10 +21,9 @@ const ConnectDropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setM
   const { data: account } = useAccount();
   const address = account?.address;
   const { data: ENSName } = useEnsName({ address });
-  const chainId = useChainId();
+  const { activeChain } = useNetwork();
   const { copied, copy } = useCopy(address!);
-  const chainData = chainId ? (CHAINS[chainId] as ExtendedChainInformation) : undefined;
-  const blockExplorer = chainData?.blockExplorerUrls![0];
+  const blockExplorer = activeChain?.blockExplorers?.default.url;
 
   const handleModalOpen = () => {
     setModalOpen(true);
@@ -60,7 +57,7 @@ const ConnectDropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setM
                       <Button
                         $active={active}
                         onClick={() => {
-                          copy(account);
+                          copy(account?.address!);
                         }}
                       >
                         {copied ? 'Address Copied' : 'Copy Address'}
@@ -81,7 +78,7 @@ const ConnectDropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setM
                   <div className="px-1 py-1">
                     <Menu.Item>
                       {({ active }) => (
-                        <a href={`${blockExplorer}/address/${account}`} target="_blank" rel="noreferrer">
+                        <a href={`${blockExplorer}/address/${account?.address!}`} target="_blank" rel="noreferrer">
                           <Button $active={active}>Open In Etherscan</Button>
                         </a>
                       )}
