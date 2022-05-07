@@ -6,7 +6,8 @@ import useCopy from '../hooks/useCopy';
 import { abbreviateHash } from '../utils/appUtils';
 import { CHAINS, ExtendedChainInformation } from '../config/chains';
 import { useColorTheme } from '../hooks/useColorTheme';
-import { useWeb3React } from '@web3-react/core';
+import { useAccount, useEnsName } from 'wagmi';
+import { useChainId } from 'wagmi/dist/declarations/src/hooks';
 
 type ButtonProps = {
   $active: boolean;
@@ -19,8 +20,11 @@ const Button = tw.button<ButtonProps>`${(p) =>
 
 const ConnectDropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setModalOpen }) => {
   const { theme, toggleTheme } = useColorTheme();
-  const { account, ENSName, chainId, connector } = useWeb3React();
-  const { copied, copy } = useCopy(account!);
+  const { data: account } = useAccount();
+  const address = account?.address;
+  const { data: ENSName } = useEnsName({ address });
+  const chainId = useChainId();
+  const { copied, copy } = useCopy(address!);
   const chainData = chainId ? (CHAINS[chainId] as ExtendedChainInformation) : undefined;
   const blockExplorer = chainData?.blockExplorerUrls![0];
 
@@ -28,7 +32,7 @@ const ConnectDropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setM
     setModalOpen(true);
   };
 
-  if (!account) return null;
+  if (!account?.address) return null;
 
   return (
     <div>
@@ -36,7 +40,7 @@ const ConnectDropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setM
         {({ open }) => (
           <>
             <Menu.Button className="inline-flex justify-between gap-2 align-middle w-full dark:bg-gray-700/50 px-4 py-2 dark:text-gray-50 text-gray-800 rounded-md bg-gray-100 border-[1px] dark:border-gray-700 border-gray-200 dark:hover:border-gray-600 hover:border-gray-300">
-              {ENSName || abbreviateHash(account!)}
+              {ENSName || abbreviateHash(address!)}
               <ChevronDownIcon className="my-auto w-5 h-5 dark:text-gray-50 text-gray-800" aria-hidden="true" />
             </Menu.Button>
             <Transition
@@ -96,7 +100,7 @@ const ConnectDropdown: FC<{ setModalOpen: (isOpen: boolean) => void }> = ({ setM
                 <div className="px-1 py-1">
                   <Menu.Item>
                     {({ active }) => (
-                      <Button $active={active} onClick={() => connector.deactivate()}>
+                      <Button $active={active} onClick={() => console.log('deactivating')}>
                         Disconnect
                       </Button>
                     )}

@@ -1,4 +1,3 @@
-import { useWeb3React } from '@web3-react/core';
 import { useEffect, useState } from 'react';
 import tw from 'tailwind-styled-components';
 import Button from '../common/Button';
@@ -19,6 +18,7 @@ import { cleanValue } from '../../utils/appUtils';
 import useInputValidation from '../../hooks/useInputValidation';
 import useETHBalance from '../../hooks/useEthBalance';
 import SlippageSetting from '../common/SlippageSetting';
+import { useAccount, useNetwork } from 'wagmi';
 
 const Inner = tw.div`m-4 text-center`;
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
@@ -46,7 +46,8 @@ const INITIAL_FORM_STATE: ITradeForm = {
 };
 
 const TradeWidget = ({ pools: poolsProps }: { pools: IPoolMap }) => {
-  const { chainId, account } = useWeb3React();
+  const { data: account } = useAccount();
+  const { activeChain } = useNetwork();
   const { data: pools } = usePools();
   const { balance: ethBalance } = useETHBalance();
 
@@ -199,7 +200,7 @@ const TradeWidget = ({ pools: poolsProps }: { pools: IPoolMap }) => {
   // reset form when chainId changes
   useEffect(() => {
     setForm(INITIAL_FORM_STATE);
-  }, [chainId]);
+  }, [activeChain?.id]);
 
   // change the to and from form values when the pool changes
   // defaults to going from base to fyToken

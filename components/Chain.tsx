@@ -1,8 +1,8 @@
 import { Menu, Transition } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/solid';
-import { useWeb3React } from '@web3-react/core';
 import { Fragment } from 'react';
 import tw from 'tailwind-styled-components';
+import { useChainId } from 'wagmi/dist/declarations/src/hooks';
 import { CHAINS } from '../config/chains';
 import useNetworkSelect from '../hooks/useNetworkSelect';
 import AssetLogo from './common/AssetLogo';
@@ -19,7 +19,7 @@ const Button = tw.button<ButtonProps>`${(p) =>
     : 'dark:text-gray-400 text-gray-600'} flex gap-2 rounded-md items-center p-3`;
 
 const Chain = () => {
-  const { chainId } = useWeb3React();
+  const chainId = useChainId();
   const { supportedChains, switchChain } = useNetworkSelect();
 
   if (!chainId) return null;

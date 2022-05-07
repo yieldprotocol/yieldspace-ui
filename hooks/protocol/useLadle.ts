@@ -1,6 +1,5 @@
-import { Web3Provider } from '@ethersproject/providers';
-import { useWeb3React } from '@web3-react/core';
 import { BigNumberish, ContractTransaction, PayableOverrides } from 'ethers';
+import { useSigner } from 'wagmi';
 import { LADLE, WRAP_ETH_MODULE } from '../../constants';
 import { Ladle, Pool, WrapEtherModule } from '../../contracts/types';
 import { LadleActions, RoutedActions } from '../../lib/tx/operations';
@@ -9,10 +8,9 @@ import useContracts from './useContracts';
 
 const useLadle = () => {
   const contracts = useContracts();
-  const { provider } = useWeb3React();
-  const signer = (provider as Web3Provider)?.getSigner();
-  const ladle = contracts ? (contracts![LADLE]?.connect(signer) as Ladle) : undefined;
-  const wrapEthModule = contracts ? (contracts![WRAP_ETH_MODULE]?.connect(signer) as WrapEtherModule) : undefined;
+  const { data: signer } = useSigner();
+  const ladle = contracts ? (contracts![LADLE]?.connect(signer!) as Ladle) : undefined;
+  const wrapEthModule = contracts ? (contracts![WRAP_ETH_MODULE]?.connect(signer!) as WrapEtherModule) : undefined;
 
   /**
    * Formatted representation of the batch function that allows for easier filtering/ignoring of actions

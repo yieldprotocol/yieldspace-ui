@@ -8,12 +8,13 @@ import { ERC20Permit__factory } from '../contracts/types';
 import { DAI_PERMIT_ASSETS, NON_PERMIT_ASSETS } from '../config/assets';
 import { LadleActions } from '../lib/tx/operations';
 import useLadle from './protocol/useLadle';
-import { useWeb3React } from '@web3-react/core';
-import { Web3Provider } from '@ethersproject/providers';
+import { useAccount, useNetwork, useProvider, useSigner } from 'wagmi';
 
 const useSignature = () => {
-  const { account, provider, chainId } = useWeb3React();
-  const signer = (provider as Web3Provider)?.getSigner();
+  const { data: account } = useAccount();
+  const provider = useProvider();
+  const { data: signer } = useSigner();
+  const { activeChain } = useNetwork();
   const { ladleContract: ladle, forwardDaiPermitAction, forwardPermitAction } = useLadle();
   const { handleTx, handleSign } = useTxProcesses();
   const approvalMethod = useApprovalMethod();
@@ -59,10 +60,10 @@ const useSignature = () => {
                 {
                   name: reqSig.target.name,
                   version: reqSig.target.version,
-                  chainId: chainId!,
+                  chainId: activeChain?.id!,
                   verifyingContract: reqSig.target.address,
                 },
-                account!,
+                account?.address!,
                 _spender!
               ),
             /* This is the function to call if using fallback approvals */
@@ -101,10 +102,10 @@ const useSignature = () => {
                 // uses custom domain if provided, else use created Domain
                 name: reqSig.target.name,
                 version: reqSig.target.version,
-                chainId: chainId!,
+                chainId: activeChain?.id!,
                 verifyingContract: reqSig.target.address,
               },
-              account!,
+              account?.address!,
               _spender!,
               _amount
             ),

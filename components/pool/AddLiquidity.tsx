@@ -1,4 +1,3 @@
-import { useWeb3React } from '@web3-react/core';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import tw from 'tailwind-styled-components';
@@ -19,6 +18,7 @@ import Arrow from '../trade/Arrow';
 import useInputValidation from '../../hooks/useInputValidation';
 import useAddLiqPreview from '../../hooks/protocol/useAddLiqPreview';
 import useETHBalance from '../../hooks/useEthBalance';
+import { useAccount, useNetwork } from 'wagmi';
 
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
@@ -45,7 +45,8 @@ const INITIAL_FORM_STATE: IAddLiquidityForm = {
 const AddLiquidity = () => {
   const router = useRouter();
   const { address } = router.query;
-  const { chainId, account } = useWeb3React();
+  const { activeChain } = useNetwork();
+  const { data: account } = useAccount();
   const { data: pools } = usePools();
   const { balance: ethBalance } = useETHBalance();
 
@@ -109,7 +110,7 @@ const AddLiquidity = () => {
   // reset chosen pool when chainId changes
   useEffect(() => {
     setForm((f) => ({ ...f, pool: undefined }));
-  }, [chainId]);
+  }, [activeChain?.id]);
 
   // use pool address from router query if available
   useEffect(() => {

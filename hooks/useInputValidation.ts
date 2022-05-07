@@ -1,5 +1,5 @@
-import { useWeb3React } from '@web3-react/core';
 import { useEffect, useState } from 'react';
+import { useAccount } from 'wagmi';
 import { AddLiquidityActions, RemoveLiquidityActions } from '../lib/protocol/liquidity/types';
 import { TradeActions } from '../lib/protocol/trade/types';
 import { IPool } from '../lib/protocol/types';
@@ -15,7 +15,7 @@ const useInputValidation = (
   secondaryInput: string = '', // this is the "to" amount when trading
   isEth = false // if the asset is eth
 ) => {
-  const { account } = useWeb3React();
+  const { data: account } = useAccount();
   const { balance: ethBalance } = useETHBalance();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 

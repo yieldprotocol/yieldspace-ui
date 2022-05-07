@@ -1,4 +1,3 @@
-import { useWeb3React } from '@web3-react/core';
 import { ethers, PayableOverrides } from 'ethers';
 import { cleanValue, valueAtDigits } from '../../utils/appUtils';
 import { calcPoolRatios, fyTokenForMint } from '../../utils/yieldMath';
@@ -9,6 +8,7 @@ import useLadle from './useLadle';
 import useTransaction from '../useTransaction';
 import { useLocalStorage } from '../useLocalStorage';
 import { DEFAULT_SLIPPAGE, SLIPPAGE_KEY } from '../../constants';
+import { useAccount } from 'wagmi';
 
 export const useAddLiquidity = (
   pool: IPool | undefined,
@@ -16,7 +16,7 @@ export const useAddLiquidity = (
   fyTokenInput: string,
   method: AddLiquidityActions
 ) => {
-  const { account } = useWeb3React();
+  const { data: account } = useAccount();
   const { sign } = useSignature();
   const { handleTransact, isTransacting, txSubmitted } = useTransaction();
   const { ladleContract, batch, transferAction, mintWithBaseAction, mintAction, wrapETHAction, exitETHAction } =
@@ -57,8 +57,10 @@ export const useAddLiquidity = (
     const _fyTokenInput = ethers.utils.parseUnits(cleanFyTokenInput, base.decimals);
 
     // check if signature is still required
-    const alreadyApprovedBase = (await base.getAllowance(account!, ladleContract?.address!)).gte(_baseInput);
-    const alreadyApprovedFyToken = (await fyToken.getAllowance(account!, ladleContract?.address!)).gte(_fyTokenInput);
+    const alreadyApprovedBase = (await base.getAllowance(account?.address!, ladleContract?.address!)).gte(_baseInput);
+    const alreadyApprovedFyToken = (await fyToken.getAllowance(account?.address!, ladleContract?.address!)).gte(
+      _fyTokenInput
+    );
 
     const overrides = {
       gasLimit: 250000,
@@ -96,14 +98,14 @@ export const useAddLiquidity = (
           {
             action: mintWithBaseAction(
               poolContract,
-              account!,
-              isEth ? ladleContract?.address! : account!, // minting with eth needs to be sent to ladle
+              account?.address!,
+              isEth ? ladleContract?.address! : account?.address!, // minting with eth needs to be sent to ladle
               _fyTokenToBeMinted,
               minRatio,
               maxRatio
             )!,
           },
-          { action: exitETHAction(account!)!, ignoreIf: !isEth }, // leftover eth gets sent back to account
+          { action: exitETHAction(account?.address!)!, ignoreIf: !isEth }, // leftover eth gets sent back to account
         ],
         withEthOverrides
       );
@@ -134,13 +136,13 @@ export const useAddLiquidity = (
           {
             action: mintAction(
               poolContract,
-              isEth ? ladleContract?.address! : account!, // minting with eth needs to be sent to ladle
-              account!,
+              isEth ? ladleContract?.address! : account?.address!, // minting with eth needs to be sent to ladle
+              account?.address!,
               minRatio,
               maxRatio
             )!,
           },
-          { action: exitETHAction(account!)!, ignoreIf: !isEth }, // leftover eth gets sent back to account
+          { action: exitETHAction(account?.address!)!, ignoreIf: !isEth }, // leftover eth gets sent back to account
         ],
         withEthOverrides
       );

@@ -1,17 +1,18 @@
-import { useWeb3React } from '@web3-react/core';
 import { ContractTransaction } from 'ethers';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { useSWRConfig } from 'swr';
-import { CHAINS, ExtendedChainInformation } from '../config/chains';
+import { useAccount, useNetwork } from 'wagmi';
 import useToasty from './useToasty';
 
 const useTransaction = () => {
-  const { account, chainId } = useWeb3React();
+  const { data: account } = useAccount();
+  const { activeChain } = useNetwork();
   const { mutate } = useSWRConfig();
   const { toasty } = useToasty();
 
-  const explorer = (CHAINS[chainId!] as ExtendedChainInformation)?.blockExplorerUrls![0];
+  const chainId = activeChain?.id;
+  const explorer = activeChain?.blockExplorers?.default.url;
 
   const [isTransacting, setIsTransacting] = useState<boolean>(false);
   const [txSubmitted, setTxSubmitted] = useState<boolean>(false);

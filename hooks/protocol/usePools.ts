@@ -1,16 +1,18 @@
-import { useWeb3React } from '@web3-react/core';
 import useSWR from 'swr';
+import { useAccount, useNetwork, useProvider } from 'wagmi';
 import { getPools } from '../../lib/protocol';
 import { IPoolMap } from '../../lib/protocol/types';
 import useContracts from './useContracts';
 
 const usePools = () => {
-  const { chainId, account, provider } = useWeb3React();
+  const { data: account } = useAccount();
+  const { activeChain } = useNetwork();
+  const provider = useProvider();
   const contractMap = useContracts();
 
   const { data, error } = useSWR(
-    `/pools/${chainId}/${account}`,
-    () => getPools(provider!, contractMap!, chainId!, account!),
+    `/pools/${activeChain?.id!}/${account}`,
+    () => getPools(provider!, contractMap!, activeChain?.id!, account?.address!),
     {
       revalidateOnFocus: false,
     }
