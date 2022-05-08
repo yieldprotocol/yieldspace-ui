@@ -67,7 +67,7 @@ const useInputValidation = (
     setErrorMsg(null); // reset
 
     const { base, fyToken, isMature } = pool;
-    const baseBalance = isEth && base.symbol === 'ETH' ? ethBalance! : parseFloat(pool.base.balance_);
+    const baseBalance = isEth ? ethBalance! : parseFloat(pool.base.balance_);
     const fyTokenBalance = parseFloat(pool.fyToken.balance_);
     const lpTokenBalance = parseFloat(pool.lpTokenBalance_);
 
