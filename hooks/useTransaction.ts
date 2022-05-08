@@ -35,8 +35,8 @@ const useTransaction = () => {
           toasty(
             async () => {
               await res?.wait();
-              mutate(`/pools/${chainId}/${account}`);
-              mutate(`/ethBalance/${chainId}/${account}`); // update eth balance
+              mutate(`/pools/${chainId}/${account?.address}`);
+              mutate(`/ethBalance/${chainId}/${account?.address}`); // update eth balance
             },
             description,
             explorer && `${explorer}/tx/${res.hash}`
