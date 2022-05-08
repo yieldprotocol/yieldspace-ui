@@ -1,14 +1,12 @@
-import { ethers } from 'ethers';
 import useSWR from 'swr';
-import { useAccount, useNetwork, useProvider } from 'wagmi';
+import { useAccount, useBalance, useNetwork } from 'wagmi';
 
 function useETHBalance() {
   const { data: account } = useAccount();
-  const provider = useProvider();
   const { activeChain } = useNetwork();
+  const { data: balance } = useBalance({ addressOrName: account?.address, chainId: activeChain?.id });
 
-  const _getBalance = async () =>
-    provider && account ? ethers.utils.formatEther(await provider.getBalance(account?.address!)) : '0';
+  const _getBalance = async () => (account ? balance?.formatted : '0');
 
   const { data } = useSWR(`/ethBalance/${activeChain?.id!}/${account}`, _getBalance);
 
