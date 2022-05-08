@@ -64,7 +64,8 @@ const TradeWidget = ({ pools: poolsProps }: { pools: IPoolMap }) => {
   const { pool, fromAsset, fromAmount, toAsset, toAmount, tradeAction, isFyTokenOutput } = form;
 
   const max = isFyTokenOutput ? maxBaseIn : maxFyTokenIn; // max limit to be used in validation
-  const { errorMsg } = useInputValidation(fromAmount, pool!, [0, max], tradeAction, toAmount);
+  const isEthPool = ['ETH', 'WETH'].includes(pool?.base?.symbol!);
+  const { errorMsg } = useInputValidation(fromAmount, pool!, [0, max], tradeAction, toAmount, isEthPool);
 
   const [updatingFromAmount, setUpdatingFromAmount] = useState<boolean>(false);
   const [updatingToAmount, setUpdatingToAmount] = useState<boolean>(false);
@@ -75,8 +76,6 @@ const TradeWidget = ({ pools: poolsProps }: { pools: IPoolMap }) => {
   }`;
 
   const { trade, isTransacting, tradeSubmitted } = useTrade(pool!, fromAmount, toAmount, tradeAction, description);
-
-  const isEthPool = pool?.base.symbol === 'ETH';
 
   const handleMaxFrom = () => {
     setUpdatingFromAmount(true);
