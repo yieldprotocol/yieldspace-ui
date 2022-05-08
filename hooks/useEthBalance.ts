@@ -8,7 +8,7 @@ function useETHBalance() {
 
   const _getBalance = async () => (account ? balance?.formatted : '0');
 
-  const { data } = useSWR(`/ethBalance/${activeChain?.id!}/${account}`, _getBalance);
+  const { data } = useSWR(`/ethBalance/${activeChain?.id!}/${account?.address}`, _getBalance);
 
   return { balance: data };
 }
