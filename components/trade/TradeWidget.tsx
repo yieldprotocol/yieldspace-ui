@@ -230,16 +230,14 @@ const TradeWidget = ({ pools: poolsProps }: { pools: IPoolMap }) => {
     }
   }, [pools, pool, isFyTokenOutput]);
 
-  // update the applicalbe from/to asset's balance based on if it is eth
+  // update the applicable from/to asset's balance based on if it is eth
   useEffect(() => {
     if (ethBalance && isEthPool) {
-      if (isFyTokenOutput) {
-        setForm((f) => ({ ...f, fromAsset: { ...f.fromAsset!, balance_: ethBalance } }));
-      } else {
-        setForm((f) => ({ ...f, toAsset: { ...f.toAsset!, balance_: ethBalance } }));
-      }
+      isFyTokenOutput
+        ? setForm((f) => ({ ...f, fromAsset: { ...f.fromAsset!, balance_: ethBalance } }))
+        : setForm((f) => ({ ...f, toAsset: { ...f.toAsset!, balance_: ethBalance } }));
     }
-  }, [ethBalance, isEthPool, isFyTokenOutput, pool?.base.balance_]);
+  }, [ethBalance, isEthPool, isFyTokenOutput]);
 
   return (
     <BorderWrap>
