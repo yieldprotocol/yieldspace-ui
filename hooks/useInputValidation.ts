@@ -1,11 +1,10 @@
-import { useWeb3React } from '@web3-react/core';
 import { useEffect, useState } from 'react';
+import { useAccount, useBalance, useNetwork } from 'wagmi';
 import { AddLiquidityActions, RemoveLiquidityActions } from '../lib/protocol/liquidity/types';
 import { TradeActions } from '../lib/protocol/trade/types';
 import { IPool } from '../lib/protocol/types';
 import useAddLiqPreview from './protocol/useAddLiqPreview';
 import useTradePreview from './protocol/useTradePreview';
-import useETHBalance from './useEthBalance';
 
 const useInputValidation = (
   input: string | undefined,
@@ -15,8 +14,10 @@ const useInputValidation = (
   secondaryInput: string = '', // this is the "to" amount when trading
   isEth = false // if the asset is eth
 ) => {
-  const { account } = useWeb3React();
-  const { balance: ethBalance } = useETHBalance();
+  const { data: account } = useAccount();
+  const { activeChain } = useNetwork();
+  const { data: balance } = useBalance({ addressOrName: account?.address, chainId: activeChain?.id });
+  const ethBalance = balance?.formatted;
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const _input = parseFloat(input!);
@@ -67,7 +68,7 @@ const useInputValidation = (
     setErrorMsg(null); // reset
 
     const { base, fyToken, isMature } = pool;
-    const baseBalance = isEth && base.symbol === 'ETH' ? ethBalance! : parseFloat(pool.base.balance_);
+    const baseBalance = isEth ? ethBalance! : parseFloat(pool.base.balance_);
     const fyTokenBalance = parseFloat(pool.fyToken.balance_);
     const lpTokenBalance = parseFloat(pool.lpTokenBalance_);
 

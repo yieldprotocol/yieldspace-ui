@@ -1,4 +1,3 @@
-import { useWeb3React } from '@web3-react/core';
 import { useEffect, useState } from 'react';
 import tw from 'tailwind-styled-components';
 import Button from '../common/Button';
@@ -17,8 +16,8 @@ import TradeConfirmation from './TradeConfirmation';
 import CloseButton from '../common/CloseButton';
 import { cleanValue } from '../../utils/appUtils';
 import useInputValidation from '../../hooks/useInputValidation';
-import useETHBalance from '../../hooks/useEthBalance';
 import SlippageSetting from '../common/SlippageSetting';
+import { useAccount, useBalance, useNetwork } from 'wagmi';
 
 const Inner = tw.div`m-4 text-center`;
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
@@ -46,9 +45,11 @@ const INITIAL_FORM_STATE: ITradeForm = {
 };
 
 const TradeWidget = ({ pools: poolsProps }: { pools: IPoolMap }) => {
-  const { chainId, account } = useWeb3React();
+  const { data: account } = useAccount();
+  const { activeChain } = useNetwork();
   const { data: pools } = usePools();
-  const { balance: ethBalance } = useETHBalance();
+  const { data: balance } = useBalance({ addressOrName: account?.address, chainId: activeChain?.id });
+  const ethBalance = balance?.formatted;
 
   const [form, setForm] = useState<ITradeForm>(INITIAL_FORM_STATE);
   const {
@@ -63,7 +64,8 @@ const TradeWidget = ({ pools: poolsProps }: { pools: IPoolMap }) => {
   const { pool, fromAsset, fromAmount, toAsset, toAmount, tradeAction, isFyTokenOutput } = form;
 
   const max = isFyTokenOutput ? maxBaseIn : maxFyTokenIn; // max limit to be used in validation
-  const { errorMsg } = useInputValidation(fromAmount, pool!, [0, max], tradeAction, toAmount);
+  const isEthPool = ['ETH', 'WETH'].includes(pool?.base?.symbol!);
+  const { errorMsg } = useInputValidation(fromAmount, pool!, [0, max], tradeAction, toAmount, isEthPool);
 
   const [updatingFromAmount, setUpdatingFromAmount] = useState<boolean>(false);
   const [updatingToAmount, setUpdatingToAmount] = useState<boolean>(false);
@@ -74,8 +76,6 @@ const TradeWidget = ({ pools: poolsProps }: { pools: IPoolMap }) => {
   }`;
 
   const { trade, isTransacting, tradeSubmitted } = useTrade(pool!, fromAmount, toAmount, tradeAction, description);
-
-  const isEthPool = pool?.base.symbol === 'ETH';
 
   const handleMaxFrom = () => {
     setUpdatingFromAmount(true);
@@ -199,7 +199,7 @@ const TradeWidget = ({ pools: poolsProps }: { pools: IPoolMap }) => {
   // reset form when chainId changes
   useEffect(() => {
     setForm(INITIAL_FORM_STATE);
-  }, [chainId]);
+  }, [activeChain?.id]);
 
   // change the to and from form values when the pool changes
   // defaults to going from base to fyToken
@@ -230,16 +230,14 @@ const TradeWidget = ({ pools: poolsProps }: { pools: IPoolMap }) => {
     }
   }, [pools, pool, isFyTokenOutput]);
 
-  // update the applicalbe from/to asset's balance based on if it is eth
+  // update the applicable from/to asset's balance based on if it is eth
   useEffect(() => {
-    if (ethBalance && isEthPool) {
-      if (isFyTokenOutput) {
-        setForm((f) => ({ ...f, fromAsset: { ...f.fromAsset!, balance_: ethBalance } }));
-      } else {
-        setForm((f) => ({ ...f, toAsset: { ...f.toAsset!, balance_: ethBalance } }));
-      }
+    if (isEthPool) {
+      isFyTokenOutput
+        ? setForm((f) => ({ ...f, fromAsset: { ...f.fromAsset!, balance_: ethBalance! } }))
+        : setForm((f) => ({ ...f, toAsset: { ...f.toAsset!, balance_: ethBalance! } }));
     }
-  }, [ethBalance, isEthPool, isFyTokenOutput, pool?.base.balance_]);
+  }, [ethBalance, isEthPool, isFyTokenOutput, pool]);
 
   return (
     <BorderWrap>

@@ -6,10 +6,10 @@ import { calcPoolRatios } from '../../utils/yieldMath';
 import useSignature from '../useSignature';
 import useLadle from './useLadle';
 import useTransaction from '../useTransaction';
-import { useWeb3React } from '@web3-react/core';
+import { useAccount } from 'wagmi';
 
 export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiquidityActions, description: string) => {
-  const { account } = useWeb3React();
+  const { data: account } = useAccount();
   const { sign } = useSignature();
   const { handleTransact, isTransacting, txSubmitted } = useTransaction();
   const { ladleContract, batch, transferAction, burnForBaseAction, burnAction, exitETHAction, redeemFYToken } =
@@ -27,14 +27,14 @@ export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiq
 
     const [minRatio, maxRatio] = calcPoolRatios(cachedBaseReserves, cachedRealReserves);
 
-    const alreadyApproved = (await pool.contract.allowance(account!, ladleContract?.address!)).gte(_input);
+    const alreadyApproved = (await pool.contract.allowance(account?.address!, ladleContract?.address!)).gte(_input);
 
     const overrides = {
       gasLimit: 300000,
     };
 
     const isETH = base.symbol === 'ETH';
-    const toAddress = isETH ? ladleContract?.address! : account!;
+    const toAddress = isETH ? ladleContract?.address! : account?.address!;
 
     const _remove = async () => {
       const permits = await sign([
@@ -59,7 +59,7 @@ export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiq
             action: burnAction(
               poolContract,
               toAddress,
-              isMature ? fyToken.address : account!, // after maturity, use the fyToken address as the destination to redeem
+              isMature ? fyToken.address : account?.address!, // after maturity, use the fyToken address as the destination to redeem
               minRatio,
               maxRatio
             )!,
@@ -69,7 +69,7 @@ export const useRemoveLiquidity = (pool: IPool, input: string, method: RemoveLiq
             action: redeemFYToken(seriesId, toAddress, '0')!,
             ignoreIf: !isMature,
           },
-          { action: exitETHAction(account!)!, ignoreIf: !isETH },
+          { action: exitETHAction(account?.address!)!, ignoreIf: !isETH },
         ],
         overrides
       );

@@ -9,7 +9,7 @@ import useLadle from './useLadle';
 import useTransaction from '../useTransaction';
 import { DEFAULT_SLIPPAGE, SLIPPAGE_KEY } from '../../constants';
 import { useLocalStorage } from '../useLocalStorage';
-import { useWeb3React } from '@web3-react/core';
+import { useAccount } from 'wagmi';
 
 export const useTrade = (
   pool: IPool,
@@ -18,7 +18,7 @@ export const useTrade = (
   method: TradeActions,
   description: string
 ) => {
-  const { account } = useWeb3React();
+  const { data: account } = useAccount();
   const { sign } = useSignature();
   const { handleTransact, isTransacting, txSubmitted } = useTransaction();
   const {
@@ -50,7 +50,9 @@ export const useTrade = (
     const withEthOverrides = { ...overrides, value: isEth ? _inputToUse : undefined } as PayableOverrides;
 
     const _sellBase = async () => {
-      const baseAlreadyApproved = (await base.getAllowance(account!, ladleContract?.address!)).gte(_inputToUse);
+      const baseAlreadyApproved = (await base.getAllowance(account?.address!, ladleContract?.address!)).gte(
+        _inputToUse
+      );
 
       const _outputLessSlippage = calculateSlippage(
         ethers.utils.parseUnits(fyTokenOutPreview, decimals),
@@ -73,16 +75,18 @@ export const useTrade = (
           { action: wrapETHAction(poolContract, _inputToUse)!, ignoreIf: !isEth },
           { action: transferAction(base.address, poolAddress, _inputToUse)!, ignoreIf: isEth },
           {
-            action: sellBaseAction(poolContract, account!, _outputLessSlippage)!,
+            action: sellBaseAction(poolContract, account?.address!, _outputLessSlippage)!,
           },
-          { action: exitETHAction(account!)!, ignoreIf: !isEth }, // leftover eth gets sent back to account
+          { action: exitETHAction(account?.address!)!, ignoreIf: !isEth }, // leftover eth gets sent back to account
         ],
         withEthOverrides
       );
     };
 
     const _sellFYToken = async () => {
-      const fyTokenAlreadyApproved = (await fyToken.getAllowance(account!, ladleContract?.address!)).gte(_inputToUse);
+      const fyTokenAlreadyApproved = (await fyToken.getAllowance(account?.address!, ladleContract?.address!)).gte(
+        _inputToUse
+      );
 
       const _outputLessSlippage = ethers.utils.parseUnits(
         calculateSlippage(baseOutPreview, slippageTolerance, true),
@@ -111,16 +115,16 @@ export const useTrade = (
           {
             action: sellFYTokenAction(
               poolContract,
-              isEth ? ladleContract?.address! : account!, // selling fyETH gets sent to the ladle to be unwrapped from weth to eth
+              isEth ? ladleContract?.address! : account?.address!, // selling fyETH gets sent to the ladle to be unwrapped from weth to eth
               _outputLessSlippage
             )!,
             ignoreIf: isMature,
           },
           {
-            action: redeemFYToken(seriesId, isEth ? ladleContract?.address! : account!, _inputToUse)!,
+            action: redeemFYToken(seriesId, isEth ? ladleContract?.address! : account?.address!, _inputToUse)!,
             ignoreIf: !isMature,
           },
-          { action: exitETHAction(account!)!, ignoreIf: !isEth }, // eth gets sent back to account
+          { action: exitETHAction(account?.address!)!, ignoreIf: !isEth }, // eth gets sent back to account
         ],
         overrides
       );

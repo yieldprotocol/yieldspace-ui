@@ -1,17 +1,21 @@
-import { useWeb3React } from '@web3-react/core';
+import { useAddRecentTransaction } from '@rainbow-me/rainbowkit';
 import { ContractTransaction } from 'ethers';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { useSWRConfig } from 'swr';
-import { CHAINS, ExtendedChainInformation } from '../config/chains';
+import { useAccount, useBalance, useNetwork } from 'wagmi';
 import useToasty from './useToasty';
 
 const useTransaction = () => {
-  const { account, chainId } = useWeb3React();
+  const { data: account } = useAccount();
+  const { activeChain } = useNetwork();
+  const { refetch } = useBalance({ addressOrName: account?.address, chainId: activeChain?.id });
   const { mutate } = useSWRConfig();
   const { toasty } = useToasty();
+  const addRecentTransaction = useAddRecentTransaction();
 
-  const explorer = (CHAINS[chainId!] as ExtendedChainInformation)?.blockExplorerUrls![0];
+  const chainId = activeChain?.id;
+  const explorer = activeChain?.blockExplorers?.default.url;
 
   const [isTransacting, setIsTransacting] = useState<boolean>(false);
   const [txSubmitted, setTxSubmitted] = useState<boolean>(false);
@@ -30,16 +34,20 @@ const useTransaction = () => {
       setTxSubmitted(true);
 
       try {
-        res &&
-          toasty(
-            async () => {
-              await res?.wait();
-              mutate(`/pools/${chainId}/${account}`);
-              mutate(`/ethBalance/${chainId}/${account}`); // update eth balance
-            },
-            description,
-            explorer && `${explorer}/tx/${res.hash}`
-          );
+        if (res) {
+          addRecentTransaction({ hash: res.hash!, description });
+
+          res &&
+            toasty(
+              async () => {
+                await res?.wait();
+                mutate(`/pools/${chainId}/${account?.address!}`);
+                refetch(); // refetch ETH balance
+              },
+              description,
+              explorer && `${explorer}/tx/${res.hash}`
+            );
+        }
         return res;
       } catch (e) {
         console.log(e);

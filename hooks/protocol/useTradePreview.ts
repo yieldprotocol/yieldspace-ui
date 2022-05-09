@@ -120,7 +120,7 @@ const useTradePreview = (
     baseOutPreview,
     fyTokenInPreview,
     baseInPreview,
-    interestRatePreview,
+    interestRatePreview: +interestRatePreview === 0 ? '0' : interestRatePreview,
     maxFyTokenIn: maxFyTokenIn_,
     maxBaseIn: maxBaseIn_,
     maxFyTokenOut: maxFyTokenOut_,
