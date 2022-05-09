@@ -41,7 +41,7 @@ const useTransaction = () => {
             toasty(
               async () => {
                 await res?.wait();
-                mutate(`/pools/${chainId}/${account?.address}`);
+                mutate(`/pools/${chainId}/${account?.address!}`);
                 refetch(); // refetch ETH balance
               },
               description,
