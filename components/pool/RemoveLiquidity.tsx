@@ -78,7 +78,7 @@ const RemoveLiquidity = () => {
   // reset chosen pool when chainId changes
   useEffect(() => {
     setForm((f) => ({ ...f, pool: undefined }));
-  }, [activeChain.id]);
+  }, [activeChain?.id]);
 
   // use pool address from router query if available
   useEffect(() => {
