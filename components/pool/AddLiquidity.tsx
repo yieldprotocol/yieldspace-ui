@@ -17,8 +17,7 @@ import { AddLiquidityActions } from '../../lib/protocol/liquidity/types';
 import Arrow from '../trade/Arrow';
 import useInputValidation from '../../hooks/useInputValidation';
 import useAddLiqPreview from '../../hooks/protocol/useAddLiqPreview';
-import useETHBalance from '../../hooks/useEthBalance';
-import { useAccount, useNetwork } from 'wagmi';
+import { useAccount, useBalance, useNetwork } from 'wagmi';
 
 const Inner = tw.div`m-4 text-center`;
 const HeaderSmall = tw.div`align-middle text-sm font-bold justify-start text-left`;
@@ -48,7 +47,8 @@ const AddLiquidity = () => {
   const { activeChain } = useNetwork();
   const { data: account } = useAccount();
   const { data: pools } = usePools();
-  const { balance: ethBalance } = useETHBalance();
+  const { data: balance } = useBalance({ addressOrName: account?.address, chainId: activeChain?.id });
+  const ethBalance = balance?.formatted;
 
   const [form, setForm] = useState<IAddLiquidityForm>(INITIAL_FORM_STATE);
   const { pool, baseAmount, fyTokenAmount, method, useFyToken } = form;

@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useAccount, useBalance, useNetwork } from 'wagmi';
 import { AddLiquidityActions, RemoveLiquidityActions } from '../lib/protocol/liquidity/types';
 import { TradeActions } from '../lib/protocol/trade/types';
 import { IPool } from '../lib/protocol/types';
 import useAddLiqPreview from './protocol/useAddLiqPreview';
 import useTradePreview from './protocol/useTradePreview';
-import useETHBalance from './useEthBalance';
 
 const useInputValidation = (
   input: string | undefined,
@@ -16,7 +15,9 @@ const useInputValidation = (
   isEth = false // if the asset is eth
 ) => {
   const { data: account } = useAccount();
-  const { balance: ethBalance } = useETHBalance();
+  const { activeChain } = useNetwork();
+  const { data: balance } = useBalance({ addressOrName: account?.address, chainId: activeChain?.id });
+  const ethBalance = balance?.formatted;
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const _input = parseFloat(input!);
