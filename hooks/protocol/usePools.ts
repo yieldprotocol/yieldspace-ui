@@ -11,7 +11,7 @@ const usePools = () => {
   const contractMap = useContracts();
 
   const { data, error } = useSWR(
-    `/pools/${activeChain?.id!}/${account}`,
+    `/pools/${activeChain?.id!}/${account?.address}`,
     () => getPools(provider!, contractMap!, activeChain?.id!, account?.address!),
     {
       revalidateOnFocus: false,
