@@ -9,8 +9,8 @@ import useContracts from './useContracts';
 const useLadle = () => {
   const contracts = useContracts();
   const { data: signer } = useSigner();
-  const ladle = contracts![LADLE]?.connect(signer!) as Ladle;
-  const wrapEthModule = contracts![WRAP_ETH_MODULE]?.connect(signer!) as WrapEtherModule;
+  const ladle = contracts ? (contracts[LADLE]?.connect(signer!) as Ladle) : undefined;
+  const wrapEthModule = contracts ? (contracts[WRAP_ETH_MODULE]?.connect(signer!) as WrapEtherModule) : undefined;
 
   /**
    * Formatted representation of the batch function that allows for easier filtering/ignoring of actions
