@@ -8,12 +8,12 @@ import { ERC20Permit__factory } from '../contracts/types';
 import { DAI_PERMIT_ASSETS, NON_PERMIT_ASSETS } from '../config/assets';
 import { LadleActions } from '../lib/tx/operations';
 import useLadle from './protocol/useLadle';
-import { useAccount, useNetwork, useProvider, useSigner } from 'wagmi';
+import { useAccount, useNetwork, useSigner } from 'wagmi';
 
 const useSignature = () => {
   const { data: account } = useAccount();
-  const provider = useProvider();
   const { data: signer } = useSigner();
+
   const { activeChain } = useNetwork();
   const { ladleContract: ladle, forwardDaiPermitAction, forwardPermitAction } = useLadle();
   const { handleTx, handleSign } = useTxProcesses();
@@ -55,7 +55,7 @@ const useSignature = () => {
             /* We pass over the generated signFn and sigData to the signatureHandler for tracking/tracing/fallback handling */
             () =>
               signDaiPermit(
-                provider,
+                signer, // using the signer to access eth_signedType_v4
                 /* build domain */
                 {
                   name: reqSig.target.name,
@@ -96,7 +96,7 @@ const useSignature = () => {
         const { v, r, s, value, deadline } = await handleSign(
           () =>
             signERC2612Permit(
-              provider,
+              signer, // using the signer to access eth_signedType_v4
               /* build domain */
               reqSig.domain || {
                 // uses custom domain if provided, else use created Domain

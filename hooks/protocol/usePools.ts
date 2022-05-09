@@ -12,7 +12,7 @@ const usePools = () => {
 
   const { data, error } = useSWR(
     `/pools/${activeChain?.id!}/${account?.address}`,
-    () => getPools(provider!, contractMap!, activeChain?.id!, account?.address!),
+    () => getPools(provider, contractMap!, activeChain?.id!, account?.address!),
     {
       revalidateOnFocus: false,
     }

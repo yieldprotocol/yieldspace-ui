@@ -15,12 +15,8 @@ import { URLS } from '../config/chains';
 export default function Web3Provider({ children }) {
   const { theme: colorTheme } = useColorTheme();
   const { chains, provider } = configureChains(
-    [chain.mainnet, chain.goerli, chain.rinkeby, chain.arbitrum, chain.arbitrumRinkeby],
-    [
-      apiProvider.jsonRpc((_chain: Chain) => ({
-        rpcUrl: URLS[_chain.id][0],
-      })),
-    ]
+    [chain.mainnet, chain.goerli, chain.rinkeby, chain.arbitrumRinkeby, chain.arbitrum],
+    [apiProvider.jsonRpc((_chain: Chain) => ({ rpcUrl: URLS[_chain.id][0] }))]
   );
 
   const { connectors } = getDefaultWallets({
