@@ -16,7 +16,6 @@ import TradeConfirmation from './TradeConfirmation';
 import CloseButton from '../common/CloseButton';
 import { cleanValue } from '../../utils/appUtils';
 import useInputValidation from '../../hooks/useInputValidation';
-import useETHBalance from '../../hooks/useEthBalance';
 import SlippageSetting from '../common/SlippageSetting';
 import { useAccount, useBalance, useNetwork } from 'wagmi';
 
