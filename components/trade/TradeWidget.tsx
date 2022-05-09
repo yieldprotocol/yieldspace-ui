@@ -18,7 +18,7 @@ import { cleanValue } from '../../utils/appUtils';
 import useInputValidation from '../../hooks/useInputValidation';
 import useETHBalance from '../../hooks/useEthBalance';
 import SlippageSetting from '../common/SlippageSetting';
-import { useAccount, useNetwork } from 'wagmi';
+import { useAccount, useBalance, useNetwork } from 'wagmi';
 
 const Inner = tw.div`m-4 text-center`;
 const Grid = tw.div`grid my-5 auto-rows-auto gap-2`;
@@ -49,7 +49,8 @@ const TradeWidget = ({ pools: poolsProps }: { pools: IPoolMap }) => {
   const { data: account } = useAccount();
   const { activeChain } = useNetwork();
   const { data: pools } = usePools();
-  const { balance: ethBalance } = useETHBalance();
+  const { data: balance } = useBalance({ addressOrName: account?.address, chainId: activeChain?.id });
+  const ethBalance = balance?.formatted;
 
   const [form, setForm] = useState<ITradeForm>(INITIAL_FORM_STATE);
   const {
@@ -232,12 +233,12 @@ const TradeWidget = ({ pools: poolsProps }: { pools: IPoolMap }) => {
 
   // update the applicable from/to asset's balance based on if it is eth
   useEffect(() => {
-    if (ethBalance && isEthPool) {
+    if (isEthPool) {
       isFyTokenOutput
-        ? setForm((f) => ({ ...f, fromAsset: { ...f.fromAsset!, balance_: ethBalance } }))
-        : setForm((f) => ({ ...f, toAsset: { ...f.toAsset!, balance_: ethBalance } }));
+        ? setForm((f) => ({ ...f, fromAsset: { ...f.fromAsset!, balance_: ethBalance! } }))
+        : setForm((f) => ({ ...f, toAsset: { ...f.toAsset!, balance_: ethBalance! } }));
     }
-  }, [ethBalance, isEthPool, isFyTokenOutput]);
+  }, [ethBalance, isEthPool, isFyTokenOutput, pool]);
 
   return (
     <BorderWrap>
