@@ -1,3 +1,4 @@
+import { useAddRecentTransaction } from '@rainbow-me/rainbowkit';
 import { ContractTransaction } from 'ethers';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
@@ -11,6 +12,7 @@ const useTransaction = () => {
   const { refetch } = useBalance({ addressOrName: account?.address, chainId: activeChain?.id });
   const { mutate } = useSWRConfig();
   const { toasty } = useToasty();
+  const addRecentTransaction = useAddRecentTransaction();
 
   const chainId = activeChain?.id;
   const explorer = activeChain?.blockExplorers?.default.url;
@@ -32,16 +34,20 @@ const useTransaction = () => {
       setTxSubmitted(true);
 
       try {
-        res &&
-          toasty(
-            async () => {
-              await res?.wait();
-              mutate(`/pools/${chainId}/${account?.address}`);
-              refetch(); // refetch ETH balance
-            },
-            description,
-            explorer && `${explorer}/tx/${res.hash}`
-          );
+        if (res) {
+          addRecentTransaction({ hash: res.hash!, description });
+
+          res &&
+            toasty(
+              async () => {
+                await res?.wait();
+                mutate(`/pools/${chainId}/${account?.address}`);
+                refetch(); // refetch ETH balance
+              },
+              description,
+              explorer && `${explorer}/tx/${res.hash}`
+            );
+        }
         return res;
       } catch (e) {
         console.log(e);

@@ -23,7 +23,6 @@ export default function Web3Provider({ children }) {
     ]
   );
 
-  console.log('🦄 ~ file: useWeb3Provider.tsx ~ line 17 ~ Web3Provider ~ provider', provider);
   const { connectors } = getDefaultWallets({
     appName: 'Yieldspace App',
     chains,
@@ -55,7 +54,7 @@ export default function Web3Provider({ children }) {
 
   return (
     <WagmiProvider client={wagmiClient}>
-      <RainbowKitProvider chains={chains} theme={theme}>
+      <RainbowKitProvider chains={chains} theme={theme} showRecentTransactions>
         {children}
       </RainbowKitProvider>
     </WagmiProvider>
