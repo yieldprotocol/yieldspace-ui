@@ -2,12 +2,13 @@ import { ContractTransaction } from 'ethers';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { useSWRConfig } from 'swr';
-import { useAccount, useNetwork } from 'wagmi';
+import { useAccount, useBalance, useNetwork } from 'wagmi';
 import useToasty from './useToasty';
 
 const useTransaction = () => {
   const { data: account } = useAccount();
   const { activeChain } = useNetwork();
+  const { refetch } = useBalance({ addressOrName: account?.address, chainId: activeChain?.id });
   const { mutate } = useSWRConfig();
   const { toasty } = useToasty();
 
@@ -36,7 +37,7 @@ const useTransaction = () => {
             async () => {
               await res?.wait();
               mutate(`/pools/${chainId}/${account?.address}`);
-              mutate(`/ethBalance/${chainId}/${account?.address}`); // update eth balance
+              refetch(); // refetch ETH balance
             },
             description,
             explorer && `${explorer}/tx/${res.hash}`
